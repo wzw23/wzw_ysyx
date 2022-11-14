@@ -44,12 +44,42 @@ static char* rl_gets() {
 
 static int cmd_c(char *args) {
   cpu_exec(-1);
-  return 0;
+
+   return 0;
 }
 
 
 static int cmd_q(char *args) {
   return -1;
+}
+//wzw insert
+static int cmd_si(char *args) {
+  char *arg2 = strtok(NULL, " ");
+  cpu_exec(atoi(arg2));
+  return 0;
+}
+//wzw add
+word_t paddr_read(paddr_t addr, int len);
+static int cmd_x(char *args){
+  char *N = strtok(NULL, " ");  
+  int n=atoi(N);
+ // printf("%d\n",n);
+  char *EXPR=strtok(NULL," ");
+ // printf("%s",EXPR);
+  uint64_t expr=(uint64_t)strtol(EXPR,NULL,16);
+  //printf("%ld",expr);
+  for(int i=0;i<n;i++){
+      uint64_t result=paddr_read(expr+i*4,4);
+      printf("addr=0x%lx\n",expr+i*4);
+      printf("value=%lx\n",result);
+  }
+  return 0;
+  
+}
+
+static int cmd_infor(char *args) {
+   isa_reg_display();
+   return 0;
 }
 
 static int cmd_help(char *args);
@@ -64,6 +94,10 @@ static struct {
   { "q", "Exit NEMU", cmd_q },
 
   /* TODO: Add more commands */
+
+  { "si", "execute n step", cmd_si},
+  {"info","show register",cmd_infor},
+  {"x","printf pmum",cmd_x}
 
 };
 
