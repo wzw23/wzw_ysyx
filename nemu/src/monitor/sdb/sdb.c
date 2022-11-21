@@ -76,7 +76,71 @@ static int cmd_x(char *args){
   return 0;
   
 }
+//wzw add
+word_t expr(char *e, bool *success);
+static int cmd_p(char *args) {
+  bool success;
+  char *arg = strtok(NULL,"\0");
+  //printf("%s\n",arg);
+  uint64_t result=expr(arg,&success);
+        char *resultstr=strdup("");
+        sprintf(resultstr,"%lu",result);
+        printf("the result is %s\n",resultstr); 
+        free(resultstr);
 
+  //printf("success is %i",success);
+  return 0;
+}
+#define BUFFER_SIZE 65536
+static int cmd_ptest(){
+    int flag=1;
+    bool success;
+    char buffer[BUFFER_SIZE];
+    int totalRead=0;
+    FILE *fp=fopen("/home/wzw/ysyx-workbench/nemu/tools/gen-expr/log","r");
+    if(fp==NULL)
+    {
+        printf("unable to open file\n");
+        exit(-1);
+    }
+    while(fgets(buffer,BUFFER_SIZE,fp)!=NULL){
+        totalRead= strlen(buffer);
+        // printf("totalRead=%d\n",totalRead);
+        buffer[totalRead-1]=buffer[totalRead-1]=='\n'
+            ?'\0'
+            :buffer[totalRead-1];
+        //printf("%s\n",buffer);
+        char * ret=strtok(buffer," ");
+        char *test_result=ret;
+        //printf("%s\n",ret);
+        ret=strtok(NULL,"\0");
+        char *test_exp=ret;
+        
+        uint64_t result=expr(test_exp,&success);
+        char *resultstr=strdup("");
+        sprintf(resultstr,"%lu",result);
+        //printf("result=%lu\n",result);
+       // printf("resultstr=%s",resultstr);
+        //printf("test_result=%s",test_result);
+        if(strcmp(resultstr,test_result)){
+            printf("%s  test is wrong\n the result is %s,and the real result is %s\n",test_exp,resultstr,test_result); 
+            flag=0;
+        }
+        //if(flag)
+         //   printf("test success");
+        free(resultstr);
+        //printf("%s\n%s\n",test_result,test_exp);
+        //printf("%s\n",ret);
+        //printf("%s\n",buffer);
+}
+if(flag)
+    printf("test success\n");
+
+fclose(fp);
+return 0;
+
+    
+}
 static int cmd_infor(char *args) {
    isa_reg_display();
    return 0;
@@ -97,7 +161,9 @@ static struct {
 
   { "si", "execute n step", cmd_si},
   {"info","show register",cmd_infor},
-  {"x","printf pmum",cmd_x}
+  {"x","printf pmum",cmd_x},
+  {"p","expression evaluation",cmd_p},
+  {"ptest","test expression evaluation",cmd_ptest}
 
 };
 
