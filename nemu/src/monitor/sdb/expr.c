@@ -28,7 +28,13 @@ enum {
   //wzw add
   TK_NUM,
   TK_BK,
-  add
+  add,
+  TK_NEQ,
+  TK_AND,
+  TK_XNUM,
+  TK_REG,
+  DEREF,
+  NEG 
   //sub,
   //mup,
   //dvi
@@ -51,9 +57,12 @@ static struct rule {
   {"/",'/'},
   {"\\(",TK_BK},        //wzw add () num
   {"\\)",TK_BK},
-  {"[0-9]+",TK_NUM}
-
-  
+  {"0X[0-9]+",TK_XNUM},
+  {"[0-9]+",TK_NUM},
+  {"&&",TK_AND},
+  {"!=",TK_NEQ},
+  {"\\$[a-z0-9$]+",TK_REG}
+  //{"0X[0-9]+",TK_XNUM}
 };
 
 #define NR_REGEX ARRLEN(rules)
@@ -85,6 +94,7 @@ typedef struct token {
 static Token tokens[65536] __attribute__((used)) = {};
 static int nr_token __attribute__((used))  = 0;
 
+//word_t isa_reg_str2val(const char *s, bool *success);
 static bool make_token(char *e) {
   int position = 0;
   int i;
@@ -111,8 +121,8 @@ static bool make_token(char *e) {
         //printf("substr_start2=%s\n",substr_start);
 
         //wzw zhushi
-        //Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
-         //   i, rules[i].regex, position, substr_len, substr_len, substr_start);
+        Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s",
+            i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
         position += substr_len;
 
@@ -130,6 +140,9 @@ static bool make_token(char *e) {
           case '+':
           case '*':
           case '/':
+          case TK_NEQ:
+          case TK_AND:
+          case TK_EQ:
           tokens[j++].type=rules[i].token_type;
          // printf("tokens j=%d",j-1);
          // printf("type=%d\n",tokens[j-1].type);
@@ -139,17 +152,61 @@ static bool make_token(char *e) {
             break;
          //case ( ) int
           case TK_BK:  
-          tokens[j].type=rules[i].token_type;
-          //printf("tokens j=%d",j);
-          //printf("str=%d\n",tokens[j].type);
-          strncpy(tokens[j++].str,substr_start,substr_len);  break;
+          //tokens[j].type=rules[i].token_type;
+            //printf("tokens j=%d",j);
+            //printf("str=%d\n",tokens[j].type);
+          //strncpy(tokens[j++].str,substr_start,substr_len);  break;
           case TK_NUM: 
+          
           tokens[j].type=rules[i].token_type;
           //printf("tokens j=%d",j);
           //printf("str=%d\n",tokens[j].type);
           strncpy(tokens[j++].str,substr_start,substr_len);
           //printf("str=%s\n",tokens[j-1].str);
           break;
+
+          case TK_XNUM: 
+          tokens[j].type=TK_NUM;
+          char *stop;
+          uint64_t expr=(uint64_t)strtol(substr_start,&stop,16); 
+          char *exprstr=strdup("");
+          sprintf(exprstr,"%lu",expr);
+          strncpy(tokens[j++].str,exprstr,substr_len);
+          free(exprstr);
+
+          
+          case TK_REG: 
+          //isa_reg_str2val();
+          tokens[j].type=TK_NUM;
+          char *regstr=strdup("");
+          //char *regstr=(char *)malloc(2*sizeof(char));
+          strncpy(regstr,substr_start+1,substr_len-1);
+          //strncpy(regstr,substr_start+1,substr_len-1);
+
+          bool *success=(bool *)malloc(sizeof(bool));
+          *success=0;
+          //isa_reg_str2val(regstr,success);
+          int reg=isa_reg_str2val(regstr,success);
+
+          printf("first%d\n",reg);
+          printf("success=%d",*success);
+          if(*success==0)
+              printf("输入寄存器地址错误");
+          //printf("lu",result);
+         // sprintf(exprstr,"%lu",expr);
+          sprintf(regstr,"%d",reg);
+          int lenreg=1;
+          while((reg/10)!=0){
+                reg=reg/10;
+                lenreg++;
+          }
+          strncpy(tokens[j++].str,regstr,lenreg);
+          free(regstr);
+
+          //strncpy(tokens[j++].str,substr_start,substr_len);
+          break;
+          
+
           //printf("str=%d\n",tokens[i].type);
          // printf("str=%s\n",tokens[i].str);
           default: TODO();break;
@@ -173,8 +230,8 @@ static Token * P_operator(Token *p,Token *q){
     Token *qa=q;
     Token *Po=pa;
     //int Po=0;
-    int Po_Yx=1;//主运算符优先级，0最大
-    int Yx=1;
+    int Po_Yx=0;//主运算符优先级，0最大
+    int Yx=0;
     //因为continue没加卡了半天
     while(pa<=qa){
         if(!strcmp(pa->str,"(")){
@@ -187,14 +244,21 @@ static Token * P_operator(Token *p,Token *q){
             pa++;
             continue;
         }
-        //判断优先级
-        if((pa->type=='+')||(pa->type=='-')||(pa->type=='*')||(pa->type=='/')){//+ - * /
+        //判断优先级 数值越大优先级越低 越可能是主运算符
+        if((pa->type=='+')||(pa->type=='-')||(pa->type=='*')||(pa->type=='/')||(pa->type==TK_NEQ)||(pa->type==TK_EQ)||(pa->type==TK_AND)||(pa->type==DEREF)||(pa->type==NEG)){//+ - * /
             if(pa->type=='+'||pa->type=='-')
-                Yx=0;
-            else Yx=1;
+                Yx=4;
+            else if(pa->type=='*'||pa->type=='/')
+                Yx=3; 
+            else if(pa->type==TK_EQ||pa->type==TK_NEQ)
+                Yx=7;
+            else if(pa->type==TK_AND)
+                Yx=11;
+            else if(pa->type==DEREF||pa->type==NEG)
+                Yx=2;
         //确定主运算符
           if(kuohao==0){
-              if(Yx<=Po_Yx){
+              if(Yx>=Po_Yx){
                  Po_Yx=Yx; 
                  Po=pa; 
                  //pa++; 
@@ -258,6 +322,16 @@ static uint64_t eval(Token *p, Token *q) {
                 return chu;
                 //return val1 / val2;
                } 
+      case TK_EQ: return val1==val2;
+      case TK_NEQ: return val1!=val2;
+      case TK_AND: return val1&&val2;
+      case DEREF:  {
+                   char *val2str=strdup("");  
+                   sprintf(val2str,"%lu",val2);
+                   return *val2str; 
+                   free(val2str);
+                   }
+      case NEG:  return -val2;
       default: assert(0);
     }
   }
@@ -307,6 +381,17 @@ word_t expr(char *e, bool *success) {
     return -1;
   }
   else{
+  for (int i = 0; i < j; i ++) {
+  if (tokens[i].type == '*' && (i == 0 || tokens[i - 1].type =='+' || tokens[i - 1].type =='-'|| tokens[i - 1].type =='*'|| tokens[i - 1].type =='/') ) {
+    tokens[i].type = DEREF;
+  }
+}
+  for (int i = 0; i < j; i ++) {
+    if (tokens[i].type == '-' && (i == 0 || tokens[i - 1].type =='+'||tokens[i - 1].type =='-' || tokens[i - 1].type =='*'|| tokens[i - 1].type =='/' )) {
+        tokens[i].type = NEG;
+    }
+}
+
   Token *q=&tokens[j-1];
   Token *p=&tokens[0];   
   uint64_t result=eval(p,q);
