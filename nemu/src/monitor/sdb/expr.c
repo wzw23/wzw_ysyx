@@ -12,7 +12,7 @@
 *
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
-
+#define RESULTSIZE 1000
 #include <isa.h>
 
 /* We use the POSIX regex functions to process regular expressions.
@@ -169,17 +169,17 @@ static bool make_token(char *e) {
           tokens[j].type=TK_NUM;
           char *stop;
           uint64_t expr=(uint64_t)strtol(substr_start,&stop,16); 
-          char *exprstr=strdup("");
+          char exprstr[RESULTSIZE]={'\0'};
           sprintf(exprstr,"%lu",expr);
           strncpy(tokens[j++].str,exprstr,substr_len);
-          free(exprstr);
+          //free(exprstr);
           break;
 
           
           case TK_REG: 
           //isa_reg_str2val();
           tokens[j].type=TK_NUM;
-          char *regstr=strdup("");
+          char regstr[RESULTSIZE]={'\0'};
           //char *regstr=(char *)malloc(2*sizeof(char));
           strncpy(regstr,substr_start+1,substr_len-1);
           //strncpy(regstr,substr_start+1,substr_len-1);
@@ -202,7 +202,7 @@ static bool make_token(char *e) {
                 lenreg++;
           }
           strncpy(tokens[j++].str,regstr,lenreg);
-          free(regstr);
+         // free(regstr);
 
           //strncpy(tokens[j++].str,substr_start,substr_len);
           break;

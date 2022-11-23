@@ -16,6 +16,7 @@
 #include "sdb.h"
 #include <string.h>
 #define NR_WP 32
+#define RESULTMAXSIZE 1000
 
 typedef struct watchpoint {
   int NO;
@@ -39,7 +40,7 @@ void init_wp_pool() {
     wp_pool[i].next = (i == NR_WP - 1 ? NULL : &wp_pool[i + 1]);
     wp_pool[i].p_data=0;
     wp_pool[i].n_data=0;
-    wp_pool[i].arg=strdup("");
+    wp_pool[i].arg=(char *)malloc(1000*sizeof(char));
   }
 
   head = NULL;

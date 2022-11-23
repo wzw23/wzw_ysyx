@@ -12,7 +12,7 @@
 *
 * See the Mulan PSL v2 for more details.
 ***************************************************************************************/
-
+#define RESULTSIZE 10000
 #include <isa.h>
 #include <cpu/cpu.h>
 #include <readline/readline.h>
@@ -96,10 +96,9 @@ static int cmd_p(char *args) {
   char *arg = strtok(NULL,"\0");
   //printf("%s\n",arg);
   uint64_t result=expr(arg,&success);
-        char *resultstr=strdup("");
+        char resultstr[1000]={'\0'};
         sprintf(resultstr,"%lu",result);
         printf("the result is %s\n",resultstr); 
-        free(resultstr);
 
   //printf("success is %i",success);
   return 0;
@@ -130,7 +129,8 @@ static int cmd_ptest(){
         char *test_exp=ret;
         
         uint64_t result=expr(test_exp,&success);
-        char *resultstr=strdup("");
+        //char *resultstr=strdup("");
+        char resultstr[RESULTSIZE]={'\0'};
         sprintf(resultstr,"%lu",result);
         //printf("result=%lu\n",result);
        // printf("resultstr=%s",resultstr);
@@ -141,7 +141,7 @@ static int cmd_ptest(){
         }
         //if(flag)
          //   printf("test success");
-        free(resultstr);
+        //free(resultstr);
         //printf("%s\n%s\n",test_result,test_exp);
         //printf("%s\n",ret);
         //printf("%s\n",buffer);
