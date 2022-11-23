@@ -173,6 +173,7 @@ static bool make_token(char *e) {
           sprintf(exprstr,"%lu",expr);
           strncpy(tokens[j++].str,exprstr,substr_len);
           free(exprstr);
+          break;
 
           
           case TK_REG: 
@@ -285,6 +286,9 @@ static Token * P_operator(Token *p,Token *q){
 }
 static bool check_parentheses(Token *p,Token *q);
 //wzw add eval
+//
+word_t paddr_read(paddr_t addr, int len);
+
 static uint64_t eval(Token *p, Token *q) {
   if (p > q) {
       return -1;
@@ -326,10 +330,11 @@ static uint64_t eval(Token *p, Token *q) {
       case TK_NEQ: return val1!=val2;
       case TK_AND: return val1&&val2;
       case DEREF:  {
-                   char *val2str=strdup("");  
-                   sprintf(val2str,"%lu",val2);
-                   return *val2str; 
-                   free(val2str);
+                   return paddr_read(val2,4);
+                   //char *val2str=strdup("");  
+                   //sprintf(val2str,"%lu",val2);
+                   //return *val2str; 
+                   //free(val2str);
                    }
       case NEG:  return -val2;
       default: assert(0);
