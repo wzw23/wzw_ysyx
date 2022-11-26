@@ -79,8 +79,8 @@ static int cmd_x(char *args){
   char *EXPR=strtok(NULL," ");
  // printf("%s",EXPR);
   uint64_t expr=(uint64_t)strtol(EXPR,NULL,16);
-  //printf("%ld",expr);
-  for(int i=0;i<n;i++){
+    for(int i=0;i<n;i++){
+      printf("dizhi=%lu",expr);
       uint64_t result=paddr_read(expr+i*4,4);
       printf("addr=0x%lx\n",expr+i*4);
       printf("value=%lx\n",result);
@@ -95,7 +95,9 @@ static int cmd_p(char *args) {
   bool success;
   char *arg = strtok(NULL,"\0");
   //printf("%s\n",arg);
+      
   uint64_t result=expr(arg,&success);
+        printf("the result is 0X%lx",result);
         char resultstr[1000]={'\0'};
         sprintf(resultstr,"%lu",result);
         printf("the result is %s\n",resultstr); 

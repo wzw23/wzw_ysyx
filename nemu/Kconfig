@@ -12,7 +12,16 @@ config ISA_riscv32
 config ISA_riscv64
   bool "riscv64"
 endchoice
-
+#wzw add
+choice
+    prompt "WatchPoint"
+config WATCHPOINT
+    bool "watchpoint"
+    default 0
+config NOTWATCHPOINT
+    bool "notwatchpoint"
+    default 0   
+endchoice
 config ISA
   string
   default "x86" if ISA_x86

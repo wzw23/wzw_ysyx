@@ -181,27 +181,40 @@ static bool make_token(char *e) {
           tokens[j].type=TK_NUM;
           char regstr[RESULTSIZE]={'\0'};
           //char *regstr=(char *)malloc(2*sizeof(char));
+          printf("cpu.pc=0X%lx\n",cpu.pc);
+
           strncpy(regstr,substr_start+1,substr_len-1);
           //strncpy(regstr,substr_start+1,substr_len-1);
 
-          bool *success=(bool *)malloc(sizeof(bool));
-          *success=0;
+          //bool *success=(bool *)malloc(10*sizeof(bool));
+          bool success[1]={0};
+          //*success=0;
           //isa_reg_str2val(regstr,success);
-          int reg=isa_reg_str2val(regstr,success);
+          uint64_t reg;
+          if(!strcmp(regstr,"pc"))
+          {
+              reg=(uint64_t)cpu.pc;
+              //printf("cpu.pc=%lu\n",reg);
+              *success=1;
+          }
+          else {reg=isa_reg_str2val(regstr,success);}
 
-          printf("first%d\n",reg);
+          printf("first=%lu\n",reg);
           printf("success=%d",*success);
           if(*success==0)
               printf("输入寄存器地址错误");
           //printf("lu",result);
          // sprintf(exprstr,"%lu",expr);
-          sprintf(regstr,"%d",reg);
+          sprintf(regstr,"%lu",reg);
+          printf("regstr=%s",regstr);
           int lenreg=1;
           while((reg/10)!=0){
                 reg=reg/10;
                 lenreg++;
           }
           strncpy(tokens[j++].str,regstr,lenreg);
+          printf("tokens[0]=%s",tokens[0].str);
+          //printf("%s",tokens[j-1].str);
          // free(regstr);
 
           //strncpy(tokens[j++].str,substr_start,substr_len);
@@ -298,8 +311,16 @@ static uint64_t eval(Token *p, Token *q) {
      * For now this token should be a number.
      * Return the value of the number.
      */
-     if(p->type==TK_NUM)
-       return atoi(p->str); 
+      printf("before atoi p->str=%s\n",p->str);
+     if(p->type==TK_NUM){
+       uint64_t fh=(uint64_t)strtol(p->str,NULL,10);
+
+       //uint64_t fh=atoi(p->str); 
+       printf("after atoi p->str=%lu\n",fh);
+       return fh; 
+     }
+
+
   }
   else if (check_parentheses(p, q) == true) {
     /* The expression is surrounded by a matched pair of parentheses.

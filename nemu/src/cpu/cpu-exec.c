@@ -31,7 +31,7 @@ static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
 
 void device_update();
-
+void watchpoint_exam();
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
   if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
@@ -39,6 +39,8 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
   //w_exam();
+  IFDEF(CONFIG_WATCHPOINT,watchpoint_exam());
+
    
   }
 
@@ -68,14 +70,15 @@ static void exec_once(Decode *s, vaddr_t pc) {
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
 #endif
 }
-void watchpoint_exam();
 static void execute(uint64_t n) {
   Decode s;
   for (;n > 0; n --) {
+    //wzw add
+    printf("cpu.pc=0X%lx\n",cpu.pc);
     exec_once(&s, cpu.pc);
     g_nr_guest_inst ++;
     //wzw add the next line
-    watchpoint_exam();
+    //watchpoint_exam();
     trace_and_difftest(&s, cpu.pc);
     if (nemu_state.state != NEMU_RUNNING) break;
     IFDEF(CONFIG_DEVICE, device_update());
