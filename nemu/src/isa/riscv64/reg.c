@@ -26,7 +26,8 @@ const char *regs[] = {
 void isa_reg_display() {
   for(int i=0;i<32;i++)
   {
-    printf("%d\n",*regs[i]);
+    printf("test1=%d\n",*regs[i]);
+    printf("reg[%d]=%lu\n",i,cpu.gpr[i]);
   }
 }
 
@@ -35,10 +36,12 @@ word_t isa_reg_str2val(const char *s, bool *success) {
   //printf("%d",*s);
   printf("s=%s\n",s);
   for(int j=0;j<32;j++)
-      if(!strcmp(s,regs[j]))
+      if(!strcmp(s,regs[j])){
           *success=1;
+          return  cpu.gpr[j];
+      }
   //for(int j=0;j<32;j++)
   //    printf("%s",regs[j]);
       
-  return *s;
+  return -1;
 }
