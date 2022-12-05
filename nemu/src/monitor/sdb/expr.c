@@ -57,7 +57,7 @@ static struct rule {
   {"/",'/'},
   {"\\(",TK_BK},        //wzw add () num
   {"\\)",TK_BK},
-  {"0X[0-9]+",TK_XNUM},
+  {"0X[0-9a-f]+",TK_XNUM},
   {"[0-9]+",TK_NUM},
   {"&&",TK_AND},
   {"!=",TK_NEQ},
@@ -213,7 +213,7 @@ static bool make_token(char *e) {
                 lenreg++;
           }
           strncpy(tokens[j++].str,regstr,lenreg);
-          printf("tokens[0]=%s",tokens[0].str);
+          //printf("tokens[0]=%s",tokens[0].str);
           //printf("%s",tokens[j-1].str);
          // free(regstr);
 
@@ -311,12 +311,12 @@ static uint64_t eval(Token *p, Token *q) {
      * For now this token should be a number.
      * Return the value of the number.
      */
-      printf("before atoi p->str=%s\n",p->str);
+      //printf("before atoi p->str=%s\n",p->str);
      if(p->type==TK_NUM){
        uint64_t fh=(uint64_t)strtol(p->str,NULL,10);
 
        //uint64_t fh=atoi(p->str); 
-       printf("after atoi p->str=%lu\n",fh);
+       //printf("after atoi p->str=%lu\n",fh);
        return fh; 
      }
 

@@ -97,7 +97,7 @@ static int cmd_p(char *args) {
   //printf("%s\n",arg);
       
   uint64_t result=expr(arg,&success);
-        printf("the result is 0X%lx",result);
+        printf("the result is 0X%lx\n",result);
         char resultstr[1000]={'\0'};
         sprintf(resultstr,"%lu",result);
         printf("the result is %s\n",resultstr); 
