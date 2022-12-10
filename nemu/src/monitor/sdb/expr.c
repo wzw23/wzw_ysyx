@@ -167,11 +167,16 @@ static bool make_token(char *e) {
 
           case TK_XNUM: 
           tokens[j].type=TK_NUM;
-          char *stop;
-          uint64_t expr=(uint64_t)strtol(substr_start,&stop,16); 
+          //char *stop;
+          uint64_t expr;
+          sscanf(substr_start,"%lx",&expr); 
+          printf("firsttest=%lx\n",expr);
+          //uint64_t expr=(uint64_t)strtol(substr_start,&stop,16); 
           char exprstr[RESULTSIZE]={'\0'};
           sprintf(exprstr,"%lu",expr);
-          strncpy(tokens[j++].str,exprstr,substr_len);
+          printf("secondtest=%s\n",exprstr);
+          strncpy(tokens[j++].str,exprstr,substr_len+1);
+          printf("thirdtest=%s\n",tokens[j-1].str);
           //free(exprstr);
           break;
 

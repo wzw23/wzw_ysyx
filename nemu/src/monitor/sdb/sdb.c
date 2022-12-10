@@ -71,18 +71,22 @@ static int cmd_si(char *args) {
   return 0;
 }
 //wzw add
+word_t expr(char *e, bool *success);
 word_t paddr_read(paddr_t addr, int len);
 static int cmd_x(char *args){
   char *N = strtok(NULL, " ");  
+  bool success;
   int n=atoi(N);
  // printf("%d\n",n);
   char *EXPR=strtok(NULL," ");
+
  // printf("%s",EXPR);
-  uint64_t expr=(uint64_t)strtol(EXPR,NULL,16);
+  //uint64_t expr=(uint64_t)strtol(EXPR,NULL,16);
+  uint64_t expr1=expr(EXPR,&success);
     for(int i=0;i<n;i++){
-      printf("dizhi=%lu",expr);
-      uint64_t result=paddr_read(expr+i*4,4);
-      printf("addr=0x%lx\n",expr+i*4);
+      printf("dizhi=%lu",expr1);
+      uint64_t result=paddr_read(expr1+i*4,4);
+      printf("addr=0x%lx\n",expr1+i*4);
       printf("value=%lx\n",result);
       printf("vlaue(uint64_t)=%lu\n",result);
   }
@@ -90,7 +94,6 @@ static int cmd_x(char *args){
   
 }
 //wzw add
-word_t expr(char *e, bool *success);
 static int cmd_p(char *args) {
   bool success;
   char *arg = strtok(NULL,"\0");
