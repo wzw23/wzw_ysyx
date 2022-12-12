@@ -49,6 +49,7 @@ VL_MODULE(Vtop___024root) {
     CData/*0:0*/ top__DOT____Vtogcov__rst;
     CData/*3:0*/ top__DOT____Vtogcov__count_c;
     CData/*0:0*/ top__DOT__i0__DOT__i0__DOT____Vtogcov__wen;
+    CData/*0:0*/ top__DOT__de__DOT____Vtogcov__state;
     CData/*2:0*/ top__DOT__de__DOT____Vtogcov__Type;
     CData/*4:0*/ top__DOT__de__DOT____Vtogcov__waddr;
     CData/*0:0*/ top__DOT__de__DOT__m0__DOT__i0__DOT____Vtogcov__hit;
@@ -57,6 +58,7 @@ VL_MODULE(Vtop___024root) {
     IData/*31:0*/ top__DOT____Vtogcov__out;
     IData/*31:0*/ top__DOT__i0__DOT____Vtogcov__zhongjian;
     VlWide<13>/*401:0*/ top__DOT__de__DOT____Vcellinp__m0____pinNumber4;
+    IData/*31:0*/ top__DOT__de__DOT____Vtogcov__return_state;
     QData/*63:0*/ top__DOT__de__DOT____Vtogcov__src1;
     QData/*63:0*/ top__DOT__de__DOT____Vtogcov__src2;
     QData/*63:0*/ top__DOT__de__DOT____Vtogcov__imm;

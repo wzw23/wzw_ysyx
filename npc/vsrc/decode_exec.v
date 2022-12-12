@@ -1,5 +1,8 @@
 module decode_exec(input clk,input[31:0]inst);
     //六种类型000-R 001-I 010-S 011-B 100-U 101-J 111_NONE
+
+    export "DPI-C" task put_state; 
+    export "DPI-C" function putstate;
     localparam 
      //   Type_R=3'b000,
         Type_I=3'b001,
@@ -8,6 +11,20 @@ module decode_exec(input clk,input[31:0]inst);
         Type_U=3'b100,
         Type_J=3'b101,
         None=3'b111;
+    wire state;
+    wire [31:0] return_state;
+    assign return_state= {{31{1'b0}},state};
+    task put_state;
+        input prior_state;
+        prior_state=state;
+    endtask
+    function  void putstate(); 
+        //定义输入变量 
+        //定义函数体 
+        output int statefh;
+        statefh=return_state;
+        endfunction
+
     wire [2:0]Type;
     wire [1:0]one_zero;
     wire [4:0]six_two;
@@ -41,5 +58,7 @@ module decode_exec(input clk,input[31:0]inst);
     assign Type=((six_two==5'b00100)&&(one_zero==2'b11)&&(fth_twl==3'b000))? Type_I:None;
     assign waddr=((six_two==5'b00100)&&(one_zero==2'b11)&&(fth_twl==3'b000))? dest:0;
     assign wdata=((six_two==5'b00100)&&(one_zero==2'b11)&&(fth_twl==3'b000))? addidata:0;
-    //
-endmodule
+    //break
+    assign state=(inst==32'b0000000_00001_00000_000_00000_11100_11)? 1'b1:1'b0;
+    endmodule
+

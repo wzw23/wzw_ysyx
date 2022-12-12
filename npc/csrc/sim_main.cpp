@@ -1,18 +1,20 @@
 // For std::unique_ptr
 #include <memory>
-
+#include "svdpi.h"
 // Include common routines
 #include <verilated.h>
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
 #include "Vtop.h"
+#include "Vtop__Dpi.h"
 //最初内存
 #define CONFIG_BASE 0x80000000
 typedef unsigned char         uint8_t;
 typedef unsigned short   int uint16_t;
 typedef unsigned int         uint32_t;
 typedef unsigned long    int uint64_t;
+extern void put_state(svLogic prior_state);  
 //文件二进制编码
 static const uint32_t img [] = {
  // 0x800002b7,  // lui t0,0x80000
@@ -23,10 +25,14 @@ static const uint32_t img [] = {
  0x0c4b0b13, //addi    s6,s6,196
  0x0c4b0b13, //addi    s6,s6,196
  0x2f0b8b93, //addi    s7,s7,752
- 0x0c4b0b13  //addi    s6,s6,196 
+ 0x0c4b0b13, //addi    s6,s6,196 
+ 0x00100073  //break
 };
+//
+//
 static uint8_t pmem[100000]={0};
-
+enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };   
+static int nemu_state=NEMU_RUNNING;
 //通过内存地址书写原本地址
 uint8_t* guest_to_host(uint32_t paddr) { printf("0/n");return pmem + paddr - CONFIG_BASE; }
 //Legacy function required only so linking works on Cygwin and MSVC++
@@ -81,7 +87,13 @@ int main(int argc, char** argv, char** env) {
     // Construct the Verilated model, from Vtop.h generated from Verilating "top.v".
     // Using unique_ptr is similar to "Vtop* top = new Vtop" then deleting at end.
     // "TOP" will be the hierarchical name of the module.
+
+
     const std::unique_ptr<Vtop> top{new Vtop{contextp.get(), "TOP"}};
+    const svScope scope = svGetScopeFromName("TOP.top.de");
+    assert(scope); // Check for nullptr if scope not found
+    svSetScope(scope);
+
 
     // Set Vtop's input signals
     top->rst = !0;
@@ -106,7 +118,16 @@ int main(int argc, char** argv, char** env) {
         top->clk = !top->clk;
         //add read memory
         //printf("read dizhi =%x\n",guest_to_host(top->out));
+                
+        top->putstate(&nemu_state);
+//      top->put_state(nemu_state);
+
         top->inst=pmem_read(top->out,4);
+        printf("the state is %d\n",nemu_state);
+        if(nemu_state)
+        {   printf("end");
+            return 0;
+        }
         printf("read neirong =%x\n",pmem_read(top->out,4));
         // Toggle control signals on an edge that doesn't correspond
         // to where the controls are sampled; in this example we do

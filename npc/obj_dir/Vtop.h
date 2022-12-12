@@ -10,6 +10,7 @@
 
 #include "verilated_heavy.h"
 #include "verilated_cov.h"
+#include "svdpi.h"
 
 class Vtop__Syms;
 class Vtop___024root;
@@ -71,6 +72,10 @@ class Vtop VL_NOT_FINAL {
     VerilatedContext* contextp() const;
     /// Retrieve name of this model instance (as passed to constructor).
     const char* name() const;
+
+    /// DPI Export functions
+    static void put_state(svLogic prior_state);
+    static void putstate(int* statefh);
 } VL_ATTR_ALIGNED(VL_CACHE_LINE_BYTES);
 
 #endif  // guard
