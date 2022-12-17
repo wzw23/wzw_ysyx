@@ -19,8 +19,12 @@
 #include <readline/history.h>
 #include "sdb.h"
 //#include "/home/wzw/ysyx-workbench/nemu/src/monitor/sdb/watchpoint.c"
-
+//#ifdef CONFIG_TARGET_AM
+#if(BATCH_MODE==1)
 static int is_batch_mode = false;
+#else 
+static int is_batch_mode = true;
+#endif
 typedef struct watchpoint {
   int NO;
   struct watchpoint *next;

@@ -12,7 +12,7 @@
 #
 # See the Mulan PSL v2 for more details.
 #**************************************************************************************/
-
+BATCH_MODE?=1
 # Sanity check
 ifeq ($(wildcard $(NEMU_HOME)/src/nemu-main.c),)
   $(error NEMU_HOME=$(NEMU_HOME) is not a NEMU repo)
@@ -45,14 +45,16 @@ CFLAGS_BUILD += $(call remove_quote,$(CONFIG_CC_OPT))
 CFLAGS_BUILD += $(if $(CONFIG_CC_LTO),-flto,)
 CFLAGS_BUILD += $(if $(CONFIG_CC_DEBUG),-Og -ggdb3,)
 CFLAGS_BUILD += $(if $(CONFIG_CC_ASAN),-fsanitize=address,)
-CFLAGS_TRACE += -DITRACE_COND=$(if $(CONFIG_ITRACE_COND),$(call remove_quote,$(CONFIG_ITRACE_COND)),true)
-CFLAGS  += $(CFLAGS_BUILD) $(CFLAGS_TRACE) -D__GUEST_ISA__=$(GUEST_ISA)
+CFLAGS_TRACE += -DITRACE_COND=$(if $(CONFIG_ITRACE_COND),$(call remove_quote,$(CONFIG_ITRACE_COND)),true)  
+CFLAGS_BATCHMODE+=-DBATCH_MODE=$(BATCH_MODE)
+CFLAGS  += $(CFLAGS_BUILD) $(CFLAGS_TRACE)  -D__GUEST_ISA__=$(GUEST_ISA) $(CFLAGS_BATCHMODE) 
 LDFLAGS += $(CFLAGS_BUILD)
 
 # Include rules for menuconfig
 include $(NEMU_HOME)/scripts/config.mk
 
 ifdef CONFIG_TARGET_AM
+echo $(CONFIG_TARGET_AM)
 include $(AM_HOME)/Makefile
 LINKAGE += $(ARCHIVES)
 else

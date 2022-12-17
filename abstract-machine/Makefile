@@ -16,21 +16,21 @@ endif
 ### Override checks when `make clean/clean-all/html`
 ifeq ($(findstring $(MAKECMDGOALS),clean|clean-all|html),)
 
-### Print build info message
+### Print build info message 建立文档提式信息
 $(info # Building $(NAME)-$(MAKECMDGOALS) [$(ARCH)])
 
-### Check: environment variable `$AM_HOME` looks sane
+### Check: environment variable `$AM_HOME` looks sane 检查是否初始化am_home
 ifeq ($(wildcard $(AM_HOME)/am/include/am.h),)
   $(error $$AM_HOME must be an AbstractMachine repo)
 endif
 
-### Check: environment variable `$ARCH` must be in the supported list
+### Check: environment variable `$ARCH` must be in the supported list 检查文件是否存在
 ARCHS = $(basename $(notdir $(shell ls $(AM_HOME)/scripts/*.mk)))
 ifeq ($(filter $(ARCHS), $(ARCH)), )
   $(error Expected $$ARCH in {$(ARCHS)}, Got "$(ARCH)")
 endif
 
-### Extract instruction set architecture (`ISA`) and platform from `$ARCH`. Example: `ARCH=x86_64-qemu -> ISA=x86_64; PLATFORM=qemu`
+### Extract instruction set architecture (`ISA`) and platform from `$ARCH`. Example: `ARCH=x86_64-qemu -> ISA=x86_64; PLATFORM=qemu` 提取ISA PLATFORM
 ARCH_SPLIT = $(subst -, ,$(ARCH))
 ISA        = $(word 1,$(ARCH_SPLIT))
 PLATFORM   = $(word 2,$(ARCH_SPLIT))
@@ -45,23 +45,26 @@ endif
 
 ## 2. General Compilation Targets
 
-### Create the destination directory (`build/$ARCH`)
+### Create the destination directory (`build/$ARCH`) 建立文件存放生成文件
 WORK_DIR  = $(shell pwd)
 DST_DIR   = $(WORK_DIR)/build/$(ARCH)
 $(shell mkdir -p $(DST_DIR))
 
 ### Compilation targets (a binary image or archive)
-IMAGE_REL = build/$(NAME)-$(ARCH)
-IMAGE     = $(abspath $(IMAGE_REL))
-ARCHIVE   = $(WORK_DIR)/build/$(NAME)-$(ARCH).a
+IMAGE_REL = build/$(NAME)-$(ARCH)#生成文件的前缀名 比如am-riscv64-nemu.a的前缀名
+IMAGE     = $(abspath $(IMAGE_REL))#生成文件的绝对路径
+ARCHIVE   = $(WORK_DIR)/build/$(NAME)-$(ARCH).a#生成文档的绝对路径
 
 ### Collect the files to be linked: object files (`.o`) and libraries (`.a`)
-OBJS      = $(addprefix $(DST_DIR)/, $(addsuffix .o, $(basename $(SRCS))))
-LIBS     := $(sort $(LIBS) am klib) # lazy evaluation ("=") causes infinite recursions
+OBJS      = $(addprefix $(DST_DIR)/, $(addsuffix .o, $(basename $(SRCS))))#建立的.o文件
+LIBS     := $(sort $(LIBS) am klib) # lazy evaluation ("=") causes infinite recursions #am klib 及 编译文件名
+#所有需要链接的文件
 LINKAGE   = $(OBJS) \
   $(addsuffix -$(ARCH).a, $(join \
     $(addsuffix /build/, $(addprefix $(AM_HOME)/, $(LIBS))), \
     $(LIBS) ))
+#linkage:
+#	echo $(LINKAGE)
 
 ## 3. General Compilation Flags
 
@@ -100,7 +103,7 @@ ifeq ($(wildcard $(shell which $(CC))),)
   CROSS_COMPILE :=
 endif
 
-## 5. Compilation Rules
+## 5. Compilation Rules 交叉编译规则
 
 ### Rule (compile): a single `.c` -> `.o` (gcc)
 $(DST_DIR)/%.o: %.c
@@ -126,7 +129,7 @@ $(DST_DIR)/%.o: %.S
 $(LIBS): %:
 	@$(MAKE) -s -C $(AM_HOME)/$* archive
 
-### Rule (link): objects (`*.o`) and libraries (`*.a`) -> `IMAGE.elf`, the final ELF binary to be packed into image (ld)
+### Rule (link): objects (`*.o`) and libraries (`*.a`) -> `IMAGE.elf`, the final ELF binary to be packed into image (ld) 链接.o .a文件
 $(IMAGE).elf: $(OBJS) am $(LIBS)
 	@echo + LD "->" $(IMAGE_REL).elf
 	@$(LD) $(LDFLAGS) -o $(IMAGE).elf --start-group $(LINKAGE) --end-group
