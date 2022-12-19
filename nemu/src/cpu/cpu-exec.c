@@ -34,12 +34,20 @@ void device_update();
 void watchpoint_exam();
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 #ifdef CONFIG_ITRACE_COND
-  if (ITRACE_COND) { log_write("%s\n", _this->logbuf); }
+  if (ITRACE_COND) {
+
+	  log_write("nemustat=%d\n", nemu_state.state); 
+		if(nemu_state.state!=NEMU_RUNNING)	 
+			log_write("-->%s\n", _this->logbuf); 
+	  else
+			log_write("--%s\n", _this->logbuf); }
 #endif
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
   //w_exam();
+	log_write("nemustat1=%d\n", nemu_state.state); 
   IFDEF(CONFIG_WATCHPOINT,watchpoint_exam());
+	log_write("nemustat2=%d\n", nemu_state.state); 
 
    
   }
@@ -76,11 +84,16 @@ static void execute(uint64_t n) {
     //wzw add
     printf("cpu.pc=0X%lx\n",cpu.pc);
     exec_once(&s, cpu.pc);
+		printf("finishexec_once\n");
     g_nr_guest_inst ++;
     //wzw add the next line
     //watchpoint_exam();
     trace_and_difftest(&s, cpu.pc);
-    if (nemu_state.state != NEMU_RUNNING) break;
+    if (nemu_state.state != NEMU_RUNNING){ 
+	    log_write("nemustatlast=%d\n", nemu_state.state); 
+	    printf("nemustat=%d\n", nemu_state.state); 
+			break;}
+
     IFDEF(CONFIG_DEVICE, device_update());
   }
 }
