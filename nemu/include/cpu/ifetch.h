@@ -19,9 +19,14 @@
 
 static inline uint32_t inst_fetch(vaddr_t *pc, int len) {
   uint32_t inst = vaddr_ifetch(*pc, len);
-	printf("inst=%x\n",inst);
-	if(inst==-1)
-    return inst;
+//	if(nemu_state.state==NEMU_ABORT){
+//	nemu_state.halt_pc=*pc;
+//	printf("wwwwwwwwwwwwwwwwwwwwwwwwww");
+//  return inst;	
+//	printf("inst=%x\n",inst);
+//	}
+//	if(inst==-1)
+//    return inst;
   (*pc) += len;
   return inst;
 }

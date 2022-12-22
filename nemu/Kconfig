@@ -17,11 +17,18 @@ choice
     prompt "WatchPoint"
 config WATCHPOINT
     bool "watchpoint"
-    default 0
 config NOTWATCHPOINT
     bool "notwatchpoint"
-    default 0   
 endchoice
+
+choice
+    prompt "MTraceAddr"
+config MTRACEADDR	
+    bool "mtraceaddr"
+config NOTMTRACEADDR
+    bool "nomtraceaddr"
+endchoice
+
 config ISA
   string
   default "x86" if ISA_x86

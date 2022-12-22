@@ -17,7 +17,7 @@
 
 extern uint64_t g_nr_guest_inst;
 FILE *log_fp = NULL;
-
+FILE *elf_fp = NULL;
 void init_log(const char *log_file) {
   log_fp = stdout;
   if (log_file != NULL) {
@@ -27,6 +27,16 @@ void init_log(const char *log_file) {
   }
   Log("Log is written to %s", log_file ? log_file : "stdout");
 }
+//wzw add
+/*void init_elf(const char *elf_file) {*/
+  /*elf_fp = stdout;*/
+  /*if (elf_file != NULL) {*/
+    /*FILE *fp = fopen(elf_file, "rb");*/
+    /*Assert(fp, "Can not open '%s'", elf_file);*/
+    /*elf_fp = fp;*/
+  /*}*/
+  /*Log("Elf is written to %s", elf_file ? elf_file : "stdout");*/
+/*}*/
 
 bool log_enable() {
   return MUXDEF(CONFIG_TRACE, (g_nr_guest_inst >= CONFIG_TRACE_START) &&

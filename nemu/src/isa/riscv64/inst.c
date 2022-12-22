@@ -38,8 +38,15 @@ enum {
 //#define immJ() do { *imm = (BITS(i,31,31)<<20)|BITS(i,19,12)<<12|BITS(i,20,20)<<11|BITS(i,30,21)<<1; *imm = SEXT(*imm,21);} while(0)
 #define immB() do { *imm = (SEXT(BITS(i,31,31),1)<<12)|BITS(i,7,7)<<11|BITS(i,30,25)<<5|BITS(i,11,8)<<1;} while(0)
 //#define immB() do { *imm = (BITS(i,31,31)<<12)|BITS(i,7,7)<<11|BITS(i,30,25)<<5|BITS(i,11,8)<<1; *imm = SEXT(*imm,13);} while(0)
-
-
+int quanjubianliangtest=0;
+//wzw add Ftrace struct 声明在isa.h中
+/*struct Ftrace{*/
+	/*int state[2001];//0为jal 1为jalr*/
+	/*word_t left[2000];*/
+	/*word_t right[2000];*/
+	/*int length;*/
+/*}*/
+Ftrace ftrace;
 static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
   int rd  = BITS(i, 11, 7);
@@ -75,9 +82,15 @@ static int decode_exec(Decode *s) {
   //tested twice
   INSTPAT("??????? ????? ????? 000 ????? 00100 11", addi   , I, R(dest) = src1+imm);
   //tested twice
-  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, {R(dest)=s->pc+4;s->dnpc=s->pc+imm;});
+  INSTPAT("??????? ????? ????? ??? ????? 11011 11", jal    , J, {R(dest)=s->pc+4;s->dnpc=s->pc+imm;
+	//log_write("s->pc=%lx  jal to %lx\n",s->pc,s->dnpc);
+  //ftrace设置
+  ftrace.left[ftrace.length]=s->pc;ftrace.right[ftrace.length]=s->dnpc;ftrace.state[ftrace.length]=0;ftrace.length=ftrace.length+1;
+			});
   //tested
-  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, {word_t t=s->pc+4;s->dnpc=(src1+imm)&~1;R(dest)=t;});
+  INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, {word_t t=s->pc+4;s->dnpc=(src1+imm)&~1;R(dest)=t;
+  ftrace.left[ftrace.length]=s->pc;ftrace.right[ftrace.length]=s->dnpc;ftrace.state[ftrace.length]=1;ftrace.length=ftrace.length+1;
+			});
  // INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, R(dest) = s->pc + 4, s->dnpc = (src1 + imm) &~ 1);
  //add-long not use 
   INSTPAT("0000000 ????? ????? 000 ????? 01110 11", addw   , R, R(dest) = SEXT((src1+src2),32));

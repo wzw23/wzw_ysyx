@@ -75,7 +75,5 @@ static int decode_exec(Decode *s) {
 
 int isa_exec_once(Decode *s) {
   s->isa.inst.val = inst_fetch(&s->snpc, 4);
-	if(s->isa.inst.val==(-1))
-    panic(log_write("-->%s\n", s->logbuf); );
   return decode_exec(s);
 }

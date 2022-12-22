@@ -36,14 +36,15 @@ static void pmem_write(paddr_t addr, int len, word_t data) {
   host_write(guest_to_host(addr), len, data);
 }
 
-//static void out_of_bound(paddr_t addr) {
-static word_t out_of_bound(paddr_t addr) {
-	//log_write("-->%s\n", s->logbuf); 
-//  panic("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
+static void out_of_bound(paddr_t addr) {
+	nemu_state.halt_pc=cpu.pc;
+	nemu_state.state=NEMU_ABORT;
+//log_write("-->%s\n", s->logbuf); 
+  printf("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
+       addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
+//printf("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
 //      addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
-printf("address = " FMT_PADDR " is out of bound of pmem [" FMT_PADDR ", " FMT_PADDR "] at pc = " FMT_WORD,
-      addr, PMEM_LEFT, PMEM_RIGHT, cpu.pc);
-return -1;
+//return -1;
 
 }
 
@@ -63,20 +64,16 @@ void init_mem() {
 }
 
 word_t paddr_read(paddr_t addr, int len) {
-	printf("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww0\n");
+	IFDEF(CONFIG_MTRACEADDR,log_write("read_addr %x\n",addr));
   if (likely(in_pmem(addr))) return pmem_read(addr, len);
-	printf("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww1\n");
   IFDEF(CONFIG_DEVICE, return mmio_read(addr, len));
- // out_of_bound(addr);
-  //return 0;
-	printf("wwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwwww2\n");
-	//printf(" jjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjjoutof bound=%lx\n",out_of_bound(addr));
-	//out_of_bound(addr);
-	return -1;
+  out_of_bound(addr);
+  return 0;
 
 }
 
 void paddr_write(paddr_t addr, int len, word_t data) {
+	IFDEF(CONFIG_MTRACEADDR,log_write("write_addr %x\n",addr));
   if (likely(in_pmem(addr))) { pmem_write(addr, len, data); return; }
   IFDEF(CONFIG_DEVICE, mmio_write(addr, len, data); return);
   out_of_bound(addr);

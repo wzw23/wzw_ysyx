@@ -33,6 +33,21 @@ extern CPU_state cpu;
 void isa_reg_display();
 word_t isa_reg_str2val(const char *name, bool *success);
 
+//wzw add ftrace struct
+typedef struct Ftrace{
+		int state[2000];//0为jal 1为jalr
+		word_t left[2000];
+		word_t right[2000];
+		int length;
+}Ftrace;
+#define file_maxsize 4000 //此处代表能记录含有4000个函数的文件
+typedef struct Sy_table{
+	int length;
+	uint64_t begin[file_maxsize];
+	int64_t  size[file_maxsize];
+	char     name[file_maxsize][200];
+}Sy_table;
+
 // exec
 struct Decode;
 int isa_exec_once(struct Decode *s);
@@ -54,5 +69,4 @@ word_t isa_query_intr();
 // difftest
 bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc);
 void isa_difftest_attach();
-
 #endif
