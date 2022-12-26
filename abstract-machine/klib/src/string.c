@@ -101,6 +101,11 @@ void *memmove(void *dst, const void *src, size_t n) {
 }
 
 void *memcpy(void *out, const void *in, size_t n) {
+	char *csrc=(char*)in;
+	char *cdest=(char*)out;
+   for(int i=0;i<n;i++)
+		 cdest[i]=csrc[i];
+	 return cdest;
   panic("Not implemented");
 }
 

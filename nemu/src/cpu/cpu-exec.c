@@ -70,100 +70,50 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 		log_write("%s\n",_this->logbuf);
 		if(nemu_state.state!=NEMU_RUNNING){	 
 		////////////////////////////////ftrace//////////////////////////////////////
-		//assert(elf_fp!=NULL);	
-		//printf(" elffile=%s\n",elf_file);
-		//ftrace
-		log_write("//////////////ftrace//////////////");	
+		log_write("//////////////ftrace//////////////\n");	
 		int space=0;
 		for(int i=0;i<ftrace.length;i++){
-			//printf(" %lx:  jalorjalr	%lx\n",ftrace.left[i],ftrace.right[i]);
-			if(ftrace.state[i]==0){
+			if(ftrace.state[i]==0){//call
 			int j=0;
-			//int j2=0;
-			int flag=0;
 			for (j=0;j<func.length;j++){
-					//if((ftrace.left[i]>=func.begin[j])&&(ftrace.left[i]<func.begin[j]+func.size[j]))
-					  if(ftrace.right[i]==func.begin[j]){
-							flag=1;//存在call设置信号为1
+						if((ftrace.right[i]==func.begin[j])){
 						  log_write("%*s",space,"");	
-							log_write(" %lx:  jal  call %s(%lx)\n",ftrace.left[i],func.name[j],ftrace.right[i]);
+							//printf(" %lx:  jal  ret %s\n",ftrace.left[i],func.name[j]);
+							log_write(" %lx:    call %s(%lx)\n",ftrace.left[i],func.name[j],ftrace.right[i]);
 							space++;
 							break;
 						}
-						/*else if((ftrace.right[i]>func.begin[j])&&(ftrace.right[i]<func.begin[j]+func.size[j])){*/
-							/*printf(" %lx:  jal  ret %s(%lx)\n,",ftrace.left[i],func.name[j],ftrace.right[i]);*/
-							/*break;*/
-						/*}*/
-			}
-			if(flag==0){//如果为call那就是ret
-				for (j=0;j<func.length;j++){
-						if((ftrace.left[i]>func.begin[j])&&(ftrace.left[i]<func.begin[j]+func.size[j])){
-							space--;
-						  log_write("%*s",space,"");	
-							//printf(" %lx:  jal  ret %s\n",ftrace.left[i],func.name[j]);
-							log_write(" %lx:  jal  ret %s(%lx)\n",ftrace.left[i],func.name[j],ftrace.right[i]);
-							break;
-						}
 				}
 			}
-			
-			}
-			else{
+			else{//ret
 				int j=0;
-				//int j2=0;
-				int flag=0;
 				for (j=0;j<func.length;j++){
-					//if((ftrace.left[i]>=func.begin[j])&&(ftrace.left[i]<func.begin[j]+func.size[j]))
-					if(ftrace.right[i]==func.begin[j]){
-						flag=1;
-						log_write("%*s",space,"");	
-						log_write(" %lx:  jalr  call %s(%lx)\n",ftrace.left[i],func.name[j],ftrace.right[i]);
-						space++;
-						break;
-					}
-				}
-				if(flag==0){
-					for (j=0;j<func.length;j++){
-						if((ftrace.left[i]>func.begin[j])&&(ftrace.left[i]<func.begin[j]+func.size[j])){
+						if((ftrace.left[i]>=func.begin[j])&&(ftrace.left[i]<func.begin[j]+func.size[j])){
 							space--;
 							log_write("%*s",space,"");	
-							log_write(" %lx:  jalr  ret %s(%lx)\n",ftrace.left[i],func.name[j],ftrace.right[i]);
+							log_write(" %lx:    ret %s(%lx)\n",ftrace.left[i],func.name[j],ftrace.right[i]);
 							break;
 						}
 					}
-
-			//printf(" %lx:  jalr  %lx\n",ftrace.left[i],ftrace.right[i]);
-			}
 		}}
-
 		log_write("/////////////////////////////////");	
-		////////////////////////////////////////////////////////////////////////////
-	  //printf("ftrace");
-	//	for (int j=0;j<func.length;j++){
-	//		printf("%s  ", func.name[j]);//输出名字
-	//		printf("0x%08lx ", func.begin[j]);//输出位置
-	//		printf("size=%ld\n ",func.size[j]);//输出大小
-	//	}
-		/////
 		if(nemu_state.state==NEMU_ABORT){	 
 			sprintf(logbuf,"-->%s\n",_this->logbuf);
-			//	log_write("%s", logbuf); 
 			ib=eniringbuf(ib,logbuf);
-			//log_write("------------iringbuf------------\n");
 			for(int i=0;i<iringbuf_MAXSIZE;i++){
 				printf("%s",ib.s[i]);
-				//log_write("%s",ib.s[i]);
 			}
-			//log_write("--------------------------------");
 		}
-		}else{
+	}else{
 			sprintf(logbuf,"   %s\n",_this->logbuf);
 			//log_write("%s pc=%lx", logbuf,cpu.pc);
 			ib=eniringbuf(ib,logbuf);
-		} 
+		}
+	
 	}
 
 #endif
+
   if (g_print_step) { IFDEF(CONFIG_ITRACE, puts(_this->logbuf)); }
   IFDEF(CONFIG_DIFFTEST, difftest_step(_this->pc, dnpc));
   //w_exam();
@@ -177,6 +127,7 @@ static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
 static void exec_once(Decode *s, vaddr_t pc) {
   s->pc = pc;
   s->snpc = pc;
+	//printf("logbuf=%s\n",s->logbuf);
   isa_exec_once(s);
   cpu.pc = s->dnpc;
 #ifdef CONFIG_ITRACE

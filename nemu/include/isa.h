@@ -35,11 +35,12 @@ word_t isa_reg_str2val(const char *name, bool *success);
 
 //wzw add ftrace struct
 typedef struct Ftrace{
-		int state[2000];//0为jal 1为jalr
-		word_t left[2000];
-		word_t right[2000];
+		int state[1024*9];//0为jal 1为jalr
+		word_t left[1024*9];
+		word_t right[1024*9];
 		int length;
 }Ftrace;
+//Ftrace ftrace;
 #define file_maxsize 4000 //此处代表能记录含有4000个函数的文件
 typedef struct Sy_table{
 	int length;

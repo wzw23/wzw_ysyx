@@ -10,28 +10,57 @@ int printf(const char *fmt, ...) {
 }
 
 //仅用于内部使用
-char* itoa(int i,char *strout,int base)
+/*char* itoa(int i,char *strout,int base)*/
+/*{*/
+/*char *str=strout;*/
+/*int digit,sign=0;*/
+/*if(i<0){*/
+/*sign=1;*/
+/*i*=-1;*/
+/*}*/
+/*while(i){*/
+/*digit=i%base;*/
+/**str=(digit>9)?('A'+digit-10):'0'+digit;*/
+/*i=i/base;*/
+/*str++;*/
+/*}*/
+/*if(sign){*/
+/**str++='-';*/
+/*}*/
+/**str='\0';*/
+/*strrev(strout);*/
+/*return strout;*/
+/*panic("Not implemented");*/
+/*}*/
+void my_itoa(int i, char *string)
 {
-char *str=strout;
-int digit,sign=0;
-if(i<0){
-sign=1;
-i*=-1;
-}
-while(i){
-digit=i%base;
-*str=(digit>9)?('A'+digit-10):'0'+digit;
-i=i/base;
-str++;
-}
-if(sign){
-*str++='-';
-}
-*str='\0';
-strrev(strout);
-return strout;
-panic("Not implemented");
-}
+	char *str=string;
+	int sign=0;
+	int digit;
+	if(i<0){
+		sign=1;
+		i=i*-1;
+	}
+	if(i==0){
+		*str='0';
+		str++;	
+	}
+	while(i){
+		digit=i%10;	
+		*str='0'+digit;
+		i=i/10;
+		str++;
+	//	len++;
+	}		
+	if(sign){
+		*str++='-';
+	//	len++;	
+	}
+	*str='\0';
+	//char *right=string+len;
+	//char *left=string;
+	strrev(string);
+	}
 int vsprintf(char *out, const char *fmt, va_list ap) {
 int i=0;
 int j=0;
@@ -50,7 +79,8 @@ break;
 }
 /* Convert decimal */
 case 'd':{
-itoa(va_arg(ap,int),tmp,10);
+//itoa(va_arg(ap,int),tmp,10);
+my_itoa(va_arg(ap,int),tmp);
 strcpy(&out[j],tmp);
 j+=strlen(tmp);
 break;

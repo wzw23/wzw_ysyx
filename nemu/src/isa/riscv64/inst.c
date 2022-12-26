@@ -38,7 +38,7 @@ enum {
 //#define immJ() do { *imm = (BITS(i,31,31)<<20)|BITS(i,19,12)<<12|BITS(i,20,20)<<11|BITS(i,30,21)<<1; *imm = SEXT(*imm,21);} while(0)
 #define immB() do { *imm = (SEXT(BITS(i,31,31),1)<<12)|BITS(i,7,7)<<11|BITS(i,30,25)<<5|BITS(i,11,8)<<1;} while(0)
 //#define immB() do { *imm = (BITS(i,31,31)<<12)|BITS(i,7,7)<<11|BITS(i,30,25)<<5|BITS(i,11,8)<<1; *imm = SEXT(*imm,13);} while(0)
-int quanjubianliangtest=0;
+//int quanjubianliangtest=0;
 //wzw add Ftrace struct 声明在isa.h中
 /*struct Ftrace{*/
 	/*int state[2001];//0为jal 1为jalr*/
@@ -47,12 +47,13 @@ int quanjubianliangtest=0;
 	/*int length;*/
 /*}*/
 Ftrace ftrace;
-static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, word_t *imm, int type) {
+static void decode_operand(Decode *s, int *dest,int *rs1r, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
   int rd  = BITS(i, 11, 7);
   int rs1 = BITS(i, 19, 15);
   int rs2 = BITS(i, 24, 20);
   *dest = rd;
+	*rs1r=rs1;
   switch (type) {
     case TYPE_I: src1R();          immI(); break;
     case TYPE_U:                   immU(); break;
@@ -66,12 +67,14 @@ static void decode_operand(Decode *s, int *dest, word_t *src1, word_t *src2, wor
 
 static int decode_exec(Decode *s) {
   int dest = 0;
+	//wzw add;
+	int rs1r=0;
   word_t src1 = 0, src2 = 0, imm = 0;
   s->dnpc = s->snpc;
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
-  decode_operand(s, &dest, &src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand(s, &dest, &rs1r ,&src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
@@ -86,11 +89,13 @@ static int decode_exec(Decode *s) {
 	//log_write("s->pc=%lx  jal to %lx\n",s->pc,s->dnpc);
   //ftrace设置
   ftrace.left[ftrace.length]=s->pc;ftrace.right[ftrace.length]=s->dnpc;ftrace.state[ftrace.length]=0;ftrace.length=ftrace.length+1;
-			});
+			});//state=0 call state=1 return
   //tested
   INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr   , I, {word_t t=s->pc+4;s->dnpc=(src1+imm)&~1;R(dest)=t;
-  ftrace.left[ftrace.length]=s->pc;ftrace.right[ftrace.length]=s->dnpc;ftrace.state[ftrace.length]=1;ftrace.length=ftrace.length+1;
-			});
+	if((dest)==0 && (imm)==0&& (rs1r==1)) ftrace.state[ftrace.length]=1; else ftrace.state[ftrace.length]=0;
+  ftrace.left[ftrace.length]=s->pc;ftrace.right[ftrace.length]=s->dnpc;ftrace.length=ftrace.length+1;
+	
+	}	);
  // INSTPAT("??????? ????? ????? 000 ????? 11001 11", jalr, I, R(dest) = s->pc + 4, s->dnpc = (src1 + imm) &~ 1);
  //add-long not use 
   INSTPAT("0000000 ????? ????? 000 ????? 01110 11", addw   , R, R(dest) = SEXT((src1+src2),32));
@@ -116,9 +121,10 @@ static int decode_exec(Decode *s) {
 //not used
   INSTPAT("??????? ????? ????? 001 ????? 01000 11", sh     , S, Mw(src1 + imm, 2, src2));
 
-  INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, printf("src1=0X%lx,imm=%lu",src1,imm);Mw(src1 + imm, 1, src2););
+  INSTPAT("??????? ????? ????? 000 ????? 01000 11", sb     , S, Mw(src1 + imm, 1, src2););
   INSTPAT("010000? ????? ????? 101 ????? 00100 11", srai   , I, R(dest)=((int64_t)src1>>BITS(imm,5,0)));
   INSTPAT("??????? ????? ????? 100 ????? 00000 11", lbu    , I, R(dest) = (Mr(src1 + imm, 1)));
+  //INSTPAT("??????? ????? ????? 100 ????? 00000 11", lbu    , I, R(dest) = 0x000000ff&(Mr(src1 + imm, 1));printf("%05lx\n",(Mr(src1 + imm, 1))));
   INSTPAT("??????? ????? ????? 111 ????? 00100 11", andi   , I, R(dest) = src1&imm);
   INSTPAT("0000000 ????? ????? 001 ????? 01110 11", sllw   , R, R(dest) = SEXT((src1<<src2),32));
   INSTPAT("0000000 ????? ????? 111 ????? 01100 11", and    , R, R(dest) = src1&src2);

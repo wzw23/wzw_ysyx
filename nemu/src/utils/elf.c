@@ -16,7 +16,9 @@ Sy_table func;
 void parse_elf(const char *elf_file){
 	FILE *fp;
 	fp = fopen(elf_file, "r");
-	assert (fp!=NULL);
+	//assert (fp!=NULL);
+	if(fp==NULL)
+		return ;
 	//获取head
 	Elf64_Ehdr elf_head;
 	int flag;
