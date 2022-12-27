@@ -37,6 +37,10 @@ void my_itoa(int i, char *string)
 	char *str=string;
 	int sign=0;
 	int digit;
+	if(i==-2147483648){
+		strcpy(string,"-2147483648\0");
+		return;
+	}
 	if(i<0){
 		sign=1;
 		i=i*-1;
