@@ -19,15 +19,31 @@
 #include <memory/paddr.h>
 
 void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
-  assert(0);
+	if (direction == DIFFTEST_TO_REF) {
+		for(int i=0;i<n;i++)
+		{
+			pmem_write(addr+i,1,*((uint8_t*)buf+i))	
+		}
+	} else {
+		assert(0);
+	}
 }
 
 void difftest_regcpy(void *dut, bool direction) {
-  assert(0);
+	uint64_t *cpugpr=(uint64_t *)dut;
+	if (direction == DIFFTEST_TO_REF) {
+		for(i=0;i<32;i++)
+			cpu.gpr[i]=cpugpr[i];
+	} else {
+		for(i=0;i<32;i++)
+			cpugpr[i]=cpu.gpr[i];
+	}
+  //assert(0);
 }
 
 void difftest_exec(uint64_t n) {
-  assert(0);
+	cpu_exec(n);
+ // assert(0);
 }
 
 void difftest_raise_intr(word_t NO) {

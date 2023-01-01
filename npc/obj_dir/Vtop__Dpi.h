@@ -13,10 +13,12 @@ extern "C" {
 
 
     // DPI EXPORTS
-    // DPI export at vsrc/decode_exec.v:17:10
-    extern void put_state(svLogic prior_state);
-    // DPI export at vsrc/decode_exec.v:21:20
-    extern void putstate(int* statefh);
+    // DPI export at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:36:18
+    extern void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn);
+
+    // DPI IMPORTS
+    // DPI import at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:9:32
+    extern void set_gpr_ptr(const svOpenArrayHandle a);
 
 #ifdef __cplusplus
 }

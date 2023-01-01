@@ -14,19 +14,11 @@
 #include "Vtop__Dpi.h"
 #include "Vtop.h"
 
-#ifndef VL_DPIDECL_put_state_
-#define VL_DPIDECL_put_state_
-void put_state(svLogic prior_state) {
-    // DPI export at vsrc/decode_exec.v:17:10
-    return Vtop::put_state(prior_state);
-}
-#endif
-
 #ifndef VL_DPIDECL_putstate_
 #define VL_DPIDECL_putstate_
-void putstate(int* statefh) {
-    // DPI export at vsrc/decode_exec.v:21:20
-    return Vtop::putstate(statefh);
+void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn) {
+    // DPI export at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:36:18
+    return Vtop::putstate(statefh, a0, pcr, dnpcr, callreturn);
 }
 #endif
 

@@ -35,9 +35,24 @@ VERILATOR_FLAGS += --coverage
 # Add this trace to get a backtrace in gdb
 #VERILATOR_FLAGS += --gdbbt
 
-# Input files for Verilator
-VERILATOR_INPUT = -f  input.vc vsrc/top.v vsrc/pc.v  vsrc/Reg.v vsrc/MuxKeyInternal.v  vsrc/RegisterFile.v vsrc/decode_exec.v vsrc/MuxKey.v vsrc/MuxKeyWithDefault.v vsrc/Alu.v --top-module top csrc/sim_main.cpp
-
+VRCS = $(shell find $(NPC_HOME)/vsrc -name "*.v") #所有的verilog文件
+CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" ) #所有的c类文件
+pri:
+	echo $(CSRCS)
+LIBS += $(shell llvm-config --libs)
+CXXSRCS=$(NPC_HOME)/csrc/utils/disasm.cc
+CXXFLAGS=$(shell llvm-config --cxxflags) -fPIE
+CXXFLAGS +=  -ffreestanding -fno-rtti -fno-exceptions
+CXX       = g++
+$(NPC_HOME)/csrc/utils/disasm.o:$(CXXSRCS)
+	@mkdir -p $(dir $@) && echo + CXX $<
+	@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<) 
+	# Input files for Verilator
+#VERILATOR_INPUT = -f  input.vc vsrc/top.v vsrc/pc.v  vsrc/Reg.v vsrc/MuxKeyInternal.v  vsrc/RegisterFile.v vsrc/decode_exec.v vsrc/MuxKey.v vsrc/MuxKeyWithDefault.v vsrc/Alu.v --top-module top csrc/sim_main.cpp
+#VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS) $(NPC_HOME)/csrc/utils/disasm.o
+VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS)
+IMG?=
+ELF?=
 ################################
 default:sim
 all:
@@ -59,16 +74,18 @@ sim:
 	@echo "run--------------------------"
 	@rm -rf logs
 	@mkdir -p logs
-	obj_dir/Vtop +trace
-	@echo "converage--------------------"
-	@rm -rf logs/annotated
-	$(VERILATOR_COVERAGE) --annotate logs/annotated logs/coverage.dat
-	@echo
-	@echo "-----------------------------"
+	obj_dir/Vtop +trace $(ARGS) -m $(IMG) 
+	#@echo "converage--------------------"
+	#@rm -rf logs/annotated
+	#$(VERILATOR_COVERAGE) --annotate logs/annotated logs/coverage.dat
+	#@echo
+	#@echo "-----------------------------"
 	@echo "To see waveforms, open vlt_dump.vcd in a waveform viewer"
 	@echo
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
 	@echo "------------------------------"
+	@echo $(IMG)
+	@gtkwave $(NPC_HOME)/logs/vlt_dump.vcd
 maintainer-copy::
 clean mostlyclean distclean maintainer-clean::
 	-rm -rf obj_dir logs *.log *.dmp *.vpd coverage.dat core

@@ -10,7 +10,7 @@ VM_C11 = 1
 # Coverage output mode?  0/1 (from --coverage)
 VM_COVERAGE = 1
 # Parallel builds?  0/1 (from --output-split)
-VM_PARALLEL_BUILDS = 0
+VM_PARALLEL_BUILDS = 1
 # Threaded output mode?  0/1/N threads (from --threads)
 VM_THREADS = 0
 # Tracing output mode?  0/1 (from --trace/--trace-fst)
@@ -28,10 +28,19 @@ VM_CLASSES_FAST += \
 	Vtop \
 	Vtop__Dpi_Export_0 \
 	Vtop___024root \
+	Vtop___024root__1 \
+	Vtop___024root__2 \
+	Vtop_MuxKeyWithDefault__K20_D40 \
+	Vtop_MuxKeyWithDefault__K20_D40__1 \
+	Vtop_MuxKeyWithDefault__N6_K3_D40 \
 
 # Generated module classes, non-fast-path, compile with low/medium optimization
 VM_CLASSES_SLOW += \
 	Vtop___024root__Slow \
+	Vtop___024root__1__Slow \
+	Vtop___024root__2__Slow \
+	Vtop_MuxKeyWithDefault__K20_D40__Slow \
+	Vtop_MuxKeyWithDefault__N6_K3_D40__Slow \
 
 # Generated support classes, fast-path, compile with highest optimization
 VM_SUPPORT_FAST += \
