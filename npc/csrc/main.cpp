@@ -15,6 +15,8 @@ int pc;
 int dnpc;
 int crstate;
 int space=0;
+uint64_t upc;
+extern void init_regex();
 using namespace std;
 //接受字节表的数组
 extern Sy_table func;
@@ -46,7 +48,7 @@ static uint32_t host_read(void *addr, int len) {
     default:  assert(0);
   }
 }
-static uint32_t pmem_read(uint32_t addr, int len) {
+uint32_t pmem_read(uint32_t addr, int len) {
   uint32_t ret = host_read(guest_to_host(addr), len);
   return ret;
 }
@@ -75,18 +77,38 @@ static int cmd_x(char *args){
 	}
 	return 0;
 }
+static int cmd_p(char *args) {
+	  bool success;
+		char *arg = strtok(NULL,"\0");
+
+		printf("args=%s\n",arg);
+
+		uint64_t result=expr(arg,&success);
+		printf("the result is 0X%lx\n",result);
+		
+
+		//printf("success is %i",success);
+		return 0;
+}
 static int cmd_w(char *args) {
+	bool success;
 	char *arg2 = strtok(NULL, " ");
-	watchpoint=(uint32_t)strtol(arg2,NULL,16);
+	uint64_t result=expr(arg2,&success);    
+	watchpoint=(uint32_t)result;
 	printf("watchpoint=%x\n",watchpoint);
 	return 0;
 }
+extern long img_size;
 int main(int argc, char** argv, char** env) {
+		init_regex();
 		parse_args(argc,argv);
 		printf("elf_file=%s\n",elf_file);
 	  init_log(log_file);
 		load_img(argc,argv);
 		parse_elf(elf_file); 
+		void init_disasm(const char *triple);
+		init_disasm("riscv64");
+		init_difftest(diff_so_file,img_size);
 		for(int i=0;i<func.length;i++)
 			printf("name=%s,begin=%lx,size=%ld\n",func.name[i],func.begin[i],func.size[i]);
 		///////////////////////////////////////////////////////verilator//////
@@ -127,6 +149,9 @@ int main(int argc, char** argv, char** env) {
     top->clk = 0;
     top->cpupc=0x80000000;
     //top->in=0;
+		char ftrace[1000][200];//代表ftrace语句
+		char spacea[1000][200];
+		int ftracelength;
     while (!contextp->gotFinish()) {
 			////////////////////////////////////////////////////////
 				/*char str[20];*/
@@ -157,9 +182,12 @@ int main(int argc, char** argv, char** env) {
 						for (int j=0;j<func.length;j++){
 							//printf("func.begin[j]=%lx",func.begin[j]);
 							if((dnpc>=(int)func.begin[j])&&(dnpc<(int)func.begin[j]+func.size[j])){
-								log_write("%*s",space,"");	
+								//log_write("%*s",space,"");	
 								//printf(" %lx:  jal  ret %s\n",ftrace.left[i],func.name[j]);
-								log_write(" %x:    call %s(%x)\n",pc,func.name[j],dnpc);
+								//log_write(" %x:    call %s(%x)\n",pc,func.name[j],dnpc);
+								sprintf(spacea[ftracelength],"%*s",space,"");	
+								sprintf(ftrace[ftracelength]," %x:    call %s(%x)\n",pc,func.name[j],dnpc);
+								ftracelength++;
 								space++;
 								break;
 							}
@@ -170,8 +198,9 @@ int main(int argc, char** argv, char** env) {
 						for (int j=0;j<func.length;j++){
 							if((pc>=(int)func.begin[j])&&(pc<(int)func.begin[j]+func.size[j])){
 								space--;
-								log_write("%*s",space,"");	
-								log_write(" %x:    ret %s(%x)\n",pc,func.name[j],dnpc);
+								//log_write("%*s",space,"");	
+								sprintf(spacea[ftracelength],"%*s",space,"");	
+								sprintf(ftrace[ftracelength++]," %x:    ret %s(%x)\n",pc,func.name[j],dnpc);
 								break;
 							}
 						}
@@ -180,7 +209,8 @@ int main(int argc, char** argv, char** env) {
 //      ///////////////////////////////////////////////////
 
         top->inst=pmem_read(top->cpupc,4);
-        //printf("the a0 is %d\n",top.de->Type);
+				uint32_t instval=top->inst;
+				//printf("the a0 is %d\n",top.de->Type);
 				if(!top->clk){
         if(nemu_state)
         {   
@@ -230,9 +260,52 @@ XunHuan:
 						cmd_w(test);
 						goto XunHuan;
 					}
+					else if(strcmp(test,"p")==0){
+						cmd_p(test);
+						goto XunHuan;
+					}
 					
 				}}
 				////////////////////////////////////////////////////////////////////////////////////
+				//////////////////////////////////////ftrace//////////////////////
+				if(!top->clk&&contextp->time()>=4){
+			 char logbuf[200];
+			 int snpc=pc+4;
+			 char *p = logbuf;
+			 /*printf("zzzzzzzzzzzz%s\n",s->logbuf);*/
+			 p += snprintf(p, sizeof(logbuf), "0x%016x  :", pc);
+			 printf("pperior=%s\n",p);
+			 int ilen = snpc - pc;
+			 int i;	
+			 printf("instval=%x\n",instval);
+			 uint8_t *inst = (uint8_t *)&instval;
+			 printf("instval=%x\n",instval);
+			 for (i = ilen - 1; i >= 0; i --) {
+				 p+=snprintf(p, 4, " %02x", inst[i]);
+			 }
+			 printf("pperior=%s\n",p);
+			 //int ilen_max =  8;
+			 int ilen_max = MUXDEF(1, 8, 4);
+			 			 printf("ilen_max=%d",ilen_max);
+			 int space_len = ilen_max - ilen;
+			 if (space_len < 0) space_len = 0;
+			 space_len = space_len * 3 + 1;
+			 printf("space_len=%d\n",space_len);
+			 memset(p, ' ', space_len);
+			 printf("pspace=%s",p);
+			 p += space_len;
+			 upc=(uint64_t)pc&0xffffffff;
+			 uint64_t udpc=(uint64_t)snpc&0xffffffff;
+			 //printf("upc=%016lx",upc);
+
+
+			 extern void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+			 disassemble(p, logbuf + sizeof(logbuf) - p,
+					 MUXDEF(1, upc, upc), (uint8_t *)&instval,ilen);
+			 log_write("%s\n",logbuf);
+				}
+			 //printf("achieve here");
+				/////////////////////////////////////////////////////////////////
 				if(!top->clk&&contextp->time()>=4)
 				  exec_step--;
         // Evaluate model
@@ -252,6 +325,10 @@ XunHuan:
                   contextp->time(), top->clk, top->rst, 
                   top->cpupc);
     }
+		log_write("----------ftrace-----------\n");
+		for(int i=0;i<ftracelength;i++){
+			log_write("%s",spacea[i]);
+			log_write("%s",ftrace[i]);}
 
     // Final model cleanup
     top->final();

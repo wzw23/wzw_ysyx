@@ -34,26 +34,33 @@ VERILATOR_FLAGS += --coverage
 #VERILATOR_FLAGS += --debug
 # Add this trace to get a backtrace in gdb
 #VERILATOR_FLAGS += --gdbbt
-
 VRCS = $(shell find $(NPC_HOME)/vsrc -name "*.v") #所有的verilog文件
-CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" ) #所有的c类文件
+CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" -or -name "*.cc") #所有的c类文件
 pri:
 	echo $(CSRCS)
-LIBS += $(shell llvm-config --libs)
-CXXSRCS=$(NPC_HOME)/csrc/utils/disasm.cc
-CXXFLAGS=$(shell llvm-config --cxxflags) -fPIE
-CXXFLAGS +=  -ffreestanding -fno-rtti -fno-exceptions
-CXX       = g++
+LIBS ="$(shell llvm-config --libs) "  
+export LD_PRELOAD=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
+#LDFLAGS=-rdynamic -shared -fPIC
+LDFLAGS=-rdynamic -ldl 
+#LDFLAGS=-L. /home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
+#CFLAGS+=-L. -lriscv64-nemu-interpreter-so
+
+#CSRCS+=$(NPC_HOME)/csrc/utils/disasm.cc
+CFLAGS=$(shell llvm-config --cxxflags) -fPIE #-fPIC
+#CFLAGS +=  -ffreestanding -fno-rtti -fno-exceptions
+#CXX       = g++
 $(NPC_HOME)/csrc/utils/disasm.o:$(CXXSRCS)
-	@mkdir -p $(dir $@) && echo + CXX $<
-	@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<) 
+	#@mkdir -p $(dir $@) && echo + CXX $<
+	#@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<) 
 	# Input files for Verilator
 #VERILATOR_INPUT = -f  input.vc vsrc/top.v vsrc/pc.v  vsrc/Reg.v vsrc/MuxKeyInternal.v  vsrc/RegisterFile.v vsrc/decode_exec.v vsrc/MuxKey.v vsrc/MuxKeyWithDefault.v vsrc/Alu.v --top-module top csrc/sim_main.cpp
 #VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS) $(NPC_HOME)/csrc/utils/disasm.o
-VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS)
+VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS)  
+#VERILATOR_INPUT+=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
+
 IMG?=
-ELF?=
 ################################
+
 default:sim
 all:
 	@echo "Write this Makefile by your self."
@@ -61,7 +68,8 @@ all:
 sim:
 	@echo "Verilator sim"
 	@echo "verilator---------------------"
-	$(VERILATOR) $(VERILATOR_FLAGS) $(VERILATOR_INPUT)
+	$(VERILATOR) $(VERILATOR_FLAGS) $(VERILATOR_INPUT) $(addprefix -CFLAGS ,$(CFLAGS)) $(addprefix -LDFLAGS ,$(LDFLAGS)) $(addprefix -LDFLAGS ,$(LIBS)) 
+
 	@echo "------------------------------"
 	@echo "build-------------------------"
 # To compile, we can either
@@ -74,7 +82,7 @@ sim:
 	@echo "run--------------------------"
 	@rm -rf logs
 	@mkdir -p logs
-	obj_dir/Vtop +trace $(ARGS) -m $(IMG) 
+	obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so" -m $(IMG)
 	#@echo "converage--------------------"
 	#@rm -rf logs/annotated
 	#$(VERILATOR_COVERAGE) --annotate logs/annotated logs/coverage.dat

@@ -4,13 +4,13 @@
 #include <string.h>
 #include <getopt.h>
 //接收参数
-
+long img_size;
 char *log_file = NULL;
 
 
 char *elf_file = NULL;
 
-static char *diff_so_file = NULL;
+char *diff_so_file = NULL;
 char *img_file = NULL;
 static int difftest_port = 1234;
 static const uint32_t img [] = {
@@ -59,6 +59,7 @@ void load_img(int argc,char**argv){
 
 		fseek(fp, 0, SEEK_END);
 		long size = ftell(fp);
+		img_size=size;
 
 		uint32_t img2[size/4];	
 		printf("The image is %s, size = %ld", img_file, size);
