@@ -37,6 +37,7 @@ extern Sy_table func;
 
 
 #define iringbuf_MAXSIZE 7
+#ifdef CONFIG_ITRACE_COND
 typedef struct{
 	char s[iringbuf_MAXSIZE][200];
 	int rear;
@@ -56,6 +57,7 @@ static iringbuf eniringbuf(iringbuf ib,char *str){
 
 	return ib;
 }
+#endif
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0; // unit: us
 static bool g_print_step = false;
@@ -151,7 +153,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
   disassemble(p, s->logbuf + sizeof(s->logbuf) - p,
       MUXDEF(CONFIG_ISA_x86, s->snpc, s->pc), (uint8_t *)&s->isa.inst.val, ilen);
 	printf("intstval=%x",s->isa.inst.val);
-	printf("zzzzzzzzzzzz%s\n",s->logbuf);
+	//printf("zzzzzzzzzzzz%s\n",s->logbuf);
 #endif
 }
 static void execute(uint64_t n) {
@@ -191,7 +193,9 @@ void assert_fail_msg() {
 
 /* Simulate how the CPU works. */
 void cpu_exec(uint64_t n) {
+#ifdef CONFIG_ITRACE_COND
 	ib=initiringbuf(ib);
+#endif
   g_print_step = (n < MAX_INST_TO_PRINT);
   switch (nemu_state.state) {
     case NEMU_END: case NEMU_ABORT:
