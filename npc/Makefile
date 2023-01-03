@@ -1,5 +1,7 @@
 # Check for sanity to avoid later confusion
-
+# 解决动态链接问题https://www.tsingfun.com/it/cpp/asan-issue-with-asan-library-loading.html
+export ASAN_OPTIONS=verify_asan_link_order=0
+#export LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.6
 ifneq ($(words $(CURDIR)),1)
   $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
 endif
@@ -39,7 +41,7 @@ CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" -or -name "*
 pri:
 	echo $(CSRCS)
 LIBS ="$(shell llvm-config --libs) "  
-export LD_PRELOAD=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
+#export LD_PRELOAD=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
 #LDFLAGS=-rdynamic -shared -fPIC
 LDFLAGS=-rdynamic -ldl 
 #LDFLAGS=-L. /home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
@@ -69,7 +71,6 @@ sim:
 	@echo "Verilator sim"
 	@echo "verilator---------------------"
 	$(VERILATOR) $(VERILATOR_FLAGS) $(VERILATOR_INPUT) $(addprefix -CFLAGS ,$(CFLAGS)) $(addprefix -LDFLAGS ,$(LDFLAGS)) $(addprefix -LDFLAGS ,$(LIBS)) 
-
 	@echo "------------------------------"
 	@echo "build-------------------------"
 # To compile, we can either
@@ -82,7 +83,7 @@ sim:
 	@echo "run--------------------------"
 	@rm -rf logs
 	@mkdir -p logs
-	obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so" -m $(IMG)
+	obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so" -m $(IMG)
 	#@echo "converage--------------------"
 	#@rm -rf logs/annotated
 	#$(VERILATOR_COVERAGE) --annotate logs/annotated logs/coverage.dat

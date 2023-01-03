@@ -12,6 +12,7 @@
 #include "iostream"
 //全局变量pc dnpc crstate
 int pc;
+char logbuf[200];
 int dnpc;
 int crstate;
 int space=0;
@@ -24,6 +25,7 @@ Decode s;
 //接收寄存器数组
 uint64_t *cpu_gpr = NULL;
 uint32_t watchpoint=-1;
+extern int difftest_step();
 extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
 	  cpu_gpr = (uint64_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
@@ -108,7 +110,7 @@ int main(int argc, char** argv, char** env) {
 		parse_elf(elf_file); 
 		void init_disasm(const char *triple);
 		init_disasm("riscv64");
-		init_difftest(diff_so_file,img_size);
+	//	dump_gpr();
 		for(int i=0;i<func.length;i++)
 			printf("name=%s,begin=%lx,size=%ld\n",func.name[i],func.begin[i],func.size[i]);
 		///////////////////////////////////////////////////////verilator//////
@@ -174,7 +176,7 @@ int main(int argc, char** argv, char** env) {
         //printf("read dizhi =%x\n",guest_to_host(top->out));
 				
         top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate);
-				printf("pc=%x,dnpc=%x,state=%x",pc,dnpc,crstate);
+				//printf("pc=%x,dnpc=%x,state=%x",pc,dnpc,crstate);
 				//printf("upc=%x\n",up);
 				if(top->clk){
 				if(crstate==1){
@@ -214,11 +216,11 @@ int main(int argc, char** argv, char** env) {
 				if(!top->clk){
         if(nemu_state)
         {   
-					  printf("the register a0 is %d",a0);
+						//printf("the register a0 is %d",a0);
 						if(a0==0)
-							printf("HIT GOOD TAP\n");
+							printf(GREEN"\nHIT GOOD TAP\n"NONE);
 						else
-							printf("HIT BAD TAP\n");
+							printf(RED"\nHIT BAD TAP\n"NONE);
 						break;
         }}
         //printf("read neirong =%x\n",pmem_read(top->cpupc,4));
@@ -237,6 +239,17 @@ int main(int argc, char** argv, char** env) {
             //top->in_quad += 0x12;
             //top->in=rand()%10;
         }
+				///////////////////////difftest//////////////////////
+				if(contextp->time()==4) 
+					init_difftest(diff_so_file,img_size);
+				if(!top->clk&&contextp->time()>4){
+				  int check=difftest_step();		
+					if(check==0){
+						printf(RED"\ninst error at:%s\n"NONE,logbuf);
+						break;}
+				}
+				///////////////////////////////////////////////////
+
 				///////////////////////////////////////sdb//////////////////////////////////////////
 			 if(((strcmp(str,"c")!=0)&&(exec_step==0))|contextp->time()==4|watchpoint==top->cpupc){	
 				if(!top->clk){
@@ -265,34 +278,36 @@ XunHuan:
 						goto XunHuan;
 					}
 					
-				}}
+				}
+			
+			 
+			 }
 				////////////////////////////////////////////////////////////////////////////////////
 				//////////////////////////////////////ftrace//////////////////////
 				if(!top->clk&&contextp->time()>=4){
-			 char logbuf[200];
 			 int snpc=pc+4;
 			 char *p = logbuf;
 			 /*printf("zzzzzzzzzzzz%s\n",s->logbuf);*/
 			 p += snprintf(p, sizeof(logbuf), "0x%016x  :", pc);
-			 printf("pperior=%s\n",p);
+			 //printf("pperior=%s\n",p);
 			 int ilen = snpc - pc;
 			 int i;	
-			 printf("instval=%x\n",instval);
+			 //printf("instval=%x\n",instval);
 			 uint8_t *inst = (uint8_t *)&instval;
-			 printf("instval=%x\n",instval);
+			 //printf("instval=%x\n",instval);
 			 for (i = ilen - 1; i >= 0; i --) {
 				 p+=snprintf(p, 4, " %02x", inst[i]);
 			 }
-			 printf("pperior=%s\n",p);
+			 //printf("pperior=%s\n",p);
 			 //int ilen_max =  8;
 			 int ilen_max = MUXDEF(1, 8, 4);
-			 			 printf("ilen_max=%d",ilen_max);
+							//printf("ilen_max=%d",ilen_max);
 			 int space_len = ilen_max - ilen;
 			 if (space_len < 0) space_len = 0;
 			 space_len = space_len * 3 + 1;
-			 printf("space_len=%d\n",space_len);
+			 //printf("space_len=%d\n",space_len);
 			 memset(p, ' ', space_len);
-			 printf("pspace=%s",p);
+			 //printf("pspace=%s",p);
 			 p += space_len;
 			 upc=(uint64_t)pc&0xffffffff;
 			 uint64_t udpc=(uint64_t)snpc&0xffffffff;

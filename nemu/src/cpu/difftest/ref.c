@@ -19,11 +19,17 @@
 #include <memory/paddr.h>
 
 void difftest_memcpy(paddr_t addr, void *buf, size_t n, bool direction) {
+	cpu.pc=0x80000000;
 	if (direction == DIFFTEST_TO_REF) {
+		printf("memcpy hello\n");
 		for(int i=0;i<n;i++)
 		{
 			paddr_write(addr+i,1,*((uint8_t*)buf+i));
 		}
+ /*   for(int i=0;i<n/4;i++)*/
+		/*{*/
+			/*printf("paddrread=%08lx\n",paddr_read(addr+i*4,4));*/
+		/*}*/
 	} else {
 		assert(0);
 	}
@@ -38,6 +44,9 @@ void difftest_regcpy(void *dut, bool direction) {
 		for(int i=0;i<32;i++)
 			cpugpr[i]=cpu.gpr[i];
 	}
+	//for(int i=0;i<32;i++)
+	//		printf("cpu.gpr[%d]=%ld\n",i,cpu.gpr[i]);
+
   //assert(0);
 }
 
