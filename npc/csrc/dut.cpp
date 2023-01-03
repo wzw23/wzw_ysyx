@@ -3,6 +3,7 @@
 #include "common.h"
 #include <dlfcn.h>
 #include <assert.h>
+extern uint64_t upc;
 extern uint64_t *cpu_gpr; 
 extern long img_size;
 //void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) = NULL;
@@ -19,6 +20,10 @@ bool checkregs(uint64_t *ref_r, uint64_t *cpu_gpr) {
 		if(ref_r[i]!=cpu_gpr[i])	
 			return false;
 	}
+	if(ref_r[32]!=upc){
+		printf("ref_r->pc=%lx\n",ref_r[32]);
+		printf("upc=%lx\n",upc);
+		return false;}
 	return true;
 }
 typedef void (*ref_difftest_memcpy_func)(uint64_t addr, void *buf, size_t n, bool direction) ;
@@ -70,7 +75,7 @@ void init_difftest(char *ref_so_file, long img_size) {
 	
 }
 int difftest_step() {
-		uint64_t ref_r[32];
+		uint64_t ref_r[33];
 		ref_difftest_exec(1);
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 		int check=checkregs(ref_r, cpu_gpr);

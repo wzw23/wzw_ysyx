@@ -14,6 +14,7 @@
 int pc;
 char logbuf[200];
 int dnpc;
+uint64_t udnpc;
 int crstate;
 int space=0;
 uint64_t upc;
@@ -176,6 +177,8 @@ int main(int argc, char** argv, char** env) {
         //printf("read dizhi =%x\n",guest_to_host(top->out));
 				
         top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate);
+				upc=(uint64_t)pc&0xffffffff;
+				udnpc=(uint64_t)dnpc&0xffffffff;
 				//printf("pc=%x,dnpc=%x,state=%x",pc,dnpc,crstate);
 				//printf("upc=%x\n",up);
 				if(top->clk){
@@ -309,8 +312,7 @@ XunHuan:
 			 memset(p, ' ', space_len);
 			 //printf("pspace=%s",p);
 			 p += space_len;
-			 upc=(uint64_t)pc&0xffffffff;
-			 uint64_t udpc=(uint64_t)snpc&0xffffffff;
+			 
 			 //printf("upc=%016lx",upc);
 
 

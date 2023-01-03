@@ -43,6 +43,8 @@ void difftest_regcpy(void *dut, bool direction) {
 	} else {
 		for(int i=0;i<32;i++)
 			cpugpr[i]=cpu.gpr[i];
+		//第33个寄存器存pc的值
+			cpugpr[32]=cpu.pc;
 	}
 	//for(int i=0;i<32;i++)
 	//		printf("cpu.gpr[%d]=%ld\n",i,cpu.gpr[i]);
