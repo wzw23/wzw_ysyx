@@ -16,11 +16,12 @@
 
 // INCLUDE MODULE CLASSES
 #include "Vtop___024root.h"
-#include "Vtop_MuxKeyWithDefault__K20_D40.h"
+#include "Vtop_MuxKeyWithDefault__N1_K20_D40.h"
+#include "Vtop_MuxKeyWithDefault__N3_K20_D40.h"
 #include "Vtop_MuxKeyWithDefault__N6_K3_D40.h"
 
 // DPI TYPES for DPI Export callbacks (Internal use)
-using Vtop__Vcb_putstate_t = void (*) (Vtop__Syms* __restrict vlSymsp, IData/*31:0*/ &statefh, IData/*31:0*/ &a0, IData/*31:0*/ &pcr, IData/*31:0*/ &dnpcr, IData/*31:0*/ &callreturn);
+using Vtop__Vcb_putstate_t = void (*) (Vtop__Syms* __restrict vlSymsp, IData/*31:0*/ &statefh, IData/*31:0*/ &a0, IData/*31:0*/ &pcr, IData/*31:0*/ &dnpcr, IData/*31:0*/ &callreturn, IData/*31:0*/ &Typer);
 
 // SYMS CLASS (contains all model state)
 class Vtop__Syms final : public VerilatedSyms {
@@ -37,12 +38,14 @@ class Vtop__Syms final : public VerilatedSyms {
     // MODULE INSTANCE STATE
     Vtop___024root                 TOP;
     Vtop_MuxKeyWithDefault__N6_K3_D40 TOP__top__DOT__de__DOT__m1;
-    Vtop_MuxKeyWithDefault__K20_D40 TOP__top__DOT__de__DOT__m4;
-    Vtop_MuxKeyWithDefault__K20_D40 TOP__top__DOT__de__DOT__m5;
+    Vtop_MuxKeyWithDefault__N1_K20_D40 TOP__top__DOT__de__DOT__m10;
+    Vtop_MuxKeyWithDefault__N3_K20_D40 TOP__top__DOT__de__DOT__m4;
+    Vtop_MuxKeyWithDefault__N3_K20_D40 TOP__top__DOT__de__DOT__m5;
     Vtop_MuxKeyWithDefault__N6_K3_D40 TOP__top__DOT__de__DOT__m7;
+    Vtop_MuxKeyWithDefault__N1_K20_D40 TOP__top__DOT__de__DOT__m9;
 
     // COVERAGE
-    uint32_t __Vcoverage[3685];
+    uint32_t __Vcoverage[4206];
 
     // SCOPE NAMES
     VerilatedScope __Vscope_top__de;

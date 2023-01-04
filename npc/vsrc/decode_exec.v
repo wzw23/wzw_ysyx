@@ -7,6 +7,21 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
     //export "DPI-C" task put_state; 
     export "DPI-C" function putstate;
 		import "DPI-C" function void set_gpr_ptr(input logic [63:0] a []);
+
+ /*   import "DPI-C" function void vpmem_read(*/
+			/*input longint mraddr, output longint mrdata);*/
+		import "DPI-C" function void vpmem_write(
+			input longint waddr, input longint wdata, input byte wmask);
+		//wire [63:0]mraddr;
+		wire [63:0] mrdata;
+		wire [63:0] mwdata;
+		wire [63:0] mwaddr;
+		wire [7:0] mwmask;
+		always @(*) begin
+			//vpmem_read(mraddr, mrdata);
+			vpmem_write(mwaddr, mwdata, mwmask);
+		end
+
     localparam 
      // Type_R=3'b000,
         Type_I=3'b001,
@@ -26,6 +41,9 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
     wire [31:0] return_a0;
 		wire [1:0]call_return;//0代表既不是call也不是return 1代表call 2代表return
 		wire [31:0]call_returnr;
+		wire [2:0]Type;
+		wire [31:0]Type_return;
+		assign Type_return={{29{1'b0}},Type};
 		assign call_returnr={{30{1'b0}},call_return};
 		assign call_return=((dest==0)&&(imm==0)&&(rs1==1)&&(inst==jalr))?2:
 										   ((inst==jal)||((inst==jalr)&&((dest!=0)||(imm!=0)||(rs1!=1))))?1:
@@ -41,11 +59,13 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			output int pcr;
 			output int dnpcr;
 			output int callreturn;
+			output int Typer;
 			statefh=return_state;
 			a0=return_a0;
 			pcr=pc;
 			dnpcr=dnpc;
 			callreturn=call_returnr;
+			Typer=Type_return;
 		endfunction
 		 
 
@@ -56,7 +76,6 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [63:0]upc;
 		assign upc={{32{1'b0}},pc};
 
-		wire [2:0]Type;
 		wire [1:0]one_zero;
 		wire [4:0]six_two;
 		wire [2:0]fth_twl;
@@ -102,7 +121,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			});
 		//在此进行指令简化
 		//代表指令长度
-    localparam length=5,wlength=5,rlength=1,alength=2,plength=2; 
+    localparam length=6,wlength=5,rlength=1,alength=3,plength=2,mwlength=1;//mrlength=0; 
 
 		wire [31:0]addi;
 		//assign addi={inst[31:20],inst[19:15],inst[14:12],inst[11:7],inst[6:0]};
@@ -134,6 +153,8 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		assign ebreak=32'b0000000_00001_00000_000_00000_11100_11;
 		assign state=(inst==32'b0000000_00001_00000_000_00000_11100_11)? 1'b1:1'b0;
 		
+		wire [31:0] sd;
+		assign sd={inst[31:20],inst[19:15],{3'b011},inst[11:7],{7'b0100011}};
 		//assign addauipc={{32{inst[31]}},inst[31:12],{12{1'b0}}};
 		//判断指令类型
 		MuxKeyWithDefault #(length,32,3)m0(Type,inst,None,{
@@ -141,7 +162,8 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			auipc,Type_U,
 			lui,Type_U,
 			jal,Type_J,
-			jalr,Type_I
+			jalr,Type_I,
+			sd,Type_S
 			}); 
 
 		//根据指令地址确定写地址和写数据 若没有的话 将写地址和写数据都设置为0
@@ -167,11 +189,14 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		//若指令需要加法器 根据指令进行加法器设计
 		MuxKeyWithDefault #(alength,32,64)m4(adddata1,inst,64'b0,{
 			addi,src1,
-			auipc,upc
+			auipc,upc,
+			sd,src1
+
 			});
 		MuxKeyWithDefault #(alength,32,64)m5(adddata2,inst,64'b0,{
 			addi,Simm,
-			auipc,addauipc
+			auipc,addauipc,
+			sd,Simm
 			});
 
 		//dnpc
@@ -179,7 +204,16 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			jal,(pc+`SEXT(imm,32,21)),
 			jalr,(src1[31:0]+`SEXT(imm,32,21))&(~1)
 			});
-
+			//memory read memory write
+			MuxKeyWithDefault #(mwlength,32,64)m9(mwaddr,inst,64'b0,{
+				sd,addresult
+				}); 
+			MuxKeyWithDefault #(mwlength,32,64)m10(mwdata,inst,64'b0,{
+				sd,src2
+				}); 
+			MuxKeyWithDefault #(mwlength,32,8)m12(mwmask,inst,8'b0,{
+				sd,8'b11111111
+				}); 
 
 		//addi
 

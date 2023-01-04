@@ -13,12 +13,14 @@ extern "C" {
 
 
     // DPI EXPORTS
-    // DPI export at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:36:18
-    extern void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn);
+    // DPI export at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:54:18
+    extern void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn, int* Typer);
 
     // DPI IMPORTS
     // DPI import at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:9:32
     extern void set_gpr_ptr(const svOpenArrayHandle a);
+    // DPI import at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:13:32
+    extern void vpmem_write(long long waddr, long long wdata, char wmask);
 
 #ifdef __cplusplus
 }

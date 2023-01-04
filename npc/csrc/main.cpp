@@ -27,9 +27,43 @@ Decode s;
 uint64_t *cpu_gpr = NULL;
 uint32_t watchpoint=-1;
 extern int difftest_step();
+static inline void host_write(void *addr, int len, uint64_t data) {
+	switch (len) {
+		case 1: *(uint8_t  *)addr = data; return;
+		case 2: *(uint16_t *)addr = data; return;
+		case 4: *(uint32_t *)addr = data; return;
+		case 8: *(uint64_t *)addr = data; return;
+	}
+}
+static void pmem_write(uint64_t addr, int len, uint64_t data) {
+	  host_write(guest_to_host(addr), len, data);
+}
 extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
 	  cpu_gpr = (uint64_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
+/*extern "C" void vpmem_read(long long raddr, long long *rdata) {*/
+		/*// 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`*/
+		/**rdata=pmem_read(raddr,8);*/
+/*}*/
+extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
+	int len;
+	printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
+	if(wmask==1)
+		len=1;
+	else if(wmask==3)
+		len=2;
+	else if(wmask==15)
+		len=3;
+	else if(wmask==-1)
+		len=4;
+	
+	if((len==1)||(len==2)||(len==4)||(len==8))
+		pmem_write(waddr,len,wdata);
+	// 总是往地址为`waddr & ~0x7ull`的8字节按写掩码`wmask`写入`wdata`
+	// `wmask`中每比特表示`wdata`中1个字节的掩码,
+	// 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
+}
+		       
 void dump_gpr() {
 	int i;
 	for (i = 0; i < 32; i++) {
@@ -41,6 +75,7 @@ static uint8_t pmem[100000]={0};
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };   
 static int nemu_state=NEMU_RUNNING;
 static int a0=0;
+static int type;	
 //通过内存地址书写原本地址
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - CONFIG_BASE; }
 //Legacy function required only so linking works on Cygwin and MSVC++
@@ -55,6 +90,7 @@ uint32_t pmem_read(uint32_t addr, int len) {
   uint32_t ret = host_read(guest_to_host(addr), len);
   return ret;
 }
+
 //sdb
 char str[40];
 int exec_step=-1;
@@ -175,8 +211,7 @@ int main(int argc, char** argv, char** env) {
         top->clk = !top->clk;
         //add read memory
         //printf("read dizhi =%x\n",guest_to_host(top->out));
-				
-        top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate);
+        top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate,&type);
 				upc=(uint64_t)pc&0xffffffff;
 				udnpc=(uint64_t)dnpc&0xffffffff;
 				//printf("pc=%x,dnpc=%x,state=%x",pc,dnpc,crstate);
@@ -225,7 +260,11 @@ int main(int argc, char** argv, char** env) {
 						else
 							printf(RED"\nHIT BAD TAP\n"NONE);
 						break;
-        }}
+        }
+				if(type==7)	{
+					printf(YELLOW"%s is not have, please add\n"NONE,logbuf);
+					break;}
+				}
         //printf("read neirong =%x\n",pmem_read(top->cpupc,4));
         // Toggle control signals on an edge that doesn't correspond
         // to where the controls are sampled; in this example we do

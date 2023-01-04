@@ -17,7 +17,8 @@ class Vtop___024root;
 class VerilatedVcdC;
 class Vtop_VerilatedVcd;
 class Vtop_MuxKeyWithDefault__N6_K3_D40;
-class Vtop_MuxKeyWithDefault__K20_D40;
+class Vtop_MuxKeyWithDefault__N3_K20_D40;
+class Vtop_MuxKeyWithDefault__N1_K20_D40;
 
 
 // This class is the main interface to the Verilated model
@@ -41,8 +42,10 @@ class Vtop VL_NOT_FINAL {
     // Otherwise the application code can consider these internals.
     Vtop_MuxKeyWithDefault__N6_K3_D40* const __PVT__top__DOT__de__DOT__m1;
     Vtop_MuxKeyWithDefault__N6_K3_D40* const __PVT__top__DOT__de__DOT__m7;
-    Vtop_MuxKeyWithDefault__K20_D40* const __PVT__top__DOT__de__DOT__m4;
-    Vtop_MuxKeyWithDefault__K20_D40* const __PVT__top__DOT__de__DOT__m5;
+    Vtop_MuxKeyWithDefault__N3_K20_D40* const __PVT__top__DOT__de__DOT__m4;
+    Vtop_MuxKeyWithDefault__N3_K20_D40* const __PVT__top__DOT__de__DOT__m5;
+    Vtop_MuxKeyWithDefault__N1_K20_D40* const __PVT__top__DOT__de__DOT__m9;
+    Vtop_MuxKeyWithDefault__N1_K20_D40* const __PVT__top__DOT__de__DOT__m10;
 
     // Root instance pointer to allow access to model internals,
     // including inlined /* verilator public_flat_* */ items.
@@ -80,7 +83,7 @@ class Vtop VL_NOT_FINAL {
     const char* name() const;
 
     /// DPI Export functions
-    static void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn);
+    static void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn, int* Typer);
 } VL_ATTR_ALIGNED(VL_CACHE_LINE_BYTES);
 
 #endif  // guard
