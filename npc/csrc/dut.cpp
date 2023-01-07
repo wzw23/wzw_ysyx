@@ -16,6 +16,8 @@ extern long img_size;
 	/*return true;*/
 /*}*/
 bool checkregs(uint64_t *ref_r, uint64_t *cpu_gpr) {
+ /* for(int i=0;i<32;i++)*/
+		/*printf("ref[%d]=%lx\n",i,ref_r[i]);*/
 	for(int i=0;i<32;i++){	
 		if(ref_r[i]!=cpu_gpr[i])	
 			return false;
@@ -82,8 +84,8 @@ int difftest_step() {
 	
 		if(check==0){
 			for(int i=0;i<32;i++){
-			  printf("refreg[%d]=%ld\n",i,ref_r[i]);	
-				printf("cpureg[%d]=%ld\n",i,cpu_gpr[i]);	
+			  printf("refreg[%d]=%lx\n",i,ref_r[i]);	
+				printf("cpureg[%d]=%lx\n",i,cpu_gpr[i]);	
 
 		}
 		}

@@ -5,8 +5,22 @@
 
 #if !defined(__ISA_NATIVE__) || defined(__NATIVE_USE_KLIB__)
 
+char print_buf[1024*2*1024];//设置最多输出2G数据
 int printf(const char *fmt, ...) {
-  panic("Not implemented");
+	va_list ap;
+	unsigned int length;
+
+	va_start (ap, fmt);
+	length=vsprintf(print_buf,fmt,ap);
+	va_end (ap);
+
+	for(int i=0;i<length;i++){
+		putch(print_buf[i]);
+		}
+	return length;
+	
+
+	panic("not implemented");
 }
 
 //仅用于内部使用
@@ -20,7 +34,7 @@ int printf(const char *fmt, ...) {
 /*}*/
 /*while(i){*/
 /*digit=i%base;*/
-/**str=(digit>9)?('A'+digit-10):'0'+digit;*/
+/**str=(digit>9)?('a'+digit-10):'0'+digit;*/
 /*i=i/base;*/
 /*str++;*/
 /*}*/
@@ -30,7 +44,7 @@ int printf(const char *fmt, ...) {
 /**str='\0';*/
 /*strrev(strout);*/
 /*return strout;*/
-/*panic("Not implemented");*/
+/*panic("not implemented");*/
 /*}*/
 void my_itoa(int i, char *string)
 {
@@ -75,13 +89,13 @@ while (fmt&&fmt[i])
 if(fmt[i]=='%'){
 i++;
 switch(fmt[i]){
-/* Convert char */
+/* convert char */
 case 'c':{
 out[j]=(char)va_arg(ap,int);
 j++;
 break;
 }
-/* Convert decimal */
+/* convert decimal */
 case 'd':{
 //itoa(va_arg(ap,int),tmp,10);
 my_itoa(va_arg(ap,int),tmp);
@@ -89,14 +103,14 @@ strcpy(&out[j],tmp);
 j+=strlen(tmp);
 break;
 }
-/* Convert hex */
+/* convert hex */
 //case 'x': {
 //  _itoa(va_arg( vl, int ), tmp, 16);
 //  strcpy(&buff[j], tmp);
 //  j += strlen(tmp);
 //  break;
 //}
-///* Convert octal */
+///* convert octal */
 //case 'o': {
 //  _itoa(va_arg( vl, int ), tmp, 8);
 //  strcpy(&buff[j], tmp);
@@ -119,7 +133,7 @@ i++;
 }
 out[j]='\0';
 return j;
-panic("Not implemented");
+panic("not implemented");
 }
  
 int sprintf(char *out, const char *fmt, ...) {

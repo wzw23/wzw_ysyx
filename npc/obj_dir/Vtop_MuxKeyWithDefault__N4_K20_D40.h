@@ -2,8 +2,8 @@
 // DESCRIPTION: Verilator output: Design internal header
 // See Vtop.h for the primary calling header
 
-#ifndef VERILATED_VTOP_MUXKEYWITHDEFAULT__N1_K20_D40_H_
-#define VERILATED_VTOP_MUXKEYWITHDEFAULT__N1_K20_D40_H_  // guard
+#ifndef VERILATED_VTOP_MUXKEYWITHDEFAULT__N4_K20_D40_H_
+#define VERILATED_VTOP_MUXKEYWITHDEFAULT__N4_K20_D40_H_  // guard
 
 #include "verilated_heavy.h"
 #include "verilated_cov.h"
@@ -16,12 +16,12 @@ class Vtop_VerilatedVcd;
 
 //----------
 
-VL_MODULE(Vtop_MuxKeyWithDefault__N1_K20_D40) {
+VL_MODULE(Vtop_MuxKeyWithDefault__N4_K20_D40) {
   public:
 
     // PORTS
     VL_IN(key,31,0);
-    VL_INW(lut,95,0,3);
+    VL_INW(lut,383,0,12);
     VL_OUT64(out,63,0);
     VL_IN64(default_out,63,0);
 
@@ -29,17 +29,15 @@ VL_MODULE(Vtop_MuxKeyWithDefault__N1_K20_D40) {
     CData/*0:0*/ __PVT__i0__DOT__hit;
     IData/*31:0*/ __PVT__i0__DOT__i;
     QData/*63:0*/ __PVT__i0__DOT__lut_out;
-    VlUnpacked<VlWide<3>/*95:0*/, 1> __PVT__i0__DOT__pair_list;
-    VlUnpacked<IData/*31:0*/, 1> __PVT__i0__DOT__key_list;
-    VlUnpacked<QData/*63:0*/, 1> __PVT__i0__DOT__data_list;
+    VlUnpacked<VlWide<3>/*95:0*/, 4> __PVT__i0__DOT__pair_list;
+    VlUnpacked<IData/*31:0*/, 4> __PVT__i0__DOT__key_list;
+    VlUnpacked<QData/*63:0*/, 4> __PVT__i0__DOT__data_list;
 
     // LOCAL VARIABLES
     CData/*0:0*/ i0__DOT____Vtogcov__hit;
-    VlWide<3>/*95:0*/ __Vtogcov__lut;
     QData/*63:0*/ i0__DOT____Vtogcov__lut_out;
-    VlUnpacked<VlWide<3>/*95:0*/, 1> i0__DOT____Vtogcov__pair_list;
-    VlUnpacked<IData/*31:0*/, 1> i0__DOT____Vtogcov__key_list;
-    VlUnpacked<QData/*63:0*/, 1> i0__DOT____Vtogcov__data_list;
+    VlUnpacked<IData/*31:0*/, 4> i0__DOT____Vtogcov__key_list;
+    VlUnpacked<QData/*63:0*/, 4> i0__DOT____Vtogcov__data_list;
 
     // INTERNAL VARIABLES
     Vtop__Syms* vlSymsp;  // Symbol table
@@ -49,10 +47,10 @@ VL_MODULE(Vtop_MuxKeyWithDefault__N1_K20_D40) {
 
     // CONSTRUCTORS
   private:
-    VL_UNCOPYABLE(Vtop_MuxKeyWithDefault__N1_K20_D40);  ///< Copying not allowed
+    VL_UNCOPYABLE(Vtop_MuxKeyWithDefault__N4_K20_D40);  ///< Copying not allowed
   public:
-    Vtop_MuxKeyWithDefault__N1_K20_D40(const char* name);
-    ~Vtop_MuxKeyWithDefault__N1_K20_D40();
+    Vtop_MuxKeyWithDefault__N4_K20_D40(const char* name);
+    ~Vtop_MuxKeyWithDefault__N4_K20_D40();
 
     // INTERNAL METHODS
     void __Vconfigure(Vtop__Syms* symsp, bool first);

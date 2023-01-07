@@ -10,12 +10,19 @@
 #include "Vtop__Dpi.h"
 #include "verilated_dpi.h"
 #include "iostream"
+const char *regs[] = {
+	"$0", "ra", "sp", "gp", "tp", "t0", "t1", "t2",
+	"s0", "s1", "a0", "a1", "a2", "a3", "a4", "a5",
+	"a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
+	"s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
+};
 //全局变量pc dnpc crstate
 int pc;
 char logbuf[200];
 int dnpc;
 uint64_t udnpc;
 int crstate;
+int circle;
 int space=0;
 uint64_t upc;
 extern void init_regex();
@@ -38,13 +45,28 @@ static inline void host_write(void *addr, int len, uint64_t data) {
 static void pmem_write(uint64_t addr, int len, uint64_t data) {
 	  host_write(guest_to_host(addr), len, data);
 }
+static uint64_t host_read(void *addr, int len) {
+  switch (len) {
+    case 1: return *(uint8_t *)addr;
+    case 2: return *(uint16_t *)addr;
+    case 4: return *(uint32_t *)addr;
+		case 8: return *(uint64_t *)addr;
+    default:  assert(0);
+  }
+}
+uint64_t pmem_read(uint32_t addr, int len) {
+  uint64_t ret = host_read(guest_to_host(addr), len);
+  return ret;
+}
 extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
 	  cpu_gpr = (uint64_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
-/*extern "C" void vpmem_read(long long raddr, long long *rdata) {*/
-		/*// 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`*/
-		/**rdata=pmem_read(raddr,8);*/
-/*}*/
+extern "C" void vpmem_read(long long raddr, long long *rdata) {
+	  if((circle>=4)&&(circle%2==0)){
+		// 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
+		printf("raddr=%llx\n",raddr);
+		*rdata=pmem_read(raddr,8);}
+}
 extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
 	int len;
 	printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
@@ -53,9 +75,9 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
 	else if(wmask==3)
 		len=2;
 	else if(wmask==15)
-		len=3;
-	else if(wmask==-1)
 		len=4;
+	else if(wmask==-1)
+		len=8;
 	
 	if((len==1)||(len==2)||(len==4)||(len==8))
 		pmem_write(waddr,len,wdata);
@@ -67,11 +89,12 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
 void dump_gpr() {
 	int i;
 	for (i = 0; i < 32; i++) {
+		printf("%s: ",regs[i]);
 		printf("gpr[%d] = 0x%lx\n", i, cpu_gpr[i]);
 	}
 }
 
-static uint8_t pmem[100000]={0};
+static uint8_t pmem[1024*2*2]={0};
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };   
 static int nemu_state=NEMU_RUNNING;
 static int a0=0;
@@ -80,16 +103,7 @@ static int type;
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - CONFIG_BASE; }
 //Legacy function required only so linking works on Cygwin and MSVC++
 double sc_time_stamp() { return 0; }
-static uint32_t host_read(void *addr, int len) {
-  switch (len) {
-    case 4: return *(uint32_t *)addr;
-    default:  assert(0);
-  }
-}
-uint32_t pmem_read(uint32_t addr, int len) {
-  uint32_t ret = host_read(guest_to_host(addr), len);
-  return ret;
-}
+
 
 //sdb
 char str[40];
@@ -192,6 +206,7 @@ int main(int argc, char** argv, char** env) {
 		char spacea[1000][200];
 		int ftracelength;
     while (!contextp->gotFinish()) {
+			  circle++;
 			////////////////////////////////////////////////////////
 				/*char str[20];*/
 				/*int a=scanf("%s",str);*/

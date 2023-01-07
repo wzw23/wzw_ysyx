@@ -30,8 +30,10 @@ VM_CLASSES_FAST += \
 	Vtop___024root \
 	Vtop___024root__1 \
 	Vtop___024root__2 \
-	Vtop_MuxKeyWithDefault__N1_K20_D40 \
-	Vtop_MuxKeyWithDefault__N3_K20_D40 \
+	Vtop___024root__3 \
+	Vtop___024root__4 \
+	Vtop_MuxKeyWithDefault__N4_K20_D40 \
+	Vtop_MuxKeyWithDefault__N29_K20_D40 \
 	Vtop_MuxKeyWithDefault__N6_K3_D40 \
 
 # Generated module classes, non-fast-path, compile with low/medium optimization
@@ -39,8 +41,9 @@ VM_CLASSES_SLOW += \
 	Vtop___024root__Slow \
 	Vtop___024root__1__Slow \
 	Vtop___024root__2__Slow \
-	Vtop_MuxKeyWithDefault__N1_K20_D40__Slow \
-	Vtop_MuxKeyWithDefault__N3_K20_D40__Slow \
+	Vtop___024root__3__Slow \
+	Vtop_MuxKeyWithDefault__N4_K20_D40__Slow \
+	Vtop_MuxKeyWithDefault__N29_K20_D40__Slow \
 	Vtop_MuxKeyWithDefault__N6_K3_D40__Slow \
 
 # Generated support classes, fast-path, compile with highest optimization

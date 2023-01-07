@@ -1,6 +1,6 @@
 # Check for sanity to avoid later confusion
 # 解决动态链接问题https://www.tsingfun.com/it/cpp/asan-issue-with-asan-library-loading.html
-export ASAN_OPTIONS=verify_asan_link_order=0
+#export ASAN_OPTIONS=verify_asan_link_order=0
 #export LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.6
 ifneq ($(words $(CURDIR)),1)
   $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
@@ -43,7 +43,8 @@ pri:
 LIBS ="$(shell llvm-config --libs) "  
 #export LD_PRELOAD=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
 #LDFLAGS=-rdynamic -shared -fPIC
-LDFLAGS=-rdynamic -ldl 
+#-fsanitize=address 解决链接问题的第二个方法
+LDFLAGS=-rdynamic -ldl -fsanitize=address
 #LDFLAGS=-L. /home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
 #CFLAGS+=-L. -lriscv64-nemu-interpreter-so
 

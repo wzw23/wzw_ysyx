@@ -48,6 +48,7 @@ VM_USER_CFLAGS = \
 VM_USER_LDLIBS = \
 	-rdynamic \
 	-ldl \
+	-fsanitize=address \
 	-lLLVM-14 -LDFLAGS  \
 
 # User .cpp files (from .cpp's on Verilator command line)
