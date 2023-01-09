@@ -28,8 +28,18 @@ int atoi(const char* nptr) {
   }
   return x;
 }
-
+static char *hbrk;
+int first=0;
 void *malloc(size_t size) {
+	size  = (size_t)ROUNDUP(size, 8);
+	char *old = (first==0)?(void*)ROUNDUP(heap.start,8):hbrk;
+	first=1;
+	hbrk = old+size;
+	for (uint64_t *p = (uint64_t *)old; p != (uint64_t *)hbrk; p ++) {
+		*p = 0;
+	}
+	/*assert((uintptr_t)hbrk - (uintptr_t)heap.start <= setting->mlim);*/
+	return old;
   // On native, malloc() will be called during initializaion of C runtime.
   // Therefore do not call panic() here, else it will yield a dead recursion:
   //   panic() -> putchar() -> (glibc) -> malloc() -> panic()

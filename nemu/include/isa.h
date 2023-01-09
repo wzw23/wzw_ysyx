@@ -35,9 +35,9 @@ word_t isa_reg_str2val(const char *name, bool *success);
 
 //wzw add ftrace struct
 typedef struct Ftrace{
-		int state[1024*9];//0为jal 1为jalr
-		word_t left[1024*9];
-		word_t right[1024*9];
+		int state[1024*2*2];//0为jal 1为jalr
+		word_t left[1024*2*2];
+		word_t right[1024*2*2];
 		int length;
 }Ftrace;
 //Ftrace ftrace;
