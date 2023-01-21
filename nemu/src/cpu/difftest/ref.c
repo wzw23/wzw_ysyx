@@ -40,6 +40,8 @@ void difftest_regcpy(void *dut, bool direction) {
 	if (direction == DIFFTEST_TO_REF) {
 		for(int i=0;i<32;i++)
 			cpu.gpr[i]=cpugpr[i];
+		cpu.pc=cpugpr[32];
+
 	} else {
 		for(int i=0;i<32;i++)
 			cpugpr[i]=cpu.gpr[i];
@@ -48,6 +50,7 @@ void difftest_regcpy(void *dut, bool direction) {
 	}
 	//for(int i=0;i<32;i++)
 	//		printf("cpu.gpr[%d]=%ld\n",i,cpu.gpr[i]);
+  /*printf("cpu.pc=%lx\n",cpu.pc);*/
 
   //assert(0);
 }
