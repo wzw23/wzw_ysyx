@@ -17,7 +17,7 @@ class Vtop___024root;
 class VerilatedVcdC;
 class Vtop_VerilatedVcd;
 class Vtop_MuxKeyWithDefault__N6_K3_D40;
-class Vtop_MuxKeyWithDefault__N29_K20_D40;
+class Vtop_MuxKeyWithDefault__N30_K20_D40;
 class Vtop_MuxKeyWithDefault__N4_K20_D40;
 
 
@@ -42,8 +42,8 @@ class Vtop VL_NOT_FINAL {
     // Otherwise the application code can consider these internals.
     Vtop_MuxKeyWithDefault__N6_K3_D40* const __PVT__top__DOT__de__DOT__m1;
     Vtop_MuxKeyWithDefault__N6_K3_D40* const __PVT__top__DOT__de__DOT__m7;
-    Vtop_MuxKeyWithDefault__N29_K20_D40* const __PVT__top__DOT__de__DOT__m4;
-    Vtop_MuxKeyWithDefault__N29_K20_D40* const __PVT__top__DOT__de__DOT__m5;
+    Vtop_MuxKeyWithDefault__N30_K20_D40* const __PVT__top__DOT__de__DOT__m4;
+    Vtop_MuxKeyWithDefault__N30_K20_D40* const __PVT__top__DOT__de__DOT__m5;
     Vtop_MuxKeyWithDefault__N4_K20_D40* const __PVT__top__DOT__de__DOT__m9;
     Vtop_MuxKeyWithDefault__N4_K20_D40* const __PVT__top__DOT__de__DOT__m10;
 
@@ -66,12 +66,12 @@ class Vtop VL_NOT_FINAL {
   public:
     // API METHODS
     /// Evaluate the model.  Application must call when inputs change.
-    void eval() { eval_step(); eval_end_step(); }
+    void eval() { eval_step(); }
     /// Evaluate when calling multiple units/models per time step.
     void eval_step();
     /// Evaluate at end of a timestep for tracing, when using eval_step().
     /// Application must call after all eval() and before time changes.
-    void eval_end_step();
+    void eval_end_step() {}
     /// Simulation complete, run final blocks.  Application must call on completion.
     void final();
     /// Trace signals in the model; called by application code

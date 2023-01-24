@@ -5,7 +5,7 @@
 #include "Vtop.h"
 #include "Vtop___024root.h"
 #include "Vtop_MuxKeyWithDefault__N4_K20_D40.h"
-#include "Vtop_MuxKeyWithDefault__N29_K20_D40.h"
+#include "Vtop_MuxKeyWithDefault__N30_K20_D40.h"
 #include "Vtop_MuxKeyWithDefault__N6_K3_D40.h"
 
 void Vtop___024root____Vdpiexp_top__DOT__de__DOT__putstate_TOP(Vtop__Syms* __restrict vlSymsp, IData/*31:0*/ &statefh, IData/*31:0*/ &a0, IData/*31:0*/ &pcr, IData/*31:0*/ &dnpcr, IData/*31:0*/ &callreturn, IData/*31:0*/ &Typer);
@@ -13,9 +13,6 @@ void Vtop___024root____Vdpiexp_top__DOT__de__DOT__putstate_TOP(Vtop__Syms* __res
 // FUNCTIONS
 Vtop__Syms::~Vtop__Syms()
 {
-#ifdef VM_TRACE
-    if (__Vm_dumping) _traceDumpClose();
-#endif  // VM_TRACE
 }
 
 Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep,Vtop* modelp)
@@ -55,26 +52,4 @@ Vtop__Syms::Vtop__Syms(VerilatedContext* contextp, const char* namep,Vtop* model
     for (int __Vfinal=0; __Vfinal<2; __Vfinal++) {
         __Vscope_top__de.exportInsert(__Vfinal, "putstate", (void*)(&Vtop___024root____Vdpiexp_top__DOT__de__DOT__putstate_TOP));
     }
-}
-
-void Vtop__Syms::_traceDump() {
-    const VerilatedLockGuard lock(__Vm_dumperMutex);
-    __Vm_dumperp->dump(VL_TIME_Q());
-}
-
-void Vtop__Syms::_traceDumpOpen() {
-    const VerilatedLockGuard lock(__Vm_dumperMutex);
-    if (VL_UNLIKELY(!__Vm_dumperp)) {
-        __Vm_dumperp = new VerilatedVcdC();
-        __Vm_modelp->trace(__Vm_dumperp, 0, 0);
-        std::string dumpfile = _vm_contextp__->dumpfileCheck();
-        __Vm_dumperp->open(dumpfile.c_str());
-        __Vm_dumping = true;
-    }
-}
-
-void Vtop__Syms::_traceDumpClose() {
-    const VerilatedLockGuard lock(__Vm_dumperMutex);
-    __Vm_dumping = false;
-    VL_DO_CLEAR(delete __Vm_dumperp, __Vm_dumperp = nullptr);
 }

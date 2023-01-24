@@ -6,6 +6,7 @@
 extern uint64_t upc;
 extern uint64_t *cpu_gpr; 
 extern long img_size;
+extern int skip_test;
 //void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) = NULL;
 //void (*ref_difftest_memcpy)(uint64_t addr, void *buf, size_t n, bool direction) = NULL;
 /*bool isa_difftest_checkregs(CPU_state *ref_r, vaddr_t pc) {*/
@@ -73,11 +74,34 @@ void init_difftest(char *ref_so_file, long img_size) {
 
 	//ref_difftest_init(port);
 	ref_difftest_memcpy(CONFIG_BASE, guest_to_host(CONFIG_BASE), img_size, DIFFTEST_TO_REF);
-	ref_difftest_regcpy(cpu_gpr, DIFFTEST_TO_REF);
+///////
+	uint64_t cpu_gpr_c[33];
+	for(int i=0;i<32;i++)
+	{
+		cpu_gpr_c[i]=cpu_gpr[i];
+	}
+	cpu_gpr_c[32]=upc;
+/////
+	ref_difftest_regcpy(cpu_gpr_c, DIFFTEST_TO_REF);
 	
 }
 int difftest_step() {
+		//printf("test here and skip_test=%d and pc=%lx\n",skip_test,upc);
 		uint64_t ref_r[33];
+		//////为了便于向ref复制pc而设置
+		uint64_t cpu_gpr_c[33];
+		for(int i=0;i<32;i++)
+		{
+			cpu_gpr_c[i]=cpu_gpr[i];
+		}
+		cpu_gpr_c[32]=upc;
+		//////
+		if(skip_test==1){
+		ref_difftest_regcpy(cpu_gpr_c, DIFFTEST_TO_REF);
+		skip_test=0;	
+		return 1;
+		}
+		else{
 		ref_difftest_exec(1);
 		ref_difftest_regcpy(&ref_r, DIFFTEST_TO_DUT);
 		int check=checkregs(ref_r, cpu_gpr);
@@ -90,4 +114,5 @@ int difftest_step() {
 		}
 		}
 		return check;
+		}
 }

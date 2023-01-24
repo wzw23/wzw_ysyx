@@ -140,7 +140,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			});
 		//在此进行指令简化
 		//代表指令长度
-    localparam length=45,wlength=35,rlength=1,alength=41,plength=8,mwlength=4,mrlength=5;//mrlength=0; 
+    localparam length=52,wlength=42,rlength=1,alength=48,plength=8,mwlength=4,mrlength=7;//mrlength=0; 
 
 		wire [31:0]addi;
 		assign addi={inst[31:20],inst[19:15],{3{1'b0}},inst[11:7],{7'b0010011}};
@@ -151,10 +151,16 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [31:0]xori;
 		assign xori={inst[31:20],inst[19:15],{3'b100},inst[11:7],{7'b0010011}};
 
+		wire [31:0]ori;
+		assign ori={inst[31:20],inst[19:15],{3'b110},inst[11:7],{7'b0010011}};
 
 		wire [31:0]sllw;
 		assign sllw={{7'b0000000},inst[24:20],inst[19:15],{3'b001},inst[11:7],{7'b0111011}};
 		
+		wire [31:0]sll;
+		assign sll={{7'b0000000},inst[24:20],inst[19:15],{3'b001},inst[11:7],{7'b0110011}};
+		
+
 		wire [31:0]srlw;
 		assign srlw={{7'b0000000},inst[24:20],inst[19:15],{3'b101},inst[11:7],{7'b0111011}};
 
@@ -231,9 +237,16 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [31:0] lh;
 		assign lh={inst[31:20],inst[19:15],{3'b001},inst[11:7],{7'b0000011}};
 
+		wire [31:0] lb;
+		assign lb={inst[31:20],inst[19:15],{3'b000},inst[11:7],{7'b0000011}};
+
 
 		wire [31:0] lbu;
 		assign lbu={inst[31:20],inst[19:15],{3'b100},inst[11:7],{7'b0000011}};
+
+		wire [31:0] lwu;
+		assign lwu={inst[31:20],inst[19:15],{3'b110},inst[11:7],{7'b0000011}};
+
 
 		wire [31:0] lhu;
 		assign lhu={inst[31:20],inst[19:15],{3'b101},inst[11:7],{7'b0000011}};
@@ -256,6 +269,15 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [31:0] divw;
 		assign divw={{7'b0000001},inst[24:20],inst[19:15],{3'b100},inst[11:7],{7'b0111011}};
 
+		wire [31:0] divuw;
+		assign divuw={{7'b0000001},inst[24:20],inst[19:15],{3'b101},inst[11:7],{7'b0111011}};
+
+
+
+		wire [31:0] div;
+		assign div= {{7'b0000001},inst[24:20],inst[19:15],{3'b101},inst[11:7],{7'b0110011}};
+
+
 		wire [31:0] remw;
 		assign remw={{7'b0000001},inst[24:20],inst[19:15],{3'b110},inst[11:7],{7'b0111011}};
 
@@ -273,6 +295,10 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [31:0] And;//And=and
 		assign And= {{7'b0000000},inst[24:20],inst[19:15],{3'b111},inst[11:7],{7'b0110011}};
 		
+		wire [31:0] Xor;//Xor=xor
+		assign Xor= {{7'b0000000},inst[24:20],inst[19:15],{3'b100},inst[11:7],{7'b0110011}};
+		
+
 		wire [31:0] Or;//Or=or
 		assign Or= {{7'b0000000},inst[24:20],inst[19:15],{3'b110},inst[11:7],{7'b0110011}};
 
@@ -297,6 +323,9 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		
 		wire [31:0] slli;
 		assign slli={{6'b000000},inst[25:20],inst[19:15],{3'b001},inst[11:7],{7'b0010011}};
+
+
+
 
 		wire [31:0] srli;
 		assign srli={{6'b000000},inst[25:20],inst[19:15],{3'b101},inst[11:7],{7'b0010011}};
@@ -331,6 +360,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			addi,Type_I,
 			andi,Type_I,
 			xori,Type_I,
+			ori,Type_I,
 			auipc,Type_U,
 			lui,Type_U,
 			jal,Type_J,
@@ -341,20 +371,26 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			sb,Type_S,
 			lw,Type_I,
 			lh,Type_I,
+			lb,Type_I,
 			lbu,Type_I,
+			lwu,Type_I,
 			lhu,Type_I,
 			ld,Type_I,
 			addw,Type_R,
 			subw,Type_R,
 			mulw,Type_R,
 			divw,Type_R,
+			divuw,Type_R,
+			div,Type_R,
 			remw,Type_R,
 			sllw,Type_R,
+			sll,Type_R,
 			srlw,Type_R,
 			sraw,Type_R,
 			Add,Type_R,
 			Mul,Type_R,
 			And,Type_R,
+			Xor,Type_R,
 			Or,Type_R,
 			sltu,Type_R,
 			slt,Type_R,
@@ -382,25 +418,32 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			addi,dest,
 			andi,dest,
 			xori,dest,
+			ori,dest,
 			auipc,dest,
 			lui,dest,
 			jal,dest,
 			jalr,dest,
 			lw,dest,
 			lh,dest,
+			lb,dest,
 			lbu,dest,
+			lwu,dest,
 			lhu,dest,
 			addw,dest,
 			subw,dest,
 			mulw,dest,
 			divw,dest,
+			divuw,dest,
+			div,dest,
 			remw,dest,
 			sllw,dest,
+			sll,dest,
 			srlw,dest,
 			sraw,dest,
 			Add,dest,
 			Mul,dest,
 			And,dest,
+			Xor,dest,
 			Or,dest,
 			sltu,dest,
 			slt,dest,
@@ -419,25 +462,32 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			addi,addresult,
 			andi,yu,
 			xori,yihuo,
+			ori,huo,
 			auipc,addresult,
 			lui,luimid,
 			jal,jalpc,
 			jalr,(upc+4),
 			lw,`SEXT(mrdata,64,32),
 			lh,`SEXT(mrdata,64,16),
+			lb,`SEXT(mrdata,64,8),
 			lbu,{{56{1'b0}},mrdata[7:0]},
+			lwu,{{32{1'b0}},mrdata[31:0]},
 			lhu,{{48{1'b0}},mrdata[15:0]},
 			addw,`SEXT(addresult,64,32),
 			subw,`SEXT(addresult,64,32),
 			mulw,`SEXT(cheng,64,32),
 			divw,`SEXT(schu,64,32),
+			divuw,`SEXT(schu,64,32),
+			div,chu,
 			remw,`SEXT(syu,64,32),
 			sllw,`SEXT(logl,64,32),
+			sll,logl,
 			srlw,`SEXT(logr,64,32),
 			sraw,`SEXT(srawd,64,32),
 			Add,addresult,
 			Mul,cheng,
 			And,yu,
+			Xor,yihuo,
 			Or,huo,
 			sltu,compare,
 			slt,(addresult[63]==1)?{{63{1'b0}},{1'b1}}:{{63{1'b0}},{1'b0}},
@@ -461,6 +511,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			addi,src1,
 			andi,src1,
 			xori,src1,
+			ori,src1,
 			auipc,upc,
 			sd,src1,
 			sh,src1,
@@ -468,19 +519,25 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			sb,src1,
 			lw,src1,
 			lh,src1,
+			lb,src1,
 			lbu,src1,
+			lwu,src1,
 			lhu,src1,
 			ld,src1,
 			addw,src1,
 			subw,src1,
 			mulw,src1,
 			divw,{{32{1'b0}},src1[31:0]},
+			divuw,{{32{1'b0}},src1[31:0]},
+			div,src1,
 			remw,{{32{1'b0}},src1[31:0]},
 			sllw,src1,
+			sll,src1,
 			srlw,{{32{1'b0}},src1[31:0]},
 			Add,src1,
 			Mul,src1,
 			And,src1,
+			Xor,src1,
 			Or,src1,
 			sltu,src2,
 			slt,src1,
@@ -504,6 +561,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			addi,Simm,
 			andi,Simm,
 			xori,Simm,
+			ori,Simm,
 			auipc,addauipc,
 			sd,Simm,
 			sh,Simm,
@@ -511,19 +569,25 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			sb,Simm,
 			lw,Simm,
 			lh,Simm,
+			lb,Simm,
 			lbu,Simm,
+			lwu,Simm,
 			lhu,Simm,
 			ld,Simm,
 			addw,src2,
 			subw,(-src2),
 			mulw,src2,
 			divw,{{32{1'b0}},src2[31:0]},
+			divuw,{{32{1'b0}},src2[31:0]},
+			div,src2,
 			remw,{{32{1'b0}},src2[31:0]},
 			sllw,{{59{1'b0}},src2[4:0]},
+			sll,{{58{1'b0}},src2[5:0]},
 			srlw,{{59{1'b0}},src2[4:0]},
 			Add,src2,
 			Mul,src2,
 			And,src2,
+			Xor,src2,
 			Or,src2,
 			sltu,src1,
 			slt,(-src2),
@@ -577,7 +641,9 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			MuxKeyWithDefault #(mrlength,32,64)m14(mraddr,inst,64'h0000000080000000,{
 				lw,addresult,
 				lh,addresult,
+				lb,addresult,
 				lbu,addresult,
+				lwu,addresult,
 				lhu,addresult,
 				ld,addresult
 				}); 

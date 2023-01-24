@@ -3,6 +3,7 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
+#define TEST 0
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -16,7 +17,24 @@ const char *regs[] = {
 	"a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7",
 	"s8", "s9", "s10", "s11", "t3", "t4", "t5", "t6"
 };
-//全局变量pc dnpc crstate
+///////////////wzw add timer.c
+static uint64_t boot_time = 0;
+
+static uint64_t get_time_internal() {
+  struct timeval now;
+  gettimeofday(&now, NULL);
+  uint64_t us = now.tv_sec * 1000000 + now.tv_usec;
+  return us;
+}
+
+uint64_t get_time() {
+  if (boot_time == 0) boot_time = get_time_internal();
+  uint64_t now = get_time_internal();
+  return now - boot_time;
+}
+////////////////
+//全局变量pc dnpc crstate skip_test
+int skip_test=0;
 int pc;
 char logbuf[200];
 int dnpc;
@@ -61,15 +79,42 @@ uint64_t pmem_read(uint32_t addr, int len) {
 extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
 	  cpu_gpr = (uint64_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
+uint32_t us_less;
+uint32_t us_bigger;
 extern "C" void vpmem_read(long long raddr, long long *rdata) {
 	  if((circle>=4)&&(circle%2==0)){
 		// 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
-		printf("raddr=%llx\n",raddr);
-		*rdata=pmem_read(raddr,8);}
+		if(TEST){
+		log_write("raddr=%llx\n",raddr);}
+		if(raddr==0xa000004c)
+		{	uint64_t us=get_time(); 
+			us_bigger=us>>32;
+			us_less=(uint32_t)us;
+			*rdata=us_bigger;
+			skip_test=1;
+			return;
+		}
+		else if(raddr==0xa0000048){
+			*rdata=us_less;
+			skip_test=1;
+			return;	
+		}
+		else
+		 *rdata=pmem_read(raddr,8);}
 }
 extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
+	if((circle>=4)&&(circle%2==0)){
 	int len;
+	if(TEST){
 	printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
+
+	printf("deng=%d\n",(waddr==0x00000000a00003f8));}
+	if(waddr==0xa00003f8)
+	{char putdata=(char)wdata;
+	 putchar(putdata);
+	 skip_test=1;
+	 return;
+	}
 	if(wmask==1)
 		len=1;
 	else if(wmask==3)
@@ -78,13 +123,13 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
 		len=4;
 	else if(wmask==-1)
 		len=8;
-	
-	if((len==1)||(len==2)||(len==4)||(len==8))
-		pmem_write(waddr,len,wdata);
+  
+	if((len==1)||(len==2)||(len==4)||(len==8)){
+		pmem_write(waddr,len,wdata);}
 	// 总是往地址为`waddr & ~0x7ull`的8字节按写掩码`wmask`写入`wdata`
 	// `wmask`中每比特表示`wdata`中1个字节的掩码,
 	// 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
-}
+}}
 		       
 void dump_gpr() {
 	int i;
@@ -94,7 +139,8 @@ void dump_gpr() {
 	}
 }
 
-static uint8_t pmem[1024*2*2]={0};
+//static uint8_t pmem[1024*2000*1024]={0};
+static uint8_t pmem[0x8000000] __attribute((aligned(4096)))={};
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };   
 static int nemu_state=NEMU_RUNNING;
 static int a0=0;
@@ -202,8 +248,8 @@ int main(int argc, char** argv, char** env) {
     top->clk = 0;
     top->cpupc=0x80000000;
     //top->in=0;
-		char ftrace[1000][200];//代表ftrace语句
-		char spacea[1000][200];
+		char ftrace[10000][200];//代表ftrace语句
+		char spacea[10000][200];
 		int ftracelength;
     while (!contextp->gotFinish()) {
 			  circle++;
@@ -240,10 +286,11 @@ int main(int argc, char** argv, char** env) {
 								//log_write("%*s",space,"");	
 								//printf(" %lx:  jal  ret %s\n",ftrace.left[i],func.name[j]);
 								//log_write(" %x:    call %s(%x)\n",pc,func.name[j],dnpc);
+								if(ftracelength<10000){
 								sprintf(spacea[ftracelength],"%*s",space,"");	
 								sprintf(ftrace[ftracelength]," %x:    call %s(%x)\n",pc,func.name[j],dnpc);
 								ftracelength++;
-								space++;
+								space++;}
 								break;
 							}
 						}
@@ -254,8 +301,11 @@ int main(int argc, char** argv, char** env) {
 							if((pc>=(int)func.begin[j])&&(pc<(int)func.begin[j]+func.size[j])){
 								space--;
 								//log_write("%*s",space,"");	
+									
+								if(ftracelength<10000){
 								sprintf(spacea[ftracelength],"%*s",space,"");	
 								sprintf(ftrace[ftracelength++]," %x:    ret %s(%x)\n",pc,func.name[j],dnpc);
+								}
 								break;
 							}
 						}
@@ -298,12 +348,14 @@ int main(int argc, char** argv, char** env) {
         }
 				///////////////////////difftest//////////////////////
 				if(contextp->time()==4) 
-					init_difftest(diff_so_file,img_size);
+					if(TEST)
+						init_difftest(diff_so_file,img_size);
 				if(!top->clk&&contextp->time()>4){
+					if(TEST){
 				  int check=difftest_step();		
 					if(check==0){
 						printf(RED"\ninst error at:%s\n"NONE,logbuf);
-						break;}
+						break;}}
 				}
 				///////////////////////////////////////////////////
 
@@ -373,7 +425,8 @@ XunHuan:
 			 extern void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
 			 disassemble(p, logbuf + sizeof(logbuf) - p,
 					 MUXDEF(1, upc, upc), (uint8_t *)&instval,ilen);
-			 log_write("%s\n",logbuf);
+			 if(TEST){
+			 log_write("%s\n",logbuf);}
 				}
 			 //printf("achieve here");
 				/////////////////////////////////////////////////////////////////
@@ -391,15 +444,23 @@ XunHuan:
         //          contextp->time(), top->clk, top->reset_l, top->in_quad, top->out_quad,
         //          top->out_wide[2], top->out_wide[1], top->out_wide[0]);
 
+				if(TEST)
         VL_PRINTF("[%" VL_PRI64 "d] clk=%x rst=%x  "
                   " -> out[31:0]=%x \n ",
                   contextp->time(), top->clk, top->rst, 
                   top->cpupc);
     }
-		log_write("----------ftrace-----------\n");
+		if(TEST){
+		log_write("----------ftrace-----------\n");}
 		for(int i=0;i<ftracelength;i++){
+
+			if(ftracelength<10000){
+			if(TEST){
 			log_write("%s",spacea[i]);
-			log_write("%s",ftrace[i]);}
+			log_write("%s",ftrace[i]);
+			}
+			}			
+			}
 
     // Final model cleanup
     top->final();

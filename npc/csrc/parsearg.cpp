@@ -50,6 +50,7 @@ int parse_args(int argc, char *argv[]) {
 }
 void load_img(int argc,char**argv){
 
+	printf("\naaaaaaaaaaaaaaaaaaaaaaaa\n");
 	//parse_args(argc,argv);
 	    //将代码复制到内存
 	if(img_file==NULL)
@@ -57,22 +58,33 @@ void load_img(int argc,char**argv){
 	else{//对文件进行解析
 		FILE *fp = fopen(img_file, "rb");
 
+
 		fseek(fp, 0, SEEK_END);
 		long size = ftell(fp);
+		printf("The image is %s, size = %ld", img_file, size);
+		fseek(fp, 0, SEEK_SET);
+		int ret = fread(guest_to_host((uint32_t)CONFIG_BASE), size, 1, fp);
+		assert(ret == 1);
+
+
 		img_size=size;
 
-		uint32_t img2[size/4];	
-		printf("The image is %s, size = %ld", img_file, size);
+		/*printf("\naaaaaaaaaaaaaaaaaaaaaaaa\n");*/
+		/*uint32_t img2[size/4];	*/
+		/*printf("The image is %s, size = %ld", img_file, size);*/
 
-		fseek(fp, 0, SEEK_SET);
-		int ret = fread(img2, size, 1, fp);
-		assert(ret == 1);
+		/*fseek(fp, 0, SEEK_SET);*/
+		/*int ret = fread(img2, size, 1, fp);*/
+		/*assert(ret == 1);*/
 		fclose(fp);
 		/*for(int i=0;i<(size/4);i++){*/
 			/*printf("img2[i]=%x\n",img2[i]);*/
 		/*}*/
 
-		memcpy(guest_to_host((uint32_t)CONFIG_BASE), img2, size);
+	/*printf("\naaaaaaaaaaaaaaaaaaaaaaaa\n");*/
+
+		/*memcpy(guest_to_host((uint32_t)CONFIG_BASE), img2, size);*/
+	/*printf("\naaaaaaaaaaaaaaaaaaaaaaaa\n");*/
 	}
 }
 
