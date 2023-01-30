@@ -79,6 +79,42 @@ void my_itoa(int i, char *string)
 	//char *left=string;
 	strrev(string);
 	}
+void my_itoa2(int64_t i, char *string,int wei)
+{
+	char *str=string;
+	int sign=0;
+	int digit;
+	if(i==-2147483648){
+		strcpy(string,"-2147483648\0");
+		return;
+	}
+	if(i<0){
+		sign=1;
+		i=i*-1;
+	}
+	if(i==0){
+		*str='0';
+		str++;
+	}
+	while(i){
+		digit=i%wei;
+		if((digit>=0)&&(digit<=9))
+		*str='0'+digit;
+		else if((digit>=10)&&(digit<=16))
+		*str='a'+(digit-10);
+		i=i/wei;
+		str++;
+	//	len++;
+	}
+	if(sign){
+		*str++='-';
+	//	len++;
+	}
+	*str='\0';
+	//char *right=string+len;
+	//char *left=string;
+	strrev(string);
+	}
 int vsprintf(char *out, const char *fmt, va_list ap) {
 int i=0;
 int j=0;
@@ -104,12 +140,31 @@ j+=strlen(tmp);
 break;
 }
 /* convert hex */
-//case 'x': {
-//  _itoa(va_arg( vl, int ), tmp, 16);
-//  strcpy(&buff[j], tmp);
-//  j += strlen(tmp);
-//  break;
-//}
+/*case 'x':{*/
+	/*my_itoa2(va_arg(ap,int),tmp,16);*/
+	/*strcpy(&out[j],tmp);*/
+	/*j+=strlen(tmp);*/
+	/*break;*/
+/*}*/
+case 'l':{
+	i++;
+	switch(fmt[i]){
+	case 'x':{
+		my_itoa2(va_arg(ap,int64_t),tmp,16);
+		strcpy(&out[j],tmp);
+		j+=strlen(tmp);
+		break;}
+	case 'd':{
+		my_itoa2(va_arg(ap,int64_t),tmp,10);
+		strcpy(&out[j],tmp);
+		j+=strlen(tmp);
+		break;}
+	default:
+		printf("weishixian in am stdio.c");
+		break;
+	}
+	break;
+}
 ///* convert octal */
 //case 'o': {
 //  _itoa(va_arg( vl, int ), tmp, 8);

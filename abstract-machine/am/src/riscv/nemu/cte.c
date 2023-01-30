@@ -5,9 +5,18 @@
 static Context* (*user_handler)(Event, Context*) = NULL;
 
 Context* __am_irq_handle(Context *c) {
+ /* for(int i=0;i<32;i++)*/
+		/*printf("gpr[%d]=%ld\n",i,c->gpr[i]);*/
+	/*printf("mcause=%ld\n",c->mcause);*/
+	/*printf("mstatus=%ld\n",c->mstatus);*/
+	/*printf("mepc=%ld\n",c->mepc);*/
+	/*printf("here is am\n");*/
   if (user_handler) {
     Event ev = {0};
     switch (c->mcause) {
+			case 0xb:switch(c->GPR1){
+								 case -1:ev.event=EVENT_YIELD;break; 
+							}break;
       default: ev.event = EVENT_ERROR; break;
     }
 

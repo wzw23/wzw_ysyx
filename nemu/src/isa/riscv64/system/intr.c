@@ -19,8 +19,18 @@ word_t isa_raise_intr(word_t NO, vaddr_t epc) {
   /* TODO: Trigger an interrupt/exception with ``NO''.
    * Then return the address of the interrupt/exception vector.
    */
+	cpu.csrs[0x341]=epc;
+	cpu.csrs[0x342]=NO;
+	log_write("\netrace:ecall at:%lx\n,and the NO is %lx",epc,NO);
+  /*return 0;*/
+	/*for(int i=0;i<32;i++)*/
+				/*printf("gpr[%d]=%ld\n",i,cpu.gpr[i]);*/
+	/*printf("mcause=%ld\n",cpu.csrs[0x342]);*/
+	/*printf("mstatus=%ld\n",cpu.csrs[0x300]);*/
+	/*printf("mepc=%ld\n",cpu.csrs[0x341]);*/
 
-  return 0;
+	/*printf("\ncpu_csr=%ld\n",cpu.csrs[0x305]);*/
+	return cpu.csrs[0x305];
 }
 
 word_t isa_query_intr() {

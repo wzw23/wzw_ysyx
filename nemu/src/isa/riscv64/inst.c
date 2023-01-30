@@ -19,6 +19,8 @@
 #include <cpu/decode.h>
 
 #define R(i) gpr(i)
+//wzw add csr register
+#define CSR(i) csrs(i)
 #define Mr vaddr_read
 #define Mw vaddr_write
 
@@ -47,13 +49,15 @@ enum {
 	/*int length;*/
 /*}*/
 Ftrace ftrace;
-static void decode_operand(Decode *s, int *dest,int *rs1r, word_t *src1, word_t *src2, word_t *imm, int type) {
+static void decode_operand(Decode *s, int *dest,int *csr,int *rs1r, word_t *src1, word_t *src2, word_t *imm, int type) {
   uint32_t i = s->isa.inst.val;
   int rd  = BITS(i, 11, 7);
   int rs1 = BITS(i, 19, 15);
   int rs2 = BITS(i, 24, 20);
+	int csrr = BITS(i, 31, 20);
   *dest = rd;
 	*rs1r=rs1;
+	*csr=csrr;
   switch (type) {
     case TYPE_I: src1R();          immI(); break;
     case TYPE_U:                   immU(); break;
@@ -66,15 +70,21 @@ static void decode_operand(Decode *s, int *dest,int *rs1r, word_t *src1, word_t 
 }
 
 static int decode_exec(Decode *s) {
+	static int chushihua=0;
+	if(chushihua==0){
+		/*cpu.csrs[0x342]=0xb;*/
+		cpu.csrs[0x300]=0xa00001800;
+		chushihua++;}
   int dest = 0;
-	//wzw add;
+	//wzw add rs1r and csr;
 	int rs1r=0;
+	int csr=0;
   word_t src1 = 0, src2 = 0, imm = 0;
   s->dnpc = s->snpc;
 
 #define INSTPAT_INST(s) ((s)->isa.inst.val)
 #define INSTPAT_MATCH(s, name, type, ... /* execute body */ ) { \
-  decode_operand(s, &dest, &rs1r ,&src1, &src2, &imm, concat(TYPE_, type)); \
+  decode_operand(s, &dest, &csr, &rs1r ,&src1, &src2, &imm, concat(TYPE_, type)); \
   __VA_ARGS__ ; \
 }
 
@@ -176,6 +186,13 @@ static int decode_exec(Decode *s) {
   INSTPAT("0000001 ????? ????? 101 ????? 01110 11", divuw   , R, R(dest) = SEXT(BITS(src1,31,0)/BITS(src2,31,0),32));
   INSTPAT("??????? ????? ????? 110 ????? 00000 11", lwu     , I, R(dest) = Mr(src1 + imm, 4));
   INSTPAT("0000001 ????? ????? 110 ????? 01100 11", rem     , R, R(dest) = (int64_t)src1%(int64_t)src2);
+  INSTPAT("0000001 ????? ????? 100 ????? 01100 11", div     , R, R(dest) = (int64_t)src1/(int64_t)src2);
+  ///////////////////////////////////////////////////////////////////////////////////
+	//csrs
+  INSTPAT("??????? ????? ????? 001 ????? 11100 11", csrrw  , I, word_t t=CSR(csr);CSR(csr)=src1;R(dest)=t;/*printf("\nsrc1==%lx csr=%x cpu_csr=%lx\n",src1,csr,cpu.csrs[0x305])*/);
+  INSTPAT("??????? ????? ????? 010 ????? 11100 11", csrrs  , I, /*printf("csr=%x\n dest=%x",csr,dest);*/word_t t=CSR(csr);CSR(csr)=t|src1;R(dest)=t);
+  INSTPAT("0000000 00000 00000 000 00000 11100 11", ecall  , I, word_t rpc=isa_raise_intr(11, s->pc	);/*printf("\nrpc=%lx\n",rpc);*/s->dnpc=rpc);
+  INSTPAT("0011000 00010 00000 000 00000 11100 11", mret   , R, s->dnpc=CSR(0x341));
   ///////////////////////////////////////////////////////////////////////////////////
   INSTPAT("??????? ????? ????? 011 ????? 00000 11", ld     , I, R(dest) = Mr(src1 + imm, 8));
   INSTPAT("??????? ????? ????? 011 ????? 01000 11", sd     , S, Mw(src1 + imm, 8, src2));
