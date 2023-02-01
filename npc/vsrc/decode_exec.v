@@ -82,6 +82,9 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [4:0]rs1;
 		wire [4:0]rs2;
 		wire [4:0]raddr;
+		wire [11:0]rcsraddr1;
+		wire [11:0]wcsraddr1;
+		wire [11:0]wcsraddr2;
 		assign one_zero=inst[1:0];
 		assign six_two=inst[6:2];
 		assign fth_twl=inst[14:12];
@@ -93,8 +96,12 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire[63:0]imm;
 		wire[63:0]Simm;
 		wire[4:0]dest;
+		wire[11:0]csr;
 		wire[4:0]waddr;
 		wire[63:0]wdata;
+		wire[63:0]rcsrdata1;
+		wire[63:0]wcsrdata1;
+		wire[63:0]wcsrdata2;
 		//加法器
 		wire [63:0]addresult;
 		wire [63:0]data1;
@@ -120,7 +127,8 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 
 
 		assign dest=inst[11:7];
-		RegisterFile #(5,64) r0 (clk,1'b1,wdata,waddr,64'b0,5'b0,rs1,rs2,raddr,src1,src2,rdata,array);
+		assign csr=inst[31:20];
+		RegisterFile #(5,64,12) r0 (clk,1'b1,wdata,waddr,64'b0,5'b0,rs1,rs2,raddr,src1,src2,rdata,array,rcsraddr1,rcsrdata1,wcsraddr1,wcsrdata1,wcsraddr2,wcsrdata2);
 		//根据指令类型取立即数
 		MuxKeyWithDefault #(6,3,64)m1(imm,Type,64'b0,{
 			Type_I,{{52{1'b0}},inst[31:20]}, 
@@ -140,11 +148,24 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			});
 		//在此进行指令简化
 		//代表指令长度
-    localparam length=52,wlength=42,rlength=1,alength=48,plength=8,mwlength=4,mrlength=7;//mrlength=0; 
+    localparam length=57,wlength=45,rlength=1,alength=49,plength=10,mwlength=4,mrlength=7,crlength=4,cwlength=3,cwlength2=1;//mrlength=0; 
 
 		wire [31:0]addi;
 		assign addi={inst[31:20],inst[19:15],{3{1'b0}},inst[11:7],{7'b0010011}};
 
+		wire [31:0]csrrw;
+		assign csrrw={inst[31:20],inst[19:15],{3'b001},inst[11:7],{7'b1110011}};
+
+		wire [31:0]csrrs;
+		assign csrrs={inst[31:20],inst[19:15],{3'b010},inst[11:7],{7'b1110011}};
+
+		wire [31:0]ecall;
+		assign ecall={32'b00000000000000000000000001110011};
+
+		wire [31:0]mret;
+		assign mret= {32'b00110000001000000000000001110011};
+
+		
 		wire [31:0]andi;
 		assign andi={inst[31:20],inst[19:15],{3'b111},inst[11:7],{7'b0010011}};
 
@@ -275,7 +296,11 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 
 
 		wire [31:0] div;
-		assign div= {{7'b0000001},inst[24:20],inst[19:15],{3'b101},inst[11:7],{7'b0110011}};
+		assign div= {{7'b0000001},inst[24:20],inst[19:15],{3'b100},inst[11:7],{7'b0110011}};
+		
+		wire [31:0] rem;
+		assign rem= {{7'b0000001},inst[24:20],inst[19:15],{3'b110},inst[11:7],{7'b0110011}};
+
 
 
 		wire [31:0] remw;
@@ -358,6 +383,10 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		//判断指令类型
 		MuxKeyWithDefault #(length,32,3)m0(Type,inst,None,{
 			addi,Type_I,
+			csrrw,Type_I,
+			csrrs,Type_I,
+			ecall,Type_I,
+			mret,Type_R,
 			andi,Type_I,
 			xori,Type_I,
 			ori,Type_I,
@@ -382,6 +411,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			divw,Type_R,
 			divuw,Type_R,
 			div,Type_R,
+			rem,Type_R,
 			remw,Type_R,
 			sllw,Type_R,
 			sll,Type_R,
@@ -416,6 +446,8 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		//tested
 		MuxKeyWithDefault #(wlength,32,5)m2(waddr,inst,5'b0,{
 			addi,dest,
+			csrrw,dest,
+			csrrs,dest,
 			andi,dest,
 			xori,dest,
 			ori,dest,
@@ -435,6 +467,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			divw,dest,
 			divuw,dest,
 			div,dest,
+			rem,dest,
 			remw,dest,
 			sllw,dest,
 			sll,dest,
@@ -458,8 +491,11 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			slli,dest,
 			srli,dest
 			}); 
+		
 		MuxKeyWithDefault #(wlength,32,64)m3(wdata,inst,64'b0,{
 			addi,addresult,
+			csrrw,rcsrdata1,
+			csrrs,rcsrdata1,
 			andi,yu,
 			xori,yihuo,
 			ori,huo,
@@ -479,6 +515,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			divw,`SEXT(schu,64,32),
 			divuw,`SEXT(schu,64,32),
 			div,chu,
+			rem,syu,
 			remw,`SEXT(syu,64,32),
 			sllw,`SEXT(logl,64,32),
 			sll,logl,
@@ -502,6 +539,30 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			slli,logl,
 			srli,logr
 			}); 
+    MuxKeyWithDefault #(crlength,32,12)m19(rcsraddr1,inst,12'b0,{
+			csrrw,csr,
+			csrrs,csr,
+			ecall,12'h305,
+			mret, 12'h341
+						});
+		MuxKeyWithDefault #(cwlength,32,12)m20(wcsraddr1,inst,12'b0,{
+			csrrw,csr,
+			csrrs,csr,
+			ecall,12'h341
+						});
+		MuxKeyWithDefault #(cwlength,32,64)m21(wcsrdata1,inst,64'b0,{
+			csrrw,src1,
+			csrrs,src1|rcsrdata1,
+			ecall,upc
+						});
+    MuxKeyWithDefault #(cwlength2,32,12)m22(wcsraddr2,inst,12'b0,{
+			ecall,12'h342
+						});
+		MuxKeyWithDefault #(cwlength2,32,64)m23(wcsrdata2,inst,64'b0,{
+			ecall,64'hb
+						});
+
+
 	 //确定读地址
 		MuxKeyWithDefault #(rlength,32,5)m8(raddr,inst,5'b0,{
 			ebreak,{5'b01010}
@@ -530,6 +591,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			divw,{{32{1'b0}},src1[31:0]},
 			divuw,{{32{1'b0}},src1[31:0]},
 			div,src1,
+			rem,src1,
 			remw,{{32{1'b0}},src1[31:0]},
 			sllw,src1,
 			sll,src1,
@@ -580,6 +642,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			divw,{{32{1'b0}},src2[31:0]},
 			divuw,{{32{1'b0}},src2[31:0]},
 			div,src2,
+			rem,src2,
 			remw,{{32{1'b0}},src2[31:0]},
 			sllw,{{59{1'b0}},src2[4:0]},
 			sll,{{58{1'b0}},src2[5:0]},
@@ -617,7 +680,9 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			bge,((addresult==0)|(addresult[63]==0))?(pc+`SEXT(Simm,32,32)):(pc+4),
 			bgeu,((src1==src2)|(compare==1))?(pc+`SEXT(Simm,32,32)):(pc+4),
 			bltu,((compare==1))?(pc+`SEXT(Simm,32,32)):(pc+4),
-			blt,(addresult[63]==1)?(pc+`SEXT(Simm,32,32)):(pc+4)
+			blt,(addresult[63]==1)?(pc+`SEXT(Simm,32,32)):(pc+4),
+			ecall,rcsrdata1[31:0],
+			mret,rcsrdata1[31:0]
 			});
 			//memory read memory write
 			MuxKeyWithDefault #(mwlength,32,64)m9(mwaddr,inst,64'b0,{

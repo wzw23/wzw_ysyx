@@ -84,8 +84,8 @@ sim:
 	@echo "run--------------------------"
 	@rm -rf logs
 	@mkdir -p logs
-	#obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so" -m $(IMG)
-	obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so" -m $(IMG)
+	obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so" -m $(IMG)
+	#obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so" -m $(IMG)
 	#@echo "converage--------------------"
 	#@rm -rf logs/annotated
 	#$(VERILATOR_COVERAGE) --annotate logs/annotated logs/coverage.dat

@@ -17,7 +17,7 @@ class Vtop___024root;
 class VerilatedVcdC;
 class Vtop_VerilatedVcd;
 class Vtop_MuxKeyWithDefault__N6_K3_D40;
-class Vtop_MuxKeyWithDefault__N30_K20_D40;
+class Vtop_MuxKeyWithDefault__N31_K20_D40;
 class Vtop_MuxKeyWithDefault__N4_K20_D40;
 
 
@@ -42,8 +42,8 @@ class Vtop VL_NOT_FINAL {
     // Otherwise the application code can consider these internals.
     Vtop_MuxKeyWithDefault__N6_K3_D40* const __PVT__top__DOT__de__DOT__m1;
     Vtop_MuxKeyWithDefault__N6_K3_D40* const __PVT__top__DOT__de__DOT__m7;
-    Vtop_MuxKeyWithDefault__N30_K20_D40* const __PVT__top__DOT__de__DOT__m4;
-    Vtop_MuxKeyWithDefault__N30_K20_D40* const __PVT__top__DOT__de__DOT__m5;
+    Vtop_MuxKeyWithDefault__N31_K20_D40* const __PVT__top__DOT__de__DOT__m4;
+    Vtop_MuxKeyWithDefault__N31_K20_D40* const __PVT__top__DOT__de__DOT__m5;
     Vtop_MuxKeyWithDefault__N4_K20_D40* const __PVT__top__DOT__de__DOT__m9;
     Vtop_MuxKeyWithDefault__N4_K20_D40* const __PVT__top__DOT__de__DOT__m10;
 
