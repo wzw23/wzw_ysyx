@@ -62,12 +62,15 @@ int _open(const char *path, int flags, mode_t mode) {
 }
 
 int _write(int fd, void *buf, size_t count) {
-  _exit(SYS_write);
-  return 0;
+	uint64_t a=_syscall_(SYS_write, fd, (size_t)buf, count);
+  /*_exit(SYS_writr);*/
+  return a;
 }
 
 void *_sbrk(intptr_t increment) {
-  return (void *)-1;
+	//开始因为设置a为有符号数导致内存溢出
+	uint64_t a=_syscall_(SYS_brk, increment, 0, 0);
+  return (void *)a;
 }
 
 int _read(int fd, void *buf, size_t count) {
