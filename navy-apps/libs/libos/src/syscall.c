@@ -57,8 +57,8 @@ void _exit(int status) {
 }
 
 int _open(const char *path, int flags, mode_t mode) {
-  _exit(SYS_open);
-  return 0;
+  /*_exit(SYS_open);*/
+  return _syscall_(SYS_open, (intptr_t)path, flags, mode);
 }
 
 int _write(int fd, void *buf, size_t count) {
@@ -66,31 +66,50 @@ int _write(int fd, void *buf, size_t count) {
   /*_exit(SYS_writr);*/
   return a;
 }
-
+//wzw add
+/*#include<stdio.h>*/
+extern char _end;
+char * Pro_bre=&(_end);
 void *_sbrk(intptr_t increment) {
 	//开始因为设置a为有符号数导致内存溢出
-	uint64_t a=_syscall_(SYS_brk, increment, 0, 0);
-  return (void *)a;
+	/*uint64_t a=_syscall_(SYS_brk, increment, 0, 0);*/
+	
+	int a=_syscall_(SYS_brk, increment, 0, 0);
+	if(a==0){
+		char *fh=Pro_bre;
+		Pro_bre+=increment;
+		/*char str[50];*/
+		/*sprintf(str,"increment=%d,pro_bre=%ld",increment,(uint64_t)Pro_bre);*/
+		/*_write(1,str,50);*/
+		return (void *)fh;
+	}
+	else
+		return (void *)(-1);
 }
 
 int _read(int fd, void *buf, size_t count) {
-  _exit(SYS_read);
-  return 0;
+  /*_exit(SYS_read);*/
+  /*return 0;*/
+	return _syscall_(SYS_read, fd, (size_t)buf, count);
+
 }
 
 int _close(int fd) {
-  _exit(SYS_close);
-  return 0;
+	return _syscall_(SYS_close, fd, 0, 0);
+  /*_exit(SYS_close);*/
+  /*return 0;*/
 }
 
 off_t _lseek(int fd, off_t offset, int whence) {
-  _exit(SYS_lseek);
+  /*_exit(SYS_lseek);*/
+  return _syscall_(SYS_lseek, fd, offset, whence);
   return 0;
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
-  _exit(SYS_gettimeofday);
-  return 0;
+	return _syscall_(SYS_gettimeofday, (intptr_t)tv, (intptr_t)tz, 0);
+  /*_exit(SYS_gettimeofday);*/
+  /*return 0;*/
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {

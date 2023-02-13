@@ -162,6 +162,17 @@ config ITRACE_COND
   string "Only trace instructions when the condition is true"
   default "true"
 
+#wzw add
+config STRACE
+  depends on TRACE && TARGET_NATIVE_ELF && ENGINE_INTERPRETER
+  bool "Enable  strace"
+  default y
+
+config STRACE_COND
+  depends on STRACE
+  string "Only strace when the condition is true"
+  default "true"
+
 
 config DIFFTEST
   depends on TARGET_NATIVE_ELF
