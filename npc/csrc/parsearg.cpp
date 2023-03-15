@@ -50,7 +50,7 @@ int parse_args(int argc, char *argv[]) {
 }
 void load_img(int argc,char**argv){
 
-	printf("\naaaaaaaaaaaaaaaaaaaaaaaa\n");
+	//printf("\naaaaaaaaaaaaaaaaaaaaaaaa\n");
 	//parse_args(argc,argv);
 	    //将代码复制到内存
 	if(img_file==NULL)

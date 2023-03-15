@@ -1,9 +1,11 @@
 include $(AM_HOME)/scripts/isa/riscv64.mk
 
+#wzw add gpu.c
 AM_SRCS := riscv/npc/start.S \
            riscv/npc/trm.c \
            riscv/npc/ioe.c \
            riscv/npc/timer.c \
+					 riscv/npc/gpu.c\
            riscv/npc/input.c \
            riscv/npc/cte.c \
            riscv/npc/trap.S \

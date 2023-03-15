@@ -2,6 +2,8 @@
 //wzw add
 #include "npc.h"
 
+/*#define SYNC_ADDR (VGACTL_ADDR + 4)*/
+
 void __am_timer_init() {
 }
 
@@ -20,3 +22,4 @@ void __am_timer_rtc(AM_TIMER_RTC_T *rtc) {
   rtc->month  = 0;
   rtc->year   = 1900;
 }
+

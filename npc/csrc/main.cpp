@@ -3,7 +3,7 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-#define TEST 0 
+#define TEST 1 
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -52,7 +52,7 @@ Decode s;
 uint64_t *cpu_gpr = NULL;
 uint32_t watchpoint=-1;
 extern int difftest_step();
-static inline void host_write(void *addr, int len, uint64_t data) {
+void host_write(void *addr, int len, uint64_t data) {
 	switch (len) {
 		case 1: *(uint8_t  *)addr = data; return;
 		case 2: *(uint16_t *)addr = data; return;
@@ -94,27 +94,37 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 			skip_test=1;
 			return;
 		}
+		else if(raddr==0xa0000100){
+			*rdata=width_height();
+			skip_test=1;
+			return;
+		}
 		else if(raddr==0xa0000048){
 			*rdata=us_less;
 			skip_test=1;
 			return;	
 		}
-		else
-		 *rdata=pmem_read(raddr,8);}
+		else if(raddr>=0x80000000&&raddr<=0x87ffffff)
+		 *rdata=pmem_read(raddr,8);
+		else{
+			//static int first=0;
+			//if(first==0)
+			//skip_test=1;
+			printf("the raddr=%llx\n",raddr);
+
+			//first=1;
+
+			//assert(0);
+		} 
+		}
 }
 extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
 	if((circle>=4)&&(circle%2==0)){
 	int len;
 	if(TEST){
 	printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
-
 	printf("deng=%d\n",(waddr==0x00000000a00003f8));}
-	if(waddr==0xa00003f8)
-	{char putdata=(char)wdata;
-	 putchar(putdata);
-	 skip_test=1;
-	 return;
-	}
+	
 	if(wmask==1)
 		len=1;
 	else if(wmask==3)
@@ -123,13 +133,38 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
 		len=4;
 	else if(wmask==-1)
 		len=8;
-  
+	if(waddr==0xa00003f8)
+	{char putdata=(char)wdata;
+	 putchar(putdata);
+	 skip_test=1;
+	 return;
+	}
+	else if(waddr==0xa0000104){
+		skip_test=1;
+		c_update();
+		return;
+	}
+	else if((waddr>=0xa1000000)&&(waddr<=0xa10752ff)){
+		//printf("the waddr=%lx len=%d wdata=%lx\n",waddr,len,wdata);
+		update_vmem(waddr,wdata,len);
+		skip_test=1;
+		//printf("change vmem\n");
+		return;
+	}
+	else if(waddr>=0x80000000&&waddr<=0x87ffffff){
 	if((len==1)||(len==2)||(len==4)||(len==8)){
 		pmem_write(waddr,len,wdata);}
 	// 总是往地址为`waddr & ~0x7ull`的8字节按写掩码`wmask`写入`wdata`
 	// `wmask`中每比特表示`wdata`中1个字节的掩码,
 	// 如`wmask = 0x3`代表只写入最低2个字节, 内存中的其它字节保持不变
-}}
+}
+	else {
+		if(waddr!=0)
+			printf("write error address %llx\n",waddr);
+		//assert(0);
+	}
+}
+}
 		       
 void dump_gpr() {
 	int i;
@@ -207,6 +242,7 @@ int main(int argc, char** argv, char** env) {
 		parse_elf(elf_file); 
 		void init_disasm(const char *triple);
 		init_disasm("riscv64");
+		init_screen();
 	//	dump_gpr();
 		for(int i=0;i<func.length;i++)
 			printf("name=%s,begin=%lx,size=%ld\n",func.name[i],func.begin[i],func.size[i]);
@@ -252,6 +288,7 @@ int main(int argc, char** argv, char** env) {
 		char spacea[10000][200];
 		int ftracelength;
     while (!contextp->gotFinish()) {
+			  device_update();
 			  circle++;
 			////////////////////////////////////////////////////////
 				/*char str[20];*/

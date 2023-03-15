@@ -1,6 +1,8 @@
 #include <common.h>
 #include "syscall.h"
+//wzw add
 #include "/home/wzw/ysyx-workbench/nemu/include/generated/autoconf.h"
+#include "/home/wzw/ysyx-workbench/nanos-lite/include/proc.h"
 /*enum {*/
   /*SYS_exit,*/
   /*SYS_yield,*/
@@ -23,6 +25,9 @@
   /*SYS_times,*/
   /*SYS_gettimeofday*/
 /*};*/
+//wzw add
+extern void naive_uload(PCB *pcb, const char *filename);
+///////////
 static const char *img[20] = {
 	"SYS_exit",
 	"SYS_yield",
@@ -77,6 +82,8 @@ void do_syscall(Context *c) {
 			yield();c->GPRx=0;
 			break; 
 		case SYS_exit:
+			/*char *exit_use="/bin/menu";*/
+			/*naive_uload(current,(char *)exit_use);*/
 			halt(a[1]);break;
 		case SYS_write:
 			/*Log("name:write args:a7=%d,a0=%d,a1=%d,a2=%d",c->gpr[17],c->gpr[10],c->gpr[11],c->gpr[12]);*/
@@ -111,11 +118,17 @@ void do_syscall(Context *c) {
 		case SYS_gettimeofday:
 			struct timeval *nowtime=(struct timeval *)a[1];			
 			(*nowtime).tv_sec=io_read(AM_TIMER_UPTIME).us/1000000;
-			(*nowtime).tv_usec=io_read(AM_TIMER_UPTIME).us;
+			(*nowtime).tv_usec=io_read(AM_TIMER_UPTIME).us%1000000;
 			c->GPRx=0;
 			break;
+		case SYS_execve:
+			static PCB pcb_boot = {};
+			PCB *current = NULL;
+			current = &pcb_boot;
+			printf("%s\n",a[1]);
+			naive_uload(current,(char *)a[1]);
+			break;
     default: panic("Unhandled syscall ID = %d,and the name is %s", a[0],img[a[0]]);
-
   }
 #ifdef CONFIG_STRACE_COND
 	Log("syscall return:%ld",c->GPRx);

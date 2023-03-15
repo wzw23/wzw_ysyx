@@ -45,12 +45,16 @@ LIBS ="$(shell llvm-config --libs) "
 #LDFLAGS=-rdynamic -shared -fPIC
 #-fsanitize=address 解决链接问题的第二个方法
 LDFLAGS=-rdynamic -ldl -fsanitize=address
+#用于添加sdl用法
+LDFLAGS+=-lSDL2main -lSDL2 
 #LDFLAGS=-L. /home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
 #CFLAGS+=-L. -lriscv64-nemu-interpreter-so
 
 #CSRCS+=$(NPC_HOME)/csrc/utils/disasm.cc
 CFLAGS=$(shell llvm-config --cxxflags) -fPIE #-fPIC
+LDFLAGS+=-fsanitize=address
 #CFLAGS +=  -ffreestanding -fno-rtti -fno-exceptions
+#CFLAGS += -lSDL2main -lSDL2 
 #CXX       = g++
 $(NPC_HOME)/csrc/utils/disasm.o:$(CXXSRCS)
 	#@mkdir -p $(dir $@) && echo + CXX $<

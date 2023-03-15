@@ -17,8 +17,8 @@ void Vtop___024root___settle__TOP__6(Vtop___024root* vlSelf);
 void Vtop___024root___sequent__TOP__13(Vtop___024root* vlSelf);
 void Vtop___024root___combo__TOP__17(Vtop___024root* vlSelf);
 void Vtop_MuxKeyWithDefault__N4_K20_D40___settle__TOP__top__DOT__de__DOT__m10__1(Vtop_MuxKeyWithDefault__N4_K20_D40* vlSelf);
-void Vtop_MuxKeyWithDefault__N31_K20_D40___settle__TOP__top__DOT__de__DOT__m4__1(Vtop_MuxKeyWithDefault__N31_K20_D40* vlSelf);
-void Vtop_MuxKeyWithDefault__N31_K20_D40___settle__TOP__top__DOT__de__DOT__m5__2(Vtop_MuxKeyWithDefault__N31_K20_D40* vlSelf);
+void Vtop_MuxKeyWithDefault__N33_K20_D40___settle__TOP__top__DOT__de__DOT__m4__1(Vtop_MuxKeyWithDefault__N33_K20_D40* vlSelf);
+void Vtop_MuxKeyWithDefault__N33_K20_D40___settle__TOP__top__DOT__de__DOT__m5__2(Vtop_MuxKeyWithDefault__N33_K20_D40* vlSelf);
 void Vtop___024root___settle__TOP__15(Vtop___024root* vlSelf);
 void Vtop_MuxKeyWithDefault__N4_K20_D40___settle__TOP__top__DOT__de__DOT__m9__2(Vtop_MuxKeyWithDefault__N4_K20_D40* vlSelf);
 void Vtop___024root___settle__TOP__16(Vtop___024root* vlSelf);
@@ -42,8 +42,8 @@ void Vtop___024root___eval(Vtop___024root* vlSelf) {
     }
     Vtop___024root___combo__TOP__17(vlSelf);
     Vtop_MuxKeyWithDefault__N4_K20_D40___settle__TOP__top__DOT__de__DOT__m10__1((&vlSymsp->TOP__top__DOT__de__DOT__m10));
-    Vtop_MuxKeyWithDefault__N31_K20_D40___settle__TOP__top__DOT__de__DOT__m4__1((&vlSymsp->TOP__top__DOT__de__DOT__m4));
-    Vtop_MuxKeyWithDefault__N31_K20_D40___settle__TOP__top__DOT__de__DOT__m5__2((&vlSymsp->TOP__top__DOT__de__DOT__m5));
+    Vtop_MuxKeyWithDefault__N33_K20_D40___settle__TOP__top__DOT__de__DOT__m4__1((&vlSymsp->TOP__top__DOT__de__DOT__m4));
+    Vtop_MuxKeyWithDefault__N33_K20_D40___settle__TOP__top__DOT__de__DOT__m5__2((&vlSymsp->TOP__top__DOT__de__DOT__m5));
     Vtop___024root___settle__TOP__15(vlSelf);
     Vtop_MuxKeyWithDefault__N4_K20_D40___settle__TOP__top__DOT__de__DOT__m9__2((&vlSymsp->TOP__top__DOT__de__DOT__m9));
     Vtop___024root___settle__TOP__16(vlSelf);

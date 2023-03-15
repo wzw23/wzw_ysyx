@@ -21,6 +21,8 @@ enum SDL_EventType {
   SDL_KEYDOWN,
   SDL_KEYUP,
   SDL_USEREVENT,
+	//wzw add
+	//Other_events,
 };
 
 #define SDL_EVENTMASK(ev_type) (1u << (ev_type))
@@ -53,10 +55,10 @@ typedef union {
   SDL_UserEvent user;
 } SDL_Event;
 
-int SDL_PushEvent(SDL_Event *ev);
+/*int SDL_PushEvent(SDL_Event *ev);*/
 int SDL_PollEvent(SDL_Event *ev);
 int SDL_WaitEvent(SDL_Event *ev);
-int SDL_PeepEvents(SDL_Event *ev, int numevents, int action, uint32_t mask);
+/*int SDL_PeepEvents(SDL_Event *ev, int numevents, int action, uint32_t mask);*/
 uint8_t* SDL_GetKeyState(int *numkeys);
 
 #endif

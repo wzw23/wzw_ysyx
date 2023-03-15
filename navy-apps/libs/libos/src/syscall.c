@@ -51,7 +51,22 @@ intptr_t _syscall_(intptr_t type, intptr_t a0, intptr_t a1, intptr_t a2) {
   return ret;
 }
 
+//wzw add
+#include<stdio.h>
+
 void _exit(int status) {
+	//wzw add
+	/*char *fname="/bin/menu";*/
+	/*return _syscall_(SYS_execve, (intptr_t)fname, 0, 0);*/
+	/*printf("get exit use execve\n");*/
+	/* char str[50];*/
+	/*sprintf(str,"get exit use execve\n");*/
+	/*write(1,str,50);*/
+	/*_syscall_(SYS_execve, (intptr_t)((char *)fname), 0, 0);*/
+	/*return;*/
+	/*sprintf(str,"get exit use execve\n");*/
+	/*_write(1,str,50);*/
+	//////
   _syscall_(SYS_exit, status, 0, 0);
   while (1);
 }
@@ -66,8 +81,6 @@ int _write(int fd, void *buf, size_t count) {
   /*_exit(SYS_writr);*/
   return a;
 }
-//wzw add
-/*#include<stdio.h>*/
 extern char _end;
 char * Pro_bre=&(_end);
 void *_sbrk(intptr_t increment) {
@@ -107,13 +120,15 @@ off_t _lseek(int fd, off_t offset, int whence) {
 }
 
 int _gettimeofday(struct timeval *tv, struct timezone *tz) {
+	/*printf("here gettime\n");*/
 	return _syscall_(SYS_gettimeofday, (intptr_t)tv, (intptr_t)tz, 0);
   /*_exit(SYS_gettimeofday);*/
   /*return 0;*/
 }
 
 int _execve(const char *fname, char * const argv[], char *const envp[]) {
-  _exit(SYS_execve);
+	return _syscall_(SYS_execve, (intptr_t)fname, (intptr_t)argv, (intptr_t)envp);
+	_exit(SYS_execve);
   return 0;
 }
 

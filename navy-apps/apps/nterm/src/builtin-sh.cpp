@@ -22,7 +22,19 @@ static void sh_prompt() {
   sh_printf("sh> ");
 }
 
-static void sh_handle_cmd(const char *cmd) {
+static void sh_handle_cmd(const char *cmd) {	
+	//wzw change
+	//printf("execve=%s",cmd);
+	//printf("get here2\n");
+	char *use_cmd=strtok((char *)cmd,"\n");
+	if(strcmp(use_cmd,"q")==0)
+		exit(0);
+	printf("use setenv and execvp\n");
+	assert(setenv("PATH","/bin",0)==0);
+	execvp(use_cmd,NULL);
+	printf("use setenv and execvp\n");
+	//printf("execve use=%s",use_cmd);
+	//execve(use_cmd,NULL,NULL);
 }
 
 void builtin_sh_run() {

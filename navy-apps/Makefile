@@ -96,19 +96,20 @@ ASFLAGS  +=  $(CFLAGS)
 ## 5. Compilation Rules
 
 ### Rule (compile): a single `.c` -> `.o` (gcc)
+#wzw添加-g令其可以调试
 $(DST_DIR)/%.o: %.c
 	@mkdir -p $(dir $@) && echo + CC $<
-	@$(CC) -std=gnu11 $(CFLAGS) -c -o $@ $(realpath $<)
+	@$(CC) -std=gnu11 $(CFLAGS) -c -g -o $@ $(realpath $<)
 
 ### Rule (compile): a single `.cc` -> `.o` (g++)
 $(DST_DIR)/%.o: %.cc
 	@mkdir -p $(dir $@) && echo + CXX $<
-	@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<)
+	@$(CXX) -std=c++17 $(CXXFLAGS) -c -g -o $@ $(realpath $<)
 
 ### Rule (compile): a single `.cpp` -> `.o` (g++)
 $(DST_DIR)/%.o: %.cpp
 	@mkdir -p $(dir $@) && echo + CXX $<
-	@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<)
+	@$(CXX) -std=c++17 $(CXXFLAGS) -c -g -o $@ $(realpath $<)
 
 ### Rule (compile): a single `.S` -> `.o` (gcc, which calls as)
 $(DST_DIR)/%.o: %.S
@@ -166,7 +167,7 @@ $(CLEAN_ALL):
 .PHONY: clean-all $(CLEAN_ALL)
 
 ### Build fsimg and ramdisk for Nanos-lite
-APPS =nslider
+APPS =nslider menu nterm bird pal
 TESTS = dummy hello file-test timer-test event-test bmp-test float-test
 
 fsimg: $(addprefix apps/, $(APPS)) $(addprefix tests/, $(TESTS))

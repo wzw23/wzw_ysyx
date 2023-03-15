@@ -20,6 +20,11 @@
 #include "sdb.h"
 //#include "/home/wzw/ysyx-workbench/nemu/src/monitor/sdb/watchpoint.c"
 //#ifdef CONFIG_TARGET_AM
+/*#include <difftest.h>*/
+#ifdef CONFIG_DIFFTEST
+extern void difftest_detach();
+extern void difftest_attach();
+#endif
 #if(BATCH_MODE==1)
 static int is_batch_mode = false;
 #else 
@@ -68,6 +73,16 @@ static char* rl_gets() {
 static int cmd_q(char *args) {
   return -1;
 }
+#ifdef CONFIG_DIFFTEST
+static int cmd_detach(){
+	difftest_detach();
+	return 0;
+}
+static int cmd_attach(){
+	difftest_attach();
+	return 0;
+}
+#endif
 //wzw insert
 static int cmd_si(char *args) {
   char *arg2 = strtok(NULL, " ");
@@ -253,7 +268,11 @@ static struct {
   {"p","expression evaluation",cmd_p},
   {"ptest","test expression evaluation",cmd_ptest},
   {"w","set watchpoint",cmd_w},
-  {"d","delete watchpoint",cmd_d}
+  {"d","delete watchpoint",cmd_d},
+#ifdef CONFIG_DIFFTEST
+	{"detach","close difftest",cmd_detach},
+	{"attach","open difftest" ,cmd_attach}
+#endif
 };
 
 #define NR_CMD ARRLEN(cmd_table)

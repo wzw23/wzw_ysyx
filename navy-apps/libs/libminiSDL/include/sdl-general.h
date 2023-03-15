@@ -13,10 +13,11 @@
 int SDL_Init(uint32_t flags);
 void SDL_Quit();
 char *SDL_GetError();
-int SDL_SetError(const char* fmt, ...);
+/*int SDL_SetError(const char* fmt, ...);*/
 int SDL_ShowCursor(int toggle);
 void SDL_WM_SetCaption(const char *title, const char *icon);
 
+//wzw 不明白此处操作是为什么
 typedef struct SDL_mutex {} SDL_mutex;
 static inline SDL_mutex* SDL_CreateMutex() { return NULL; }
 static inline void SDL_DestroyMutex(SDL_mutex* mutex) { }

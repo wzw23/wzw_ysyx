@@ -124,11 +124,15 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [63:0]scheng;
 		wire [63:0]schu;
 		wire [63:0]syu;
+		wire [63:0]uyu;
 
 
 		assign dest=inst[11:7];
 		assign csr=inst[31:20];
 		RegisterFile #(5,64,12) r0 (clk,1'b1,wdata,waddr,64'b0,5'b0,rs1,rs2,raddr,src1,src2,rdata,array,rcsraddr1,rcsrdata1,wcsraddr1,wcsrdata1,wcsraddr2,wcsrdata2);
+		//设置jalr寄存器指令
+		reg [31:0]t_src1;
+		Reg #(32,0) reg1(clk,1'b0,src1[31:0],t_src1,1'b1);
 		//根据指令类型取立即数
 		MuxKeyWithDefault #(6,3,64)m1(imm,Type,64'b0,{
 			Type_I,{{52{1'b0}},inst[31:20]}, 
@@ -148,7 +152,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			});
 		//在此进行指令简化
 		//代表指令长度
-    localparam length=57,wlength=45,rlength=1,alength=49,plength=10,mwlength=4,mrlength=7,crlength=4,cwlength=3,cwlength2=1;//mrlength=0; 
+    localparam length=59,wlength=47,rlength=1,alength=51,plength=10,mwlength=4,mrlength=7,crlength=4,cwlength=3,cwlength2=1;//mrlength=0; 
 
 		wire [31:0]addi;
 		assign addi={inst[31:20],inst[19:15],{3{1'b0}},inst[11:7],{7'b0010011}};
@@ -293,18 +297,22 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		wire [31:0] divuw;
 		assign divuw={{7'b0000001},inst[24:20],inst[19:15],{3'b101},inst[11:7],{7'b0111011}};
 
-
+		wire [31:0] divu;
+		assign divu= {{7'b0000001},inst[24:20],inst[19:15],{3'b101},inst[11:7],{7'b0110011}};
 
 		wire [31:0] div;
 		assign div= {{7'b0000001},inst[24:20],inst[19:15],{3'b100},inst[11:7],{7'b0110011}};
 		
 		wire [31:0] rem;
-		assign rem= {{7'b0000001},inst[24:20],inst[19:15],{3'b110},inst[11:7],{7'b0110011}};
+		assign rem=  {{7'b0000001},inst[24:20],inst[19:15],{3'b110},inst[11:7],{7'b0110011}};
 
-
+		wire [31:0] remu;
+		assign remu= {{7'b0000001},inst[24:20],inst[19:15],{3'b111},inst[11:7],{7'b0110011}};
 
 		wire [31:0] remw;
 		assign remw={{7'b0000001},inst[24:20],inst[19:15],{3'b110},inst[11:7],{7'b0111011}};
+
+
 
 
 
@@ -410,9 +418,11 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			mulw,Type_R,
 			divw,Type_R,
 			divuw,Type_R,
+			divu,Type_R,
 			div,Type_R,
 			rem,Type_R,
 			remw,Type_R,
+			remu,Type_R,
 			sllw,Type_R,
 			sll,Type_R,
 			srlw,Type_R,
@@ -439,7 +449,6 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			sraiw,Type_I,
 			slliw,Type_I,
 			srliw,Type_I
-
 			}); 
 
 		//根据指令地址确定写地址和写数据 若没有的话 将写地址和写数据都设置为0
@@ -466,8 +475,10 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			mulw,dest,
 			divw,dest,
 			divuw,dest,
+			divu,dest,
 			div,dest,
 			rem,dest,
+			remu,dest,
 			remw,dest,
 			sllw,dest,
 			sll,dest,
@@ -514,8 +525,11 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			mulw,`SEXT(cheng,64,32),
 			divw,`SEXT(schu,64,32),
 			divuw,`SEXT(schu,64,32),
+			//divu, `SEXT(chu,64,32),
+			divu, chu,
 			div,chu,
 			rem,syu,
+			remu,uyu,
 			remw,`SEXT(syu,64,32),
 			sllw,`SEXT(logl,64,32),
 			sll,logl,
@@ -590,8 +604,10 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			mulw,src1,
 			divw,{{32{1'b0}},src1[31:0]},
 			divuw,{{32{1'b0}},src1[31:0]},
+			divu,src1,
 			div,src1,
 			rem,src1,
+			remu,src1,
 			remw,{{32{1'b0}},src1[31:0]},
 			sllw,src1,
 			sll,src1,
@@ -641,8 +657,10 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 			mulw,src2,
 			divw,{{32{1'b0}},src2[31:0]},
 			divuw,{{32{1'b0}},src2[31:0]},
+			divu,src2,
 			div,src2,
 			rem,src2,
+			remu,src2,
 			remw,{{32{1'b0}},src2[31:0]},
 			sllw,{{59{1'b0}},src2[4:0]},
 			sll,{{58{1'b0}},src2[5:0]},
@@ -674,7 +692,8 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		//dnpc
 		MuxKeyWithDefault #(plength,32,32)m6(dnpc,inst,(pc+4),{
 			jal,(pc+`SEXT(imm,32,21)),
-			jalr,(src1[31:0]+`SEXT(imm,32,21))&(~1),
+			//jalr,(src1[31:0]+`SEXT(imm,32,21))&(~1),
+			jalr,(src1[31:0]+{{20{inst[31]}},inst[31:20]})&(~1),
 			beq,(addresult==0)?(pc+`SEXT(Simm,32,32)):(pc+4),
 			bne,(addresult!=0)?(pc+`SEXT(Simm,32,32)):(pc+4),
 			bge,((addresult==0)|(addresult[63]==0))?(pc+`SEXT(Simm,32,32)):(pc+4),
@@ -714,7 +733,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 				}); 
 		//addi
 
-		Alu add(.a(data1),.b(data2),.out(addresult),.compare(compare),.ur(logr),.sr(arir),.ul(logl),.sl(aril),.yu(yu),.huo(huo),.yihuo(yihuo),.cheng(cheng),.chu(chu),.scheng(scheng),.schu(schu),.syu(syu));
+		Alu add(.a(data1),.b(data2),.out(addresult),.compare(compare),.ur(logr),.sr(arir),.ul(logl),.sl(aril),.yu(yu),.huo(huo),.yihuo(yihuo),.cheng(cheng),.chu(chu),.scheng(scheng),.schu(schu),.syu(syu),.uyu(uyu));
 
 
 		//判断指令种类

@@ -80,13 +80,15 @@ size_t fs_read(int fd, void *buf, size_t len){
 	/*printf("here\n");*/
 	/*size_t fh=ramdisk_read(buf,open_offset[fd],len);*/
 	size_t fh;
-	if(file_table[fd].read)
+	if(file_table[fd].read){
 		fh=file_table[fd].read(buf,open_offset[fd],len);
+		return fh;
+	}
 	else
 		fh=ramdisk_read(buf,open_offset[fd],len);
 	if(open_offset[fd]-file_table[fd].disk_offset+len>file_table[fd].size){
 		//此处不能对fh赋值 原因是如果是流动字符串长度也不应是0
-		/*fh=file_table[fd].size+file_table[fd].disk_offset-open_offset[fd];*/
+		fh=file_table[fd].size+file_table[fd].disk_offset-open_offset[fd];
 		open_offset[fd]=file_table[fd].disk_offset+file_table[fd].size;
 		return fh;
 	};
@@ -99,13 +101,15 @@ size_t fs_write(int fd, const void *buf, size_t len){
 	Log("write file %s\n",file_table[fd].name);
 #endif
 	size_t fh;
-	if(file_table[fd].write)
+	if(file_table[fd].write){
 		fh=file_table[fd].write(buf,open_offset[fd],len);
+		return fh;
+	}
 	else
 		fh=ramdisk_write(buf,open_offset[fd],len);
 	if(open_offset[fd]-file_table[fd].disk_offset+len>file_table[fd].size){
 		//此处不能对fh赋值 原因是如果是流动字符串长度也不应是0
-		/*fh=file_table[fd].size+file_table[fd].disk_offset-open_offset[fd];*/
+		fh=file_table[fd].size+file_table[fd].disk_offset-open_offset[fd];
 		open_offset[fd]=file_table[fd].disk_offset+file_table[fd].size;
 		return fh;
 	};

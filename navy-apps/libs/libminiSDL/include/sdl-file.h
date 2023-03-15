@@ -20,8 +20,8 @@ typedef struct SDL_RWops {
   struct { void *base; ssize_t size; } mem;
 } SDL_RWops;
 
-SDL_RWops* SDL_RWFromFile(const char *filename, const char *mode);
-SDL_RWops* SDL_RWFromMem(void *mem, int size);
+/*SDL_RWops* SDL_RWFromFile(const char *filename, const char *mode);*/
+/*SDL_RWops* SDL_RWFromMem(void *mem, int size);*/
 
 #define SDL_RWtell(f)  SDL_RWseek(f, 0, RW_SEEK_CUR)
 #define SDL_RWsize(f)  f->size(f)

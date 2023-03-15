@@ -14,6 +14,12 @@ extern char *img_file;
 extern char *elf_file;
 extern char *log_file;
 extern char *diff_so_file;
+extern void init_screen();
+extern uint32_t width_height();
+extern void device_update();
+extern void update_vmem(long long waddr, long long wdata,int len);
+extern void device_update();
+extern void c_update();
 uint8_t* guest_to_host(uint32_t paddr);
 //extern void put_state(svLogic prior_state);  
 //文件二进制编码

@@ -24,25 +24,48 @@ static int full_w=0,full_h=0;
 static int cavas_w=0,cavas_h=0;
 static struct  timeval  nowtime_us;
 static int ndl_open=0;
+static uint32_t pre_time=0;
+static uint32_t now_time=0;
 uint32_t NDL_GetTicks() {
-	if(ndl_open){
+	/*printf("get ticks get ticksget ticksget ticksget ticksget ticks\n");*/
+	/*if(ndl_open){*/
+	static int flag=0;
 	gettimeofday(&nowtime_us,NULL);
-	return nowtime_us.tv_usec/1000;}
+	now_time=nowtime_us.tv_sec*1000+nowtime_us.tv_usec/1000;
+	if(flag==0){
+		pre_time=now_time;	
+		/*printf("get ticks get ticksget ticksget ticksget ticksget ticks\n");*/
+		flag++;
+		return 0;
+	}
 	else{
-		printf("ndl isn't init\n");
-  return 0;}
+		return now_time-pre_time;
+	}
+	/*return nowtime_us.tv_sec*1000+nowtime_us.tv_usec/1000;*/
+	/*printf("sec=%d usec=%d",nowtime_us.tv_sec,nowtime_us.tv_usec);*/
+	/*}*/
+	/*else{*/
+		/*printf("ndl isn't init\n");*/
+  /*return 0;}*/
 }
 
 int NDL_PollEvent(char *buf, int len) {
 	/*FILE *fp = fopen("/dev/events", "r+");*/
-	/*int fd=_open("/dev/events",0,0);*/
+	/*if(fp==NULL)*/
+		/*printf("should not get here\n");*/
 	int fd=open("/dev/events",0,0);
-	/*int length=_read(fd,buf,len);*/
+	/*printf("fd=%d\n");*/
 	int length=read(fd,buf,len);
+	/*if(length!=0)*/
+		/*printf("len=%d buflen=%d length=%d\n",len,strlen(buf),length);*/
+	/*printf("get here0\n");*/
 	/*int length=fread(buf,len,1,fp);*/
+	/*printf("get here\n");*/
+	/*printf("buf=%s length=%d\n",buf,length);*/
 	/*printf("%d\n",length);*/
-	if(length!=0)
-		return 1;
+	if(length!=0){
+		/*printf("len=%d buflen=%d length=%d\n",len,strlen(buf),length);*/
+		return 1;}
 	else 
 		return 0;
 }
@@ -67,31 +90,34 @@ void NDL_OpenCanvas(int *w, int *h) {
   }
 		cavas_w=*w;cavas_h=*h;
 		if((*w==0)||(*h==0))
-		{cavas_w=full_w;cavas_h=full_h;}
+		{cavas_w=full_w;cavas_h=full_h;
+		 *w=full_w;*h=full_h;	
+		}
 		printf("screen w=%d,screen_h=%d\n",cavas_w,cavas_h);
 }
 
-#if defined(__ISA_RISCV64__)
+/*#if defined(__ISA_RISCV64__)*/
+/*void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {*/
+	/*[>printf("here\n");<]*/
+	/*int use_x=full_w/2-cavas_w/2+x;*/
+	/*int use_y=full_h/2-cavas_h/2+y;*/
+	/*int offset=(use_y-1)*400+use_x;*/
+	/*int fd=open("/dev/fb",0,0);*/
+	/*struct use{*/
+		/*int var3;*/
+		/*int var4;*/
+	/*};*/
+	/*struct use offset1;*/
+	/*offset1.var3=w;*/
+	/*offset1.var4=h;*/
+	/*lseek(fd,offset*4,SEEK_SET);*/
+	/*write(fd,pixels,(size_t)&offset1);*/
+/*}*/
+/*#else*/
 void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
-	/*printf("here\n");*/
-	int use_x=full_w/2-cavas_w/2+y;
-	int use_y=full_h/2-cavas_h/2+x;
-	int offset=(use_y-1)*400+use_x;
-	int fd=open("/dev/fb",0,0);
-	struct use{
-		int var3;
-		int var4;
-	};
-	struct use offset1;
-	offset1.var3=w;
-	offset1.var4=h;
-	lseek(fd,offset*4,SEEK_SET);
-	write(fd,pixels,(size_t)&offset1);
-}
-#else
-void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
-	int use_x=full_w/2-cavas_w/2+y;
-	int use_y=full_h/2-cavas_h/2+x;
+	int use_x=full_w/2-cavas_w/2+x;
+	int use_y=full_h/2-cavas_h/2+y;
+	/*printf("full_w=%d fll_h=%d cavas_w=%d cavas_h=%d\n",full_w,full_h,cavas_w,cavas_h);*/
 	int offset=(use_y-1)*400+use_x;
 	int fd=open("/dev/fb",0,0);
 	for(int i=0;i<h;i++)
@@ -100,7 +126,7 @@ void NDL_DrawRect(uint32_t *pixels, int x, int y, int w, int h) {
 		write(fd,pixels+i*w,w*4);
 	}
 }
-#endif
+/*#endif*/
 
 void NDL_OpenAudio(int freq, int channels, int samples) {
 }

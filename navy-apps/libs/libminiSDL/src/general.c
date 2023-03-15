@@ -17,8 +17,11 @@ int SDL_SetError(const char* fmt, ...) {
 }
 
 int SDL_ShowCursor(int toggle) {
+	assert(0);
   return 0;
 }
 
 void SDL_WM_SetCaption(const char *title, const char *icon) {
+	printf("pay attention here upay attention here se vm setcaption and not improve\n");
+	/*assert(0);*/
 }

@@ -1,6 +1,8 @@
 #ifndef _FIXEDPTC_H_
 #define _FIXEDPTC_H_
 
+//wzw add
+#include<assert.h>
 /*
  * fixedptc.h is a 32-bit or 64-bit fixed point numeric library.
  *
@@ -127,36 +129,73 @@ typedef	__uint128_t fixedptud;
 
 /* Multiplies a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_muli(fixedpt A, int B) {
+	return A * B ;
+	//assert(0);
 	return 0;
 }
 
 /* Divides a fixedpt number with an integer, returns the result. */
 static inline fixedpt fixedpt_divi(fixedpt A, int B) {
-	return 0;
+	return A / B ;
+	assert(0);
+	//return 0;
 }
 
 /* Multiplies two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_mul(fixedpt A, fixedpt B) {
+	//assert(0);
 	//return 0;
+	//return A*B/FIXEDPT_ONE;
 	return A*B/FIXEDPT_ONE;
 }
 
 
 /* Divides two fixedpt numbers, returns the result. */
 static inline fixedpt fixedpt_div(fixedpt A, fixedpt B) {
+	//assert(0);
 	//return 0;
 	return A/B*FIXEDPT_ONE;
 }
 
 static inline fixedpt fixedpt_abs(fixedpt A) {
-	return 0;
+	//assert(0);
+	return A < 0 ? -A : A;
+	//return 0;
 }
+static int wzw_mask=0b11111111;
 
 static inline fixedpt fixedpt_floor(fixedpt A) {
+ /* if (A<0)*/
+  /*{*/
+   /*//printf("A %d A>>8 %d\n",fixedpt_toint(A>>8 <<8),fixedpt_toint(A));*/
+   /*A = (A >> 8) << 8;*/
+   /*//printf("final %d\n",fixedpt_toint(A));*/
+  /*}*/
+	//else{
+		if(A&wzw_mask)
+		{
+			A = (A >> 8) << 8;
+		}
+		else
+			A=A;
+//}
+  return A;
+	//assert(0);
 	return 0;
 }
 
 static inline fixedpt fixedpt_ceil(fixedpt A) {
+ /* if (A< 0)*/
+	/*{*/
+		/*A = ((A >> 8)+1) << 8;*/
+  /*}*/
+	/*else*/
+		if((A&wzw_mask)!=0)
+			A =((A >> 8) + 1) << 8;
+		else 
+			A=A;
+	return A;
+	//assert(0);
 	return 0;
 }
 

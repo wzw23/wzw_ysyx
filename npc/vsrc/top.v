@@ -33,7 +33,7 @@ module top(
 		/*end*/
 	/*end*/
 	/////////////////////////////开启波形图/////////////////////
-	/*initial begin*/
+ /* initial begin*/
 		/*if ($test$plusargs("trace") != 0) begin*/
 			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/
 			/*$dumpfile("logs/vlt_dump.vcd");*/
@@ -41,7 +41,7 @@ module top(
 		/*end*/
 		/*$display("[%0t] Model running...\n", $time);*/
 	/*end*/
-	////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////
 
 	endmodule
 

@@ -1,4 +1,4 @@
-module Alu(input [63:0]a, input [63:0]b,output [63:0]out,output [63:0]compare,output [63:0]ur,output signed [63:0]sr,output [63:0]ul,output [63:0]sl,output [63:0]yu,output [63:0]huo,output [63:0]yihuo,output [63:0]cheng,output [63:0]chu,output signed [63:0]scheng,output signed [63:0]schu,output signed [63:0]syu);
+module Alu(input [63:0]a, input [63:0]b,output [63:0]out,output [63:0]compare,output [63:0]ur,output signed [63:0]sr,output [63:0]ul,output [63:0]sl,output [63:0]yu,output [63:0]huo,output [63:0]yihuo,output [63:0]cheng,output [63:0]chu,output signed [63:0]scheng,output signed [63:0]schu,output signed [63:0]syu,output signed [63:0]uyu);
     assign out=a+b;
 		assign compare={{63{1'b0}},(a>b)};
 		
@@ -19,5 +19,6 @@ module Alu(input [63:0]a, input [63:0]b,output [63:0]out,output [63:0]compare,ou
 		assign scheng=$signed(a*b);
 		assign schu=$signed(a/b);
 		assign syu=$signed(a%b);
+		assign uyu=a%b;
 
 endmodule

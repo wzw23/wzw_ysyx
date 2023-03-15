@@ -49,10 +49,14 @@ VM_USER_LDLIBS = \
 	-rdynamic \
 	-ldl \
 	-fsanitize=address \
+	-lSDL2main \
+	-lSDL2 \
+	-fsanitize=address \
 	-lLLVM-14 -LDFLAGS  \
 
 # User .cpp files (from .cpp's on Verilator command line)
 VM_USER_CLASSES = \
+	device \
 	dut \
 	elf \
 	expr \
@@ -60,6 +64,7 @@ VM_USER_CLASSES = \
 	main \
 	parsearg \
 	disasm \
+	vga \
 
 # User .cpp directories (from .cpp's on Verilator command line)
 VM_USER_DIR = \
@@ -76,6 +81,8 @@ include $(VERILATOR_ROOT)/include/verilated.mk
 ### Executable rules... (from --exe)
 VPATH += $(VM_USER_DIR)
 
+device.o: /home/wzw/ysyx-workbench/npc/csrc/device.cpp
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 dut.o: /home/wzw/ysyx-workbench/npc/csrc/dut.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 elf.o: /home/wzw/ysyx-workbench/npc/csrc/elf.cpp
@@ -89,6 +96,8 @@ main.o: /home/wzw/ysyx-workbench/npc/csrc/main.cpp
 parsearg.o: /home/wzw/ysyx-workbench/npc/csrc/parsearg.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 disasm.o: /home/wzw/ysyx-workbench/npc/csrc/utils/disasm.cc
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+vga.o: /home/wzw/ysyx-workbench/npc/csrc/vga.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 
 ### Link rules... (from --exe)
