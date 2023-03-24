@@ -13,26 +13,39 @@ module top(
   // 位宽为3比特, 复位值为3'b0, 写使能为out[0]
   //Reg #(3, 3'b0) i1 (clk, rst, in[3:1], out[3:1], out[0]);
   //pc test
-  pc i0(clk, rst, dnpc,cpupc);
-  decode_exec de(clk,inst,cpupc,dnpc);
- /* always @ (posedge clk) begin*/
-		/*if (rst) begin*/
-			/*[>AUTORESET<]*/
-			/*// Beginning of autoreset for uninitialized flops*/
-			/*count_c <= 6'b0;*/
-			/*// End of automatics*/
-		/*end*/
-		/*else begin*/
-			/*count_c <= count_c + 1;*/
-			/*if (count_c >= 20) begin*/
-				/*// This write is a magic value the Makefile uses to make sure the*/
-				/*// test completes successfully.*/
-				/*$write("*-* All Finished *-*\n");*/
-				/*$finish;*/
-			/*end*/
-		/*end*/
-	/*end*/
-	/////////////////////////////开启波形图/////////////////////
+	
+	assign dnpc=32'h80000004;
+  pc i0(clk, rst, dnpc,cpupc);//if
+  //decode_exec de(clk,inst,cpupc,dnpc);
+	
+	wire [4:0]rs1;
+	wire [4:0]rs2;
+	wire [4:0]rd;
+	wire [63:0]imm;
+	wire [6:0]op;
+	wire [6:0]fu_7;
+	wire [2:0]fu_3;
+	id id_0(.inst(inst),.rs1(rs1),.rs2(rs2),.rd(rd),.imm(imm),.op(op),.fu_7(fu_7),.fu_3(fu_3));
+
+	wire [2:0]sel_alu_src1;
+	wire [2:0]sel_alu_src2;
+	wire [11:0]alu_control;
+	wire rf_wen;
+	wire sel_rf_res;
+	wire data_ram_wen;
+	control control_0(.op(op),.fu_7(fu_7),.fu_3(fu_3),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_wen(data_ram_wen),.wmask(wmask)) ;//控制模块
+
+	wire [63:0]alu_result;
+	wire [63:0]ram_addr;
+	wire [63:0]ram_data;
+	wire [63:0]src1;
+	wire [7:0]wmask;
+	exe exe_0(.clk(clk),.rst(rst),.imm(imm),.rs1(rs1),.rs2(rs2),.rd(rd),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1));
+
+	mem #(64,64) mem0(clk,rst,ram_addr,ram_data,ram_addr,wmask,data_ram_wen,src1);
+
+
+ 	/////////////////////////////开启波形图/////////////////////
  /* initial begin*/
 		/*if ($test$plusargs("trace") != 0) begin*/
 			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/

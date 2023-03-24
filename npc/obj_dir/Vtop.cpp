@@ -15,12 +15,6 @@ Vtop::Vtop(VerilatedContext* _vcontextp__, const char* _vcname__)
     , rst{vlSymsp->TOP.rst}
     , inst{vlSymsp->TOP.inst}
     , cpupc{vlSymsp->TOP.cpupc}
-    , __PVT__top__DOT__de__DOT__m1{vlSymsp->TOP.__PVT__top__DOT__de__DOT__m1}
-    , __PVT__top__DOT__de__DOT__m7{vlSymsp->TOP.__PVT__top__DOT__de__DOT__m7}
-    , __PVT__top__DOT__de__DOT__m4{vlSymsp->TOP.__PVT__top__DOT__de__DOT__m4}
-    , __PVT__top__DOT__de__DOT__m5{vlSymsp->TOP.__PVT__top__DOT__de__DOT__m5}
-    , __PVT__top__DOT__de__DOT__m9{vlSymsp->TOP.__PVT__top__DOT__de__DOT__m9}
-    , __PVT__top__DOT__de__DOT__m10{vlSymsp->TOP.__PVT__top__DOT__de__DOT__m10}
     , rootp{&(vlSymsp->TOP)}
 {
 }

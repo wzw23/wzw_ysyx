@@ -235,7 +235,7 @@ module decode_exec(input clk,input[31:0]inst,input [31:0] pc,output[31:0]dnpc);
 		assign jalpc={{31{1'b0}},pc}+4;
 
 		wire [31:0]jalr;
-		assign jalr={inst[31:20],inst[19:15],{3'b000},inst[11:7],{7'b1100111}};
+		assign jalr={inst[31:20],inst[19:15],{3'b000},inst[11:7],  {7'b1100111}};
 
 		wire[31:0]ebreak;
 		assign ebreak=32'b0000000_00001_00000_000_00000_11100_11;

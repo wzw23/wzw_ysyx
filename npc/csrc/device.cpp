@@ -8,10 +8,19 @@ void device_update() {
 	//printf("use device_update\n");
   static uint64_t last = 0;
   uint64_t now = get_time();
+	static int jishu=0;
+	jishu++;
   if (now - last < 1000000 / TIMER_HZ) {
     return;
   }
   last = now;
+	static int time_hz=0;
+	time_hz++;
+	if(time_hz==60){
+	printf("mips=%d\n",jishu);
+	jishu=0;
+  time_hz=0;	
+	}
   //IFDEF(CONFIG_HAS_VGA, vga_update_screen());
 		update_screen();
 /*#ifndef CONFIG_TARGET_AM*/

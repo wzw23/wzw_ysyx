@@ -14,11 +14,3 @@
 #include "Vtop__Dpi.h"
 #include "Vtop.h"
 
-#ifndef VL_DPIDECL_putstate_
-#define VL_DPIDECL_putstate_
-void putstate(int* statefh, int* a0, int* pcr, int* dnpcr, int* callreturn, int* Typer) {
-    // DPI export at /home/wzw/ysyx-workbench/npc/vsrc/decode_exec.v:54:18
-    return Vtop::putstate(statefh, a0, pcr, dnpcr, callreturn, Typer);
-}
-#endif
-

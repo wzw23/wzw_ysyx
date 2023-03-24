@@ -3,7 +3,7 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-#define TEST 1 
+#define TEST 0 
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -110,7 +110,7 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 			//static int first=0;
 			//if(first==0)
 			//skip_test=1;
-			printf("the raddr=%llx\n",raddr);
+			//printf("the raddr=%llx\n",raddr);
 
 			//first=1;
 
@@ -118,7 +118,10 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 		} 
 		}
 }
-extern "C" void vpmem_write(long long waddr, long long wdata, char wmask) {
+extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long long wen) {
+	if(wen==0){
+		//printf("wzw add write unuse\n");
+		return;}
 	if((circle>=4)&&(circle%2==0)){
 	int len;
 	if(TEST){
@@ -275,7 +278,7 @@ int main(int argc, char** argv, char** env) {
     // "TOP" will be the hierarchical name of the module.
     const std::unique_ptr<Vtop> top{new Vtop{contextp.get(), "TOP"}};
     const svScope scope = svGetScopeFromName("TOP.top.de");
-    assert(scope); // Check for nullptr if scope not found
+    //assert(scope); // Check for nullptr if scope not found wzw change
     svSetScope(scope);
 /////////////////////////////////////////////////////////////////////
 
@@ -309,11 +312,12 @@ int main(int argc, char** argv, char** env) {
         top->clk = !top->clk;
         //add read memory
         //printf("read dizhi =%x\n",guest_to_host(top->out));
-        top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate,&type);
+        //top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate,&type); //wzw change
 				upc=(uint64_t)pc&0xffffffff;
 				udnpc=(uint64_t)dnpc&0xffffffff;
 				//printf("pc=%x,dnpc=%x,state=%x",pc,dnpc,crstate);
 				//printf("upc=%x\n",up);
+				if(TEST){
 				if(top->clk){
 				if(crstate==1){
 					  //printf("udnpc=%lx\n",udnpc);
@@ -346,7 +350,7 @@ int main(int argc, char** argv, char** env) {
 								break;
 							}
 						}
-					}}
+					}}}
 //      top->put_state(nemu_state);
 //      ///////////////////////////////////////////////////
 
@@ -423,6 +427,9 @@ XunHuan:
 						cmd_p(test);
 						goto XunHuan;
 					}
+					else if(strcmp(test,"q")==0){
+						break;
+					}
 					
 				}
 			
@@ -430,6 +437,7 @@ XunHuan:
 			 }
 				////////////////////////////////////////////////////////////////////////////////////
 				//////////////////////////////////////ftrace//////////////////////
+				if(TEST){
 				if(!top->clk&&contextp->time()>=4){
 			 int snpc=pc+4;
 			 char *p = logbuf;
@@ -464,6 +472,7 @@ XunHuan:
 					 MUXDEF(1, upc, upc), (uint8_t *)&instval,ilen);
 			 if(TEST){
 			 log_write("%s\n",logbuf);}
+				}
 				}
 			 //printf("achieve here");
 				/////////////////////////////////////////////////////////////////
