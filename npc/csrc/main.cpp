@@ -3,7 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-#define TEST 0 
+int TEST=0; 
+int DIFFTEST=0;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -35,15 +36,18 @@ uint64_t get_time() {
 ////////////////
 //全局变量pc dnpc crstate skip_test
 int skip_test=0;
-int pc;
 char logbuf[200];
-int dnpc;
+int npc_state=1;
+//int dnpc;
 uint64_t udnpc;
 int crstate;
 int circle;
-int space=0;
 uint64_t upc;
+extern uint32_t key_dequeue();
 extern void init_regex();
+extern void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
+extern void itrace_use(char *logbuf,uint64_t upc,uint32_t instval);
+extern void init_device();
 using namespace std;
 //接受字节表的数组
 extern Sy_table func;
@@ -82,7 +86,8 @@ extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
 uint32_t us_less;
 uint32_t us_bigger;
 extern "C" void vpmem_read(long long raddr, long long *rdata) {
-	  if((circle>=4)&&(circle%2==0)){
+		//printf("the raddr=%lx\n",raddr);
+		//if((circle>=4)&&(circle%2==0)){
 		// 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
 		if(TEST){
 		log_write("raddr=%llx\n",raddr);}
@@ -106,6 +111,10 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 		}
 		else if(raddr>=0x80000000&&raddr<=0x87ffffff)
 		 *rdata=pmem_read(raddr,8);
+		else if(raddr==0xa0000060){
+			skip_test=1;
+			*rdata=key_dequeue();
+		}
 		else{
 			//static int first=0;
 			//if(first==0)
@@ -116,13 +125,14 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 
 			//assert(0);
 		} 
-		}
+		//}
 }
 extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long long wen) {
 	if(wen==0){
 		//printf("wzw add write unuse\n");
-		return;}
-	if((circle>=4)&&(circle%2==0)){
+		return;
+	}
+	//if((circle>=4)&&(circle%2==0)){
 	int len;
 	if(TEST){
 	printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
@@ -155,6 +165,7 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long lo
 		return;
 	}
 	else if(waddr>=0x80000000&&waddr<=0x87ffffff){
+	//printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
 	if((len==1)||(len==2)||(len==4)||(len==8)){
 		pmem_write(waddr,len,wdata);}
 	// 总是往地址为`waddr & ~0x7ull`的8字节按写掩码`wmask`写入`wdata`
@@ -166,7 +177,7 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long lo
 			printf("write error address %llx\n",waddr);
 		//assert(0);
 	}
-}
+//}
 }
 		       
 void dump_gpr() {
@@ -181,7 +192,7 @@ void dump_gpr() {
 static uint8_t pmem[0x8000000] __attribute((aligned(4096)))={};
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };   
 static int nemu_state=NEMU_RUNNING;
-static int a0=0;
+//static int a0=0;
 static int type;	
 //通过内存地址书写原本地址
 uint8_t* guest_to_host(uint32_t paddr) { return pmem + paddr - CONFIG_BASE; }
@@ -245,7 +256,7 @@ int main(int argc, char** argv, char** env) {
 		parse_elf(elf_file); 
 		void init_disasm(const char *triple);
 		init_disasm("riscv64");
-		init_screen();
+		init_device();
 	//	dump_gpr();
 		for(int i=0;i<func.length;i++)
 			printf("name=%s,begin=%lx,size=%ld\n",func.name[i],func.begin[i],func.size[i]);
@@ -278,7 +289,7 @@ int main(int argc, char** argv, char** env) {
     // "TOP" will be the hierarchical name of the module.
     const std::unique_ptr<Vtop> top{new Vtop{contextp.get(), "TOP"}};
     const svScope scope = svGetScopeFromName("TOP.top.de");
-    //assert(scope); // Check for nullptr if scope not found wzw change
+		//assert(scope); // Check for nullptr if scope not found wzw change
     svSetScope(scope);
 /////////////////////////////////////////////////////////////////////
 
@@ -287,11 +298,10 @@ int main(int argc, char** argv, char** env) {
     top->clk = 0;
     top->cpupc=0x80000000;
     //top->in=0;
-		char ftrace[10000][200];//代表ftrace语句
-		char spacea[10000][200];
-		int ftracelength;
-    while (!contextp->gotFinish()) {
+		 while (!contextp->gotFinish()) {
 			  device_update();
+				/*if(npc_state==0)*/
+					/*break;*/
 			  circle++;
 			////////////////////////////////////////////////////////
 				/*char str[20];*/
@@ -311,72 +321,14 @@ int main(int argc, char** argv, char** env) {
         // Toggle a fast (time/2 period) clock
         top->clk = !top->clk;
         //add read memory
-        //printf("read dizhi =%x\n",guest_to_host(top->out));
-        //top->putstate(&nemu_state,&a0,&pc,&dnpc,&crstate,&type); //wzw change
-				upc=(uint64_t)pc&0xffffffff;
-				udnpc=(uint64_t)dnpc&0xffffffff;
-				//printf("pc=%x,dnpc=%x,state=%x",pc,dnpc,crstate);
-				//printf("upc=%x\n",up);
-				if(TEST){
-				if(top->clk){
-				if(crstate==1){
-					  //printf("udnpc=%lx\n",udnpc);
-						for (int j=0;j<func.length;j++){
-							//printf("func.begin[j]=%lx",func.begin[j]);
-							if((dnpc>=(int)func.begin[j])&&(dnpc<(int)func.begin[j]+func.size[j])){
-								//log_write("%*s",space,"");	
-								//printf(" %lx:  jal  ret %s\n",ftrace.left[i],func.name[j]);
-								//log_write(" %x:    call %s(%x)\n",pc,func.name[j],dnpc);
-								if(ftracelength<10000){
-								sprintf(spacea[ftracelength],"%*s",space,"");	
-								sprintf(ftrace[ftracelength]," %x:    call %s(%x)\n",pc,func.name[j],dnpc);
-								ftracelength++;
-								space++;}
-								break;
-							}
-						}
-
-					}
-					if(crstate==2){
-						for (int j=0;j<func.length;j++){
-							if((pc>=(int)func.begin[j])&&(pc<(int)func.begin[j]+func.size[j])){
-								space--;
-								//log_write("%*s",space,"");	
-									
-								if(ftracelength<10000){
-								sprintf(spacea[ftracelength],"%*s",space,"");	
-								sprintf(ftrace[ftracelength++]," %x:    ret %s(%x)\n",pc,func.name[j],dnpc);
-								}
-								break;
-							}
-						}
-					}}}
-//      top->put_state(nemu_state);
+				upc=top->cpupc;
+				udnpc=top->dnpc;
 //      ///////////////////////////////////////////////////
-
-        top->inst=pmem_read(top->cpupc,4);
 				uint32_t instval=top->inst;
-				//printf("the a0 is %d\n",top.de->Type);
-				if(!top->clk){
-        if(nemu_state)
-        {   
-						//printf("the register a0 is %d",a0);
-						if(a0==0)
-							printf(GREEN"\nHIT GOOD TAP\n"NONE);
-						else
-							printf(RED"\nHIT BAD TAP\n"NONE);
-						break;
-        }
-				if(type==7)	{
-					printf(YELLOW"%s is not have, please add\n"NONE,logbuf);
-					break;}
-				}
-        //printf("read neirong =%x\n",pmem_read(top->cpupc,4));
-        // Toggle control signals on an edge that doesn't correspond
+				// Toggle control signals on an edge that doesn't correspond
         // to where the controls are sampled; in this example we do
         // this only on a negedge of clk, because we know
         // reset is not sampled there.
-
         if (!top->clk) {
             if (contextp->time() > 1 && contextp->time() < 3) {
                 top->rst = !0;  // Assert reset
@@ -386,6 +338,15 @@ int main(int argc, char** argv, char** env) {
             // Assign some other inputs
             //top->in_quad += 0x12;
             //top->in=rand()%10;
+        }
+				if(!top->clk){
+        if(top->ebreak)
+        {   
+						if(cpu_gpr[10]==0)
+							printf(GREEN"\nHIT GOOD TAP\n"NONE);
+						else
+							printf(RED"\nHIT BAD TAP\n"NONE);
+						break;
         }
 				///////////////////////difftest//////////////////////
 				if(contextp->time()==4) 
@@ -401,7 +362,7 @@ int main(int argc, char** argv, char** env) {
 				///////////////////////////////////////////////////
 
 				///////////////////////////////////////sdb//////////////////////////////////////////
-			 if(((strcmp(str,"c")!=0)&&(exec_step==0))|contextp->time()==4|watchpoint==top->cpupc){	
+			 if(((strcmp(str,"c")!=0)&&(exec_step==0))|contextp->time()==4|watchpoint==top->cpupc|(npc_state==0)){	
 				if(!top->clk){
 XunHuan:
 					printf("\nnpc:");
@@ -430,51 +391,29 @@ XunHuan:
 					else if(strcmp(test,"q")==0){
 						break;
 					}
-					
+					else if(strcmp(test,"opent")==0){
+						DIFFTEST=1;
+					}	
+					else if(strcmp(test,"close")==0){
+						DIFFTEST=0;
+					}
+					else if(strcmp(test,"c")==0){
+						npc_state=1;
+					}
 				}
-			
-			 
 			 }
 				////////////////////////////////////////////////////////////////////////////////////
-				//////////////////////////////////////ftrace//////////////////////
-				if(TEST){
-				if(!top->clk&&contextp->time()>=4){
-			 int snpc=pc+4;
-			 char *p = logbuf;
-			 /*printf("zzzzzzzzzzzz%s\n",s->logbuf);*/
-			 p += snprintf(p, sizeof(logbuf), "0x%016x  :", pc);
-			 //printf("pperior=%s\n",p);
-			 int ilen = snpc - pc;
-			 int i;	
-			 //printf("instval=%x\n",instval);
-			 uint8_t *inst = (uint8_t *)&instval;
-			 //printf("instval=%x\n",instval);
-			 for (i = ilen - 1; i >= 0; i --) {
-				 p+=snprintf(p, 4, " %02x", inst[i]);
-			 }
-			 //printf("pperior=%s\n",p);
-			 //int ilen_max =  8;
-			 int ilen_max = MUXDEF(1, 8, 4);
-							//printf("ilen_max=%d",ilen_max);
-			 int space_len = ilen_max - ilen;
-			 if (space_len < 0) space_len = 0;
-			 space_len = space_len * 3 + 1;
-			 //printf("space_len=%d\n",space_len);
-			 memset(p, ' ', space_len);
-			 //printf("pspace=%s",p);
-			 p += space_len;
-			 
-			 //printf("upc=%016lx",upc);
-
-
-			 extern void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-			 disassemble(p, logbuf + sizeof(logbuf) - p,
-					 MUXDEF(1, upc, upc), (uint8_t *)&instval,ilen);
-			 if(TEST){
-			 log_write("%s\n",logbuf);}
+				//////////////////////////////////////itrace//////////////////////
+			if(TEST){
+				if(!top->clk&&!top->rst){
+					itrace_use(logbuf,upc,instval);
+					if(!top->not_have)	{
+					printf(YELLOW"%s is not have, please add\n"NONE,logbuf);
+					break;
+					}
 				}
+			}
 				}
-			 //printf("achieve here");
 				/////////////////////////////////////////////////////////////////
 				if(!top->clk&&contextp->time()>=4)
 				  exec_step--;
@@ -483,31 +422,11 @@ XunHuan:
         // timestep then instead of eval(), call eval_step() on each, then
         // eval_end_step() on each. See the manual.)
         top->eval();
-
-        // Read outputs
-        //VL_PRINTF("[%" VL_PRI64 "d] clk=%x rstl=%x iquad=%" VL_PRI64 "x"
-        //          " -> oquad=%" VL_PRI64 "x owide=%x_%08x_%08x\n",
-        //          contextp->time(), top->clk, top->reset_l, top->in_quad, top->out_quad,
-        //          top->out_wide[2], top->out_wide[1], top->out_wide[0]);
-
-				if(TEST)
-        VL_PRINTF("[%" VL_PRI64 "d] clk=%x rst=%x  "
-                  " -> out[31:0]=%x \n ",
-                  contextp->time(), top->clk, top->rst, 
-                  top->cpupc);
+				if(TEST&&!top->clk)
+        VL_PRINTF("[%" VL_PRI64 "d]  finish cpupc=%lx inst=%lx\n",
+                  contextp->time()/2,  
+                  top->cpupc,top->inst);
     }
-		if(TEST){
-		log_write("----------ftrace-----------\n");}
-		for(int i=0;i<ftracelength;i++){
-
-			if(ftracelength<10000){
-			if(TEST){
-			log_write("%s",spacea[i]);
-			log_write("%s",ftrace[i]);
-			}
-			}			
-			}
-
     // Final model cleanup
     top->final();
 

@@ -20,17 +20,19 @@ endif
 
 # Generate C++ in executable form
 #VERILATOR_FLAGS += -cc --exe
-# Generate makefile dependencies (not shown as complicates the Makefile)
+## Generate makefile dependencies (not shown as complicates the Makefile)
 #VERILATOR_FLAGS += -MMD
-# Optimize
-#VERILATOR_FLAGS += -Os -x-assign 0
-# Warn abount lint issues; may not want this on less solid designs
-#VERILATOR_FLAGS += -Wall
-# Make waveforms
+## Optimize
+##VERILATOR_FLAGS += -Os -x-assign 0
+#VERILATOR_FLAGS += -O3 --x-assign fast --x-initial fast
+## Warn abount lint issues; may not want this on less solid designs
+##VERILATOR_FLAGS += -Wall
+## Make waveforms
 #VERILATOR_FLAGS += --trace
-# Check SystemVerilog assertions
+## Check SystemVerilog assertions
 #VERILATOR_FLAGS += --assert
 # Generate coverage analysis
+#由于加了coverage导致运行速度减慢
 #VERILATOR_FLAGS += --coverage
 #VERILATOR_FLAGS += -j 20
 
@@ -41,7 +43,7 @@ VERILATOR_FLAGS += -MMD --build -cc --exe \
 #VERILATOR_FLAGS += --debug
 # Add this trace to get a backtrace in gdb
 #VERILATOR_FLAGS += --gdbbt
-VRCS = $(shell find $(NPC_HOME)/vsrc -name "*.v") #所有的verilog文件
+VRCS = $(shell find $(NPC_HOME)/vsrc -name "*.v" -or -name "*.vh") #所有的verilog文件
 CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" -or -name "*.cc") #所有的c类文件
 pri:
 	echo $(CSRCS)

@@ -86,7 +86,7 @@ void init_difftest(char *ref_so_file, long img_size) {
 	
 }
 int difftest_step() {
-		//printf("test here and skip_test=%d and pc=%lx\n",skip_test,upc);
+		printf("test here and skip_test=%d and pc=%lx\n",skip_test,upc);
 		uint64_t ref_r[33];
 		//////为了便于向ref复制pc而设置
 		uint64_t cpu_gpr_c[33];

@@ -88,5 +88,7 @@ uint64_t expr(char *e, bool *success);
 #define YELLOW       "\033[1;33m"
 #define LIGHT_GRAY   "\033[0;37m"
 #define WHITE        "\033[1;37m"
+#define MAP(c, f) c(f)
+
 
 

@@ -60,9 +60,11 @@ VM_USER_CLASSES = \
 	dut \
 	elf \
 	expr \
+	keyboard \
 	log \
 	main \
 	parsearg \
+	trace \
 	disasm \
 	vga \
 
@@ -89,11 +91,15 @@ elf.o: /home/wzw/ysyx-workbench/npc/csrc/elf.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 expr.o: /home/wzw/ysyx-workbench/npc/csrc/expr.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+keyboard.o: /home/wzw/ysyx-workbench/npc/csrc/keyboard.cpp
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 log.o: /home/wzw/ysyx-workbench/npc/csrc/log.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 main.o: /home/wzw/ysyx-workbench/npc/csrc/main.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 parsearg.o: /home/wzw/ysyx-workbench/npc/csrc/parsearg.cpp
+	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
+trace.o: /home/wzw/ysyx-workbench/npc/csrc/trace.cpp
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
 disasm.o: /home/wzw/ysyx-workbench/npc/csrc/utils/disasm.cc
 	$(OBJCACHE) $(CXX) $(CXXFLAGS) $(CPPFLAGS) $(OPT_FAST) -c -o $@ $<
