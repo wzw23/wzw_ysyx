@@ -1,6 +1,6 @@
 //`include "hong.v"
 `define alu_length 17
-module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [2:0]e_inst);
+module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [2:0]e_inst,input inst_update,output c_wen1_2);
 
 //下标标识
 //op_d
@@ -143,6 +143,9 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 
 	wire remw;
 	assign remw=(fu_7_d[2])&(fu_3_d[3'b110])&(op_d[11]);
+
+	wire remuw;
+	assign remuw=(fu_7_d[2])&(fu_3_d[3'b111])&(op_d[11]);
   
 	wire divu;
 	assign divu=(fu_7_d[2])&(fu_3_d[3'b101])&(op_d[8]);
@@ -214,11 +217,11 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 
 	//////////////////////////控制信号书写////////////////////////////
 	//此处jalr可能有问题//
-	assign sel_alu_src1=({4{Add|addi|ld|sd|slt|sll|srl|sra|And|Or|Xor|sltiu|andi|ori|xori|Mul|divu|bge|bgeu|blt|bltu|lw|lwu|lh|lhu|lb|lbu|sw|sh|sb|div|rem|remu|addw|subw|sub|mulw|divw|divuw|remw|beq|bne|addiw|slli|srli|srai|sltu}} & {4'b0001})
+	assign sel_alu_src1=({4{Add|addi|ld|sd|slt|sll|srl|sra|And|Or|Xor|sltiu|andi|ori|xori|Mul|divu|bge|bgeu|blt|bltu|lw|lwu|lh|lhu|lb|lbu|sw|sh|sb|div|rem|remu|addw|subw|sub|mulw|divw|divuw|remw|beq|bne|addiw|slli|srli|srai|sltu|remuw}} & {4'b0001})
 	              |     ({4{jal|jalr|auipc}}& {4'b0010})
 	              |     ({4{sllw|srlw|slliw|srliw}}& {4'b0100})
 	              |     ({4{sraw|sraiw}}& {4'b1000});
-	assign sel_alu_src2=({3{Add|slt|sll|srl|sra|And|Or|Xor|Mul|divu|bge|bgeu|blt|bltu|rem|remu|div|addw|subw|sub|mulw|divw|divuw|remw|beq|bne|sllw|srlw|sraw|sltu}}  & {3'b001})
+	assign sel_alu_src2=({3{Add|slt|sll|srl|sra|And|Or|Xor|Mul|divu|bge|bgeu|blt|bltu|rem|remu|div|addw|subw|sub|mulw|remuw|divw|divuw|remw|beq|bne|sllw|srlw|sraw|sltu}}  & {3'b001})
 	              |     ({3{addi|ld|sd|lui|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|sw|sh|sb|auipc|addiw|srliw|slliw|sraiw|slli|srli|srai}}& {3'b010})
 	              |     ({3{jal|jalr}}& {3'b100});
 
@@ -251,7 +254,7 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 							|       ({`alu_length{divu|divuw}}&             {`alu_length'b10000000000000})
 							|       ({`alu_length{div|divw}} &             {`alu_length'b100000000000000})
 							|       ({`alu_length{remu}}&                 {`alu_length'b1000000000000000})
-							|       ({`alu_length{rem|remw}} &           {`alu_length'b10000000000000000})
+							|       ({`alu_length{rem|remw|remuw}} &           {`alu_length'b10000000000000000})
 	;
 	assign l_choose=({7{ld}} &{7'b0000001})
 							|   ({7{lw}} &{7'b0000010})
@@ -262,7 +265,7 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 							|   ({7{lbu}}&{7'b1000000})
 	;
 
-	assign rf_wen=Add|addi|ld|jal|jalr|slt|sltu|sll|srl|sra|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|auipc|sub|sllw|srlw|sraw|addiw|slliw|srliw|sraiw|addw|srli|srai|slli|And|Or|mulw|divw|remw|lui|subw|Mul|Xor|divu|divuw|rem|div|csrrs|csrrw|remu;
+	assign rf_wen=(Add|addi|ld|jal|jalr|slt|sltu|sll|srl|sra|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|auipc|sub|sllw|srlw|sraw|addiw|slliw|srliw|sraiw|addw|srli|srai|slli|And|Or|mulw|divw|remw|lui|subw|Mul|Xor|divu|divuw|rem|div|csrrs|csrrw|remu|remuw)&inst_update;
 
 	assign sel_rf_res=(ld|lw|lwu|lh|lhu|lb|lbu)?3'b010:
 										(csrrw|csrrs)?3'b100:
@@ -270,7 +273,7 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 
 	//assign data_ram_wen=sd|sw;
 	assign data_ram_en=1;
-	assign data_ram_wen=sd|sb|sh|sw|sb;
+	assign data_ram_wen=(sd|sb|sh|sw|sb)&inst_update;
 
 	assign wmask=sb?8'b00000001:
 							 sh?8'b00000011:
@@ -281,10 +284,12 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 	/////////////////////////////////////////////////////////////////
 	assign sel_nextpc=({2{{beq&alu_equal[0]}|{bne&(!alu_equal[0])}|jal|{bltu&(alu_equal[1])}|{blt&(alu_equal[2])}|{bgeu&{(~alu_equal[1])|(alu_equal[0])}}|{bge&{(~alu_equal[2])|alu_equal[0]}}}}&2'b01)
 					|					({2{jalr}}&2'b10)
-					|					({2{e_inst[1]|e_inst[2]}}&2'b11)					;
+					|					({2{e_inst[1]|e_inst[2]}}&2'b11)	
+					;
 	assign c_wchoose=csrrs;
-	assign c_wen=csrrw|csrrs;
+	assign c_wen=(csrrw|csrrs)&inst_update;
+	assign c_wen1_2=inst_update&e_inst[1];
 	
-	assign not_have=addi|andi|xori|ori|sll|srl|sra|lui|jal|jalr|sd|sh|sw|sb|lw|lwu|lh|lhu|lb|lbu|ld|divu|Add|Mul|And|Xor|Or|sltu|slt|sub|sltiu|beq|bne|bge|bgeu|bltu|blt|auipc|rem|remu|div|addw|subw|mulw|divw|divuw|remw|addiw|srliw|slliw|sraiw|slli|srli|srai|sllw|sraw|srlw|csrrs|csrrw|e_inst[1]|e_inst[2]|e_inst[0];
-	assign w_choose=addw|subw|mulw|divw|divuw|remw|sllw|srlw|sraw|addiw|sraiw|slliw|srliw;
+	assign not_have=addi|andi|xori|ori|sll|srl|sra|lui|jal|jalr|sd|sh|sw|sb|lw|lwu|lh|lhu|lb|lbu|ld|divu|Add|Mul|And|Xor|Or|sltu|slt|sub|sltiu|beq|bne|bge|bgeu|bltu|blt|auipc|rem|remu|div|addw|subw|mulw|remuw|divw|divuw|remw|addiw|srliw|slliw|sraiw|slli|srli|srai|sllw|sraw|srlw|csrrs|csrrw|e_inst[1]|e_inst[2]|e_inst[0];
+	assign w_choose=addw|subw|mulw|divw|divuw|remw|sllw|srlw|sraw|addiw|sraiw|slliw|srliw|remuw;
 endmodule

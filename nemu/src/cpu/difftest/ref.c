@@ -42,6 +42,15 @@ void difftest_regcpy(void *dut, bool direction) {
 			cpu.gpr[i]=cpugpr[i];
 		cpu.pc=cpugpr[32];
 
+		static int csr_first=0;
+		if(csr_first==0){
+		cpu.csrs[768]=cpugpr[33];
+		cpu.csrs[773]=cpugpr[34];
+		cpu.csrs[833]=cpugpr[35];
+		cpu.csrs[834]=cpugpr[36];
+		csr_first=1;
+		}
+
 	} else {
 		for(int i=0;i<32;i++)
 			cpugpr[i]=cpu.gpr[i];

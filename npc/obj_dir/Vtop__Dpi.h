@@ -13,6 +13,8 @@ extern "C" {
 
 
     // DPI IMPORTS
+    // DPI import at /home/wzw/ysyx-workbench/npc/vsrc/RegisterFile2.v:29:31
+    extern void set_csr_ptr(const svOpenArrayHandle a);
     // DPI import at /home/wzw/ysyx-workbench/npc/vsrc/RegisterFile2.v:28:31
     extern void set_gpr_ptr(const svOpenArrayHandle a);
     // DPI import at /home/wzw/ysyx-workbench/npc/vsrc/If.v:6:30

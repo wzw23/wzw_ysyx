@@ -5,6 +5,7 @@
 #include <assert.h>
 extern uint64_t upc;
 extern uint64_t *cpu_gpr; 
+extern uint64_t *cpu_csr; 
 extern long img_size;
 extern int skip_test;
 //void (*ref_difftest_memcpy)(paddr_t addr, void *buf, size_t n, bool direction) = NULL;
@@ -43,11 +44,11 @@ ref_difftest_exec_func ref_difftest_exec=NULL;
 //void (*ref_difftest_raise_intr)(uint64_t NO) = NULL;
 
 void init_difftest(char *ref_so_file, long img_size) {
-	printf("achieve here and ref_so_file=%s\n",ref_so_file);
 	assert(ref_so_file != NULL);
 
 	void *handle;
 	printf("achieve here and ref_so_file=%s\n",ref_so_file);
+	printf("achieve here and img_size=%ld\n",img_size);
 	handle = dlopen(ref_so_file, RTLD_LAZY);
 	assert(handle);
 
@@ -75,12 +76,16 @@ void init_difftest(char *ref_so_file, long img_size) {
 	//ref_difftest_init(port);
 	ref_difftest_memcpy(CONFIG_BASE, guest_to_host(CONFIG_BASE), img_size, DIFFTEST_TO_REF);
 ///////
-	uint64_t cpu_gpr_c[33];
+	uint64_t cpu_gpr_c[37];
 	for(int i=0;i<32;i++)
 	{
 		cpu_gpr_c[i]=cpu_gpr[i];
 	}
 	cpu_gpr_c[32]=upc;
+	cpu_gpr_c[33]=cpu_csr[0];
+	cpu_gpr_c[34]=cpu_csr[1];
+	cpu_gpr_c[35]=cpu_csr[2];
+	cpu_gpr_c[36]=cpu_csr[3];
 /////
 	ref_difftest_regcpy(cpu_gpr_c, DIFFTEST_TO_REF);
 	

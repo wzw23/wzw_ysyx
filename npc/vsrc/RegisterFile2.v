@@ -26,6 +26,7 @@ module RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
   input [1:0] c_waddr2
 	);
 	import "DPI-C" function void set_gpr_ptr(input logic [63:0] a []);
+	import "DPI-C" function void set_csr_ptr(input logic [63:0] a []);
 
   reg [DATA_WIDTH-1:0] rf [31:0];
   reg [DATA_WIDTH-1:0] csr [3:0];//0-4 mstatus mtvec mepc mcause
@@ -60,6 +61,7 @@ module RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
   end
 	initial begin
 			set_gpr_ptr(rf);
+			set_csr_ptr(csr);
 		end
 endmodule
     

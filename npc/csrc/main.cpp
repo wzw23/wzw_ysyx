@@ -3,8 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-int TEST=0; 
-int DIFFTEST=0;
+int TEST=1; 
+int DIFFTEST=1;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -54,6 +54,7 @@ extern Sy_table func;
 Decode s;
 //接收寄存器数组
 uint64_t *cpu_gpr = NULL;
+uint64_t *cpu_csr = NULL;
 uint32_t watchpoint=-1;
 extern int difftest_step();
 void host_write(void *addr, int len, uint64_t data) {
@@ -82,6 +83,9 @@ uint64_t pmem_read(uint32_t addr, int len) {
 }
 extern "C" void set_gpr_ptr(const svOpenArrayHandle r) {
 	  cpu_gpr = (uint64_t *)(((VerilatedDpiOpenVar*)r)->datap());
+}
+extern "C" void set_csr_ptr(const svOpenArrayHandle r) {
+	  cpu_csr = (uint64_t *)(((VerilatedDpiOpenVar*)r)->datap());
 }
 uint32_t us_less;
 uint32_t us_bigger;
@@ -190,6 +194,7 @@ void dump_gpr() {
 
 //static uint8_t pmem[1024*2000*1024]={0};
 static uint8_t pmem[0x8000000] __attribute((aligned(4096)))={};
+long pmem_size=sizeof(pmem)/sizeof(pmem[0]);
 enum { NEMU_RUNNING, NEMU_STOP, NEMU_END, NEMU_ABORT, NEMU_QUIT };   
 static int nemu_state=NEMU_RUNNING;
 //static int a0=0;
@@ -349,16 +354,21 @@ int main(int argc, char** argv, char** env) {
 						break;
         }
 				///////////////////////difftest//////////////////////
-				if(contextp->time()==4) 
-					if(TEST)
-						init_difftest(diff_so_file,img_size);
-				if(!top->clk&&contextp->time()>4){
-					if(TEST){
+				static int diff_first=0;
+				if(!top->clk&&contextp->time()>4&&(diff_first==1)&&top->inst_finish){
+					if(DIFFTEST){
 				  int check=difftest_step();		
 					if(check==0){
 						printf(RED"\ninst error at:%s\n"NONE,logbuf);
 						break;}}
 				}
+				if(contextp->time()>=4&&(diff_first==0)) 
+					if(DIFFTEST){
+						//init_difftest(diff_so_file,img_size);
+						init_difftest(diff_so_file,pmem_size);
+						diff_first=1;
+					}
+
 				///////////////////////////////////////////////////
 
 				///////////////////////////////////////sdb//////////////////////////////////////////
@@ -393,9 +403,11 @@ XunHuan:
 					}
 					else if(strcmp(test,"opent")==0){
 						DIFFTEST=1;
+						goto XunHuan;
 					}	
 					else if(strcmp(test,"close")==0){
 						DIFFTEST=0;
+						goto XunHuan;
 					}
 					else if(strcmp(test,"c")==0){
 						npc_state=1;
@@ -404,8 +416,8 @@ XunHuan:
 			 }
 				////////////////////////////////////////////////////////////////////////////////////
 				//////////////////////////////////////itrace//////////////////////
-			if(TEST){
-				if(!top->clk&&!top->rst){
+			if(DIFFTEST){
+				if(!top->clk&&!top->rst&&top->inst_update){
 					itrace_use(logbuf,upc,instval);
 					if(!top->not_have)	{
 					printf(YELLOW"%s is not have, please add\n"NONE,logbuf);
