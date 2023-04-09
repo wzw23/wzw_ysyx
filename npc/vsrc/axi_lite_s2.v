@@ -1,4 +1,4 @@
-module axi_lite_s(
+module axi_lite_s2(
 	input  clk,
 	input  rst,
 	//读地址通道 
@@ -16,18 +16,19 @@ module axi_lite_s(
 	output awready,
 	//写数据通道
 	input  [63:0]wdata,
-	input  [3:0]wstrb,
+	input  [7:0]wstrb,
 	input  wvalid,
 	output wready,
 	//写回复通道
 	output [1:0]bresp,
 	output bvalid,
 	input  bready
-	//可能需要添加寄存器
 );
 import "DPI-C" function void vpmem_read(
 	input longint mraddr, output longint mrdata);
 
+import "DPI-C" function void vpmem_write(
+			input longint waddr, input longint wdata, input byte wmask,input longint use_wen);
 //寄存器 写回馈信号也需要寄存器
 reg [31:0]r_araddr;
 //状态机
@@ -74,4 +75,41 @@ else begin
 		rvalid<='d0;
 	end
 end
+//
+//写信号状态机
+reg [2:0]write_state;
+parameter     WRITE_IDLE       = 3'd0 ,
+            	WRITE_AW_WVALID	 =3'd1,
+							WRITE_FINISH 		 =3'd2;
+always @(posedge clk)begin
+	if(rst)
+		write_state<=WRITE_IDLE;
+	else if((write_state==WRITE_IDLE)&awvalid&wvalid)
+		write_state<=WRITE_AW_WVALID;
+	else if(write_state==WRITE_IDLE)
+		write_state<=WRITE_IDLE;
+	else if((write_state==WRITE_AW_WVALID)&bready)
+		write_state<=WRITE_FINISH;
+	else if(write_state==WRITE_AW_WVALID)
+		write_state<=WRITE_AW_WVALID;
+	else if(write_state==WRITE_FINISH)
+		write_state<=WRITE_IDLE;
+end
+//awready wready信号
+assign awready=(write_state==WRITE_IDLE);
+assign wready =(write_state==WRITE_IDLE);
+
+always @(posedge clk)begin
+	if(write_state==WRITE_AW_WVALID)begin
+		//vpmem_write(awaddr, wdata, wstrb,{{63'b0},r_wen});
+		vpmem_write({{32'b0},awaddr}, wdata, wstrb,64'd1);
+		bvalid<='d1;//只有读出数据之后才能让其有效
+		bresp<='d0;
+end
+else begin
+		bvalid<='d0;
+		bresp<=2'b10;
+	end
+end
+
 endmodule

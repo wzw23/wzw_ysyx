@@ -19,6 +19,7 @@ Vtop::Vtop(VerilatedContext* _vcontextp__, const char* _vcname__)
     , not_have{vlSymsp->TOP.not_have}
     , dnpc{vlSymsp->TOP.dnpc}
     , inst_finish{vlSymsp->TOP.inst_finish}
+    , mem_finish{vlSymsp->TOP.mem_finish}
     , inst_update{vlSymsp->TOP.inst_update}
     , rootp{&(vlSymsp->TOP)}
 {

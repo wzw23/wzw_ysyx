@@ -1,6 +1,6 @@
 //`include "hong.v"
 `define alu_length 17
-module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [2:0]e_inst,input inst_update,output c_wen1_2);
+module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [2:0]e_inst,input inst_update,output c_wen1_2,input mem_finish);
 
 //下标标识
 //op_d
@@ -265,7 +265,7 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 							|   ({7{lbu}}&{7'b1000000})
 	;
 
-	assign rf_wen=(Add|addi|ld|jal|jalr|slt|sltu|sll|srl|sra|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|auipc|sub|sllw|srlw|sraw|addiw|slliw|srliw|sraiw|addw|srli|srai|slli|And|Or|mulw|divw|remw|lui|subw|Mul|Xor|divu|divuw|rem|div|csrrs|csrrw|remu|remuw)&inst_update;
+	assign rf_wen=(Add|addi|ld|jal|jalr|slt|sltu|sll|srl|sra|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|auipc|sub|sllw|srlw|sraw|addiw|slliw|srliw|sraiw|addw|srli|srai|slli|And|Or|mulw|divw|remw|lui|subw|Mul|Xor|divu|divuw|rem|div|csrrs|csrrw|remu|remuw)&mem_finish;
 
 	assign sel_rf_res=(ld|lw|lwu|lh|lhu|lb|lbu)?3'b010:
 										(csrrw|csrrs)?3'b100:
@@ -273,7 +273,7 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 
 	//assign data_ram_wen=sd|sw;
 	assign data_ram_en=1;
-	assign data_ram_wen=(sd|sb|sh|sw|sb)&inst_update;
+	assign data_ram_wen=(sd|sb|sh|sw|sb);
 
 	assign wmask=sb?8'b00000001:
 							 sh?8'b00000011:
@@ -287,8 +287,8 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 					|					({2{e_inst[1]|e_inst[2]}}&2'b11)	
 					;
 	assign c_wchoose=csrrs;
-	assign c_wen=(csrrw|csrrs)&inst_update;
-	assign c_wen1_2=inst_update&e_inst[1];
+	assign c_wen=(csrrw|csrrs)&mem_finish;
+	assign c_wen1_2=mem_finish&e_inst[1];
 	
 	assign not_have=addi|andi|xori|ori|sll|srl|sra|lui|jal|jalr|sd|sh|sw|sb|lw|lwu|lh|lhu|lb|lbu|ld|divu|Add|Mul|And|Xor|Or|sltu|slt|sub|sltiu|beq|bne|bge|bgeu|bltu|blt|auipc|rem|remu|div|addw|subw|mulw|remuw|divw|divuw|remw|addiw|srliw|slliw|sraiw|slli|srli|srai|sllw|sraw|srlw|csrrs|csrrw|e_inst[1]|e_inst[2]|e_inst[0];
 	assign w_choose=addw|subw|mulw|divw|divuw|remw|sllw|srlw|sraw|addiw|sraiw|slliw|srliw|remuw;

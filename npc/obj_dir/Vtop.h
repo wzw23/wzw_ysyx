@@ -36,6 +36,7 @@ class Vtop VL_NOT_FINAL {
     VL_OUT8(&not_have,0,0);
     VL_OUT64(&dnpc,63,0);
     VL_OUT8(&inst_finish,0,0);
+    VL_OUT8(&mem_finish,0,0);
     VL_OUT8(&inst_update,0,0);
 
     // CELLS

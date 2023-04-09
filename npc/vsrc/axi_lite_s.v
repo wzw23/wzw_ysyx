@@ -37,8 +37,9 @@ always @(posedge clk)begin
 	else if(state==READ_FINISH)
 		state<=READ_IDLE;
 end
-MuxKey #(2,3,1) mux0(arready,state,{
+MuxKey #(3,3,1) mux0(arready,state,{
 		READ_ARVALID,1'd0,	
+		READ_FINISH,1'b0,
 		READ_IDLE,1'd1
 		});
 //araddr信号寄存器
