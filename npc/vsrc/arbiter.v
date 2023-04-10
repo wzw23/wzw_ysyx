@@ -20,18 +20,14 @@ module arbiter(
 	//写地址通道
 	input  [31:0]awaddr_1,
 	input  awvalid_1,
-	output awready_0,
 	output awready_1,
 	//写数据通道
 	input  [63:0]wdata_1,
 	input  [7:0]wstrb_1,
 	input  wvalid_1,
-	output wready_0,
 	output wready_1,
 	//写回复通道
-	output [1:0]bresp_0,
 	output [1:0]bresp_1,
-	output bvalid_0,
 	output bvalid_1,
 	input  bready_1,
 
@@ -101,8 +97,6 @@ assign awaddr =master_1?awaddr_1:
 						  0;
 assign awvalid=master_1?awvalid_1:
 						  0;
-assign awready_0=master_0?awready:
-								0;
 assign awready_1=master_1?awready:
 								0;
 /////////////////////////////
@@ -116,8 +110,6 @@ assign wstrb  =master_1?wstrb_1:
 						  0;
 assign wvalid =master_1?wvalid_1:
 						  0;
-assign wready_0=master_0?wready:
-								0;
 assign wready_1=master_1?wready:
 								0;
 ///////////////////////////
@@ -126,11 +118,7 @@ wire bvalid;
 wire bready;
 assign bready=master_1?bready_1:
 						  0;
-assign bresp_0=master_0?bresp:
-								0;
 assign bresp_1=master_1?bresp:
-								0;
-assign bvalid_0=master_0?bvalid:
 								0;
 assign bvalid_1=master_1?bvalid:
 								0;

@@ -14,7 +14,28 @@ module mem #(parameter ADDR_WIDTH=64,//地址位宽
 	input [6:0]l_choose,
 	input inst_update,
 	output mem_finish,
-	output inst_finish
+	output inst_finish,
+	output [31:0]araddr,
+	output arvalid,
+	input arready,
+	input [63:0]rdata,
+	input [1:0]rresp,
+	input rvalid,
+	output rready,
+	//写地址通道
+	output [31:0]awaddr,
+	output awvalid,
+	input awready,
+	//写数据通道
+	output [63:0]wdata,
+	output [7:0]wstrb,
+	output wvalid,
+	input wready,
+	//写回复通道
+	input [1:0]bresp,
+	input bvalid,
+	output bready
+
 );
   wire [DATA_WIDTH-1:0]r_rdata_ld;
 	wire [DATA_WIDTH-1:0]r_rdata_lw;
@@ -55,31 +76,7 @@ module mem #(parameter ADDR_WIDTH=64,//地址位宽
 		//总线信号
 		//wire r_rdata_update;
 		//assign r_rdata_update=(read_state==READ_FINISH);
-
-		wire arvalid;
-		wire arready;
-		wire [31:0]araddr;
-
-		wire [63:0]rdata;
-		wire [1:0]rresp;
-		wire rvalid;
-		wire reg rready;
 		//wire rvalid_rready;
-
-		//写地址通道
-		wire [31:0]awaddr;
-		wire awvalid;
-		wire awready;
-		//写数据通道
-		wire [63:0]wdata;
-		wire [7:0]wstrb;
-		wire wvalid;
-		wire wready;
-		//写回复通道
-		wire [1:0]bresp;
-		wire bvalid;
-		wire bready;
-
 		//assign rvalid_rready=rvalid&rready;
 
 		////////////////////////////////
@@ -148,65 +145,42 @@ module mem #(parameter ADDR_WIDTH=64,//地址位宽
 		assign wstrb =r_mask;
 	//bready信号
 	  assign bready= (write_state==WRITE_AW_WREADY);
-
-///////////////axi_slave2模块////////////
-			axi_lite_s2 axi_lite_s2_0(
-				.clk(clk),
-				.rst(rst),
-				.araddr(araddr),
-				.arvalid(arvalid),
-				.arready(arready),
-				.rdata(rdata),
-				.rresp(rresp),
-				.rvalid(rvalid),
-				.rready(rready),
-				.awaddr(awaddr),
-				.awvalid(awvalid),
-				.awready(awready),
-				.wdata(wdata),
-				.wstrb(wstrb),
-				.wvalid(wvalid),
-				.wready(wready),
-				.bresp(bresp),
-				.bvalid(bvalid),
-				.bready(bready)
-			);
-			//MEM_状态信息
-			reg [2:0]mem_state;
-			parameter MEM_BEGIN            =3'd0,
-			          MEM_WAIT_WRITE_FINISH=3'd1,
-			          MEM_WAIT_READ_FINISH =3'd2,
-								MEM_WAIT_ALL         =3'd3,
-								MEM_FINISH           =3'd4;
-			///////////////////////////////////////
-			always @(posedge clk)begin
-				if(rst)
-					mem_state<=MEM_BEGIN;
-				else if((mem_state==MEM_BEGIN)&(inst_update)&(~r_ren)&(~r_wen))
-					mem_state<=MEM_FINISH;
-				else if((mem_state==MEM_BEGIN)&(inst_update)&(~r_ren)&(r_wen))
-					mem_state<=MEM_WAIT_WRITE_FINISH;
-				else if((mem_state==MEM_BEGIN)&(inst_update)&(r_ren)&(~r_wen))
-					mem_state<=MEM_WAIT_READ_FINISH;
-				else if((mem_state==MEM_BEGIN)&(inst_update)&(r_ren)&(r_wen))
-					mem_state<=MEM_WAIT_ALL;
-				else if((mem_state==MEM_BEGIN))
-					mem_state<=MEM_BEGIN;
-				else if((mem_state==MEM_WAIT_WRITE_FINISH)&(write_state==WRITE_FINISH))
-					mem_state<=MEM_FINISH;
-				else if((mem_state==MEM_WAIT_READ_FINISH) &(read_state ==READ_FINISH))
-					mem_state<=MEM_FINISH;
-				else if((mem_state==MEM_WAIT_ALL) &(read_state ==READ_FINISH)&(write_state==WRITE_FINISH))
-					mem_state<=MEM_FINISH;
-				else if((mem_state==MEM_WAIT_ALL) &(read_state ==READ_FINISH))
-					mem_state<=MEM_WAIT_WRITE_FINISH;
-				else if((mem_state==MEM_WAIT_ALL) &(write_state==WRITE_FINISH))
-					mem_state<=MEM_WAIT_READ_FINISH;
-				else if(mem_state==MEM_FINISH)
-					mem_state<=MEM_BEGIN;
-				end
-				///////////////////
-			assign r_rdata_ld=reg_rdata;
-			assign mem_finish=(mem_state==MEM_FINISH);
-			Reg #(1,1'b0) finish(clk,rst,mem_finish,inst_finish,1'b1);
-			endmodule
+		//MEM_状态信息
+		reg [2:0]mem_state;
+		parameter MEM_BEGIN            =3'd0,
+			MEM_WAIT_WRITE_FINISH=3'd1,
+			MEM_WAIT_READ_FINISH =3'd2,
+			MEM_WAIT_ALL         =3'd3,
+			MEM_FINISH           =3'd4;
+		///////////////////////////////////////
+		always @(posedge clk)begin
+			if(rst)
+				mem_state<=MEM_BEGIN;
+			else if((mem_state==MEM_BEGIN)&(inst_update)&(~r_ren)&(~r_wen))
+				mem_state<=MEM_FINISH;
+			else if((mem_state==MEM_BEGIN)&(inst_update)&(~r_ren)&(r_wen))
+				mem_state<=MEM_WAIT_WRITE_FINISH;
+			else if((mem_state==MEM_BEGIN)&(inst_update)&(r_ren)&(~r_wen))
+				mem_state<=MEM_WAIT_READ_FINISH;
+			else if((mem_state==MEM_BEGIN)&(inst_update)&(r_ren)&(r_wen))
+				mem_state<=MEM_WAIT_ALL;
+			else if((mem_state==MEM_BEGIN))
+				mem_state<=MEM_BEGIN;
+			else if((mem_state==MEM_WAIT_WRITE_FINISH)&(write_state==WRITE_FINISH))
+				mem_state<=MEM_FINISH;
+			else if((mem_state==MEM_WAIT_READ_FINISH) &(read_state ==READ_FINISH))
+				mem_state<=MEM_FINISH;
+			else if((mem_state==MEM_WAIT_ALL) &(read_state ==READ_FINISH)&(write_state==WRITE_FINISH))
+				mem_state<=MEM_FINISH;
+			else if((mem_state==MEM_WAIT_ALL) &(read_state ==READ_FINISH))
+				mem_state<=MEM_WAIT_WRITE_FINISH;
+			else if((mem_state==MEM_WAIT_ALL) &(write_state==WRITE_FINISH))
+				mem_state<=MEM_WAIT_READ_FINISH;
+			else if(mem_state==MEM_FINISH)
+				mem_state<=MEM_BEGIN;
+		end
+		///////////////////
+		assign r_rdata_ld=reg_rdata;
+		assign mem_finish=(mem_state==MEM_FINISH);
+		Reg #(1,1'b0) finish(clk,rst,mem_finish,inst_finish,1'b1);
+		endmodule

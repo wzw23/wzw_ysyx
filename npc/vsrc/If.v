@@ -1,4 +1,4 @@
-module If(input clk,input rst,output [63:0]cpupc,input [1:0]sel_nextpc,input [63:0]imm,input [63:0]src1,output [31:0]inst,output [63:0]dnpc,input[63:0]c_rdata,output inst_update,input mem_finish);
+module If(input clk,input rst,output [63:0]cpupc,input [1:0]sel_nextpc,input [63:0]imm,input [63:0]src1,output [31:0]inst,output [63:0]dnpc,input[63:0]c_rdata,output inst_update,input mem_finish,output [31:0]araddr,output arvalid,input arready,input [63:0]rdata,input [1:0]rresp,input rvalid,output rready);
 //位宽为32bit，复位值为0x80000000,写使能一直有效
 //wire [31:0]zhongjian;
 //assign zhongjian=cpupc+4;
@@ -27,14 +27,7 @@ Reg #(64,64'h80000000) i0 (clk,rst,dnpc,cpupc,1'b1);
 //assign inst=inst_64[31:0];
 
 //总线信号
-wire arvalid;
-wire arready;
-wire [31:0]araddr;
 
-wire [63:0]rdata;
-wire [1:0]rresp;
-wire rvalid;
-wire rready;
 wire rvalid_rready;
 
 assign inst_update=(state==READ_FINISH);
@@ -78,18 +71,6 @@ MuxKey #(3,3,1) mux1(rready,state,{
 		READ_FINISH,1'd0,
 		READ_IDLE,1'd0
 		});
-///////////////axi_slave模块////////////
-axi_lite_s axi_lite_s0(
-	.clk(clk),
-	.rst(rst),
-	.araddr(araddr),
-	.arvalid(arvalid),
-	.arready(arready),
-	.rdata(rdata),
-	.rresp(rresp),
-	.rvalid(rvalid),
-	.rready(rready)
-);
 ///////////////////////////////////////
 assign inst=r_rdata[31:0];
 endmodule
