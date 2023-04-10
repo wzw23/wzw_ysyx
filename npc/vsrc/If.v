@@ -60,15 +60,11 @@ always @(posedge clk)begin
 		state<=READ_FINISH;
 	else if(state==READ_ARREADY)
 		state<=READ_ARREADY;
-	else if(state==READ_FINISH)
+	else if(state==READ_FINISH&(mem_finish))
 		state<=READ_IDLE;
 end
 //arvalid信号
-MuxKey #(3,3,1) mux0(arvalid,state,{
-		READ_ARREADY,1'd0,
-		READ_FINISH,1'd0,
-		READ_IDLE,1'd1
-		});
+assign arvalid=(state==READ_IDLE);
 //r_data信号
 always @(posedge clk)begin
 	if(rvalid&rready)

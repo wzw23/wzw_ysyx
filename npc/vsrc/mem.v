@@ -102,7 +102,7 @@ module mem #(parameter ADDR_WIDTH=64,//地址位宽
 				read_state<=READ_FINISH;
 			else if(read_state==READ_ARREADY)
 				read_state<=READ_ARREADY;
-			else if(read_state==READ_FINISH)
+			else if((read_state==READ_FINISH)&(mem_state==MEM_FINISH))
 				read_state<=READ_IDLE;
 		end
 		//arvalid信号
@@ -137,7 +137,7 @@ module mem #(parameter ADDR_WIDTH=64,//地址位宽
 			 write_state<=WRITE_FINISH;
 		 else if(write_state==WRITE_AW_WREADY)
 			 write_state<=WRITE_AW_WREADY;
-		 else if(write_state==WRITE_FINISH)
+		 else if(write_state==WRITE_FINISH&(mem_finish))
 			 write_state<=WRITE_IDLE;
 	 end
 	 //awvalid wvalid wdata wstrb信号
