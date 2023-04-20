@@ -271,8 +271,8 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 										(csrrw|csrrs)?3'b100:
 										3'b001;
 
-	//assign data_ram_wen=sd|sw;
-	assign data_ram_en=1;
+	//assign data_ram_en=1;
+	assign data_ram_en=ld|lw|lwu|lh|lhu|lb|lbu;
 	assign data_ram_wen=(sd|sb|sh|sw|sb);
 
 	assign wmask=sb?8'b00000001:

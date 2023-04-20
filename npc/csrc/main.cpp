@@ -105,6 +105,7 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 		}
 		else if(raddr==0xa0000100){
 			*rdata=width_height();
+			//printf("the width_high=%d\n",*rdata);
 			skip_test=1;
 			return;
 		}
@@ -113,8 +114,10 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 			skip_test=1;
 			return;	
 		}
-		else if(raddr>=0x80000000&&raddr<=0x87ffffff)
+		else if(raddr>=0x80000000&&raddr<=0x87ffffff){
 		 *rdata=pmem_read(raddr,8);
+			//printf("use pmem_read and the rdata=%lx\n",*rdata);
+		}
 		else if(raddr==0xa0000060){
 			skip_test=1;
 			*rdata=key_dequeue();
@@ -303,6 +306,7 @@ int main(int argc, char** argv, char** env) {
     top->clk = 0;
     top->cpupc=0x80000000;
     //top->in=0;
+		int testdata=0;
 		 while (!contextp->gotFinish()) {
 			  device_update();
 				/*if(npc_state==0)*/
@@ -328,6 +332,15 @@ int main(int argc, char** argv, char** env) {
         //add read memory
 				upc=top->cpupc;
 				udnpc=top->dnpc;
+
+				if(TEST){
+					static int testaddr=0x82395E18;
+					int result=pmem_read(testaddr,4);
+					if(result!=testdata){
+						log_write("now change result=%lx,cpupc=%lx at %d\n",result,top->cpupc,contextp->time()/2);
+						testdata=result;
+					}
+				}
 //      ///////////////////////////////////////////////////
 				uint32_t instval=top->inst;
 				// Toggle control signals on an edge that doesn't correspond

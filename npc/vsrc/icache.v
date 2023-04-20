@@ -25,8 +25,7 @@ module icache(
 wire   [OFFSET_WIDTH-1:0]addr_offset;
 wire   [INDEX_WIDTH-1:0]addr_index;
 wire   [TAG_WIDTH-1:0]addr_tag;
-wire   mem_read_finish;
-wire   cache_input_finish;
+wire   [63:0]rdata_axi;
 assign addr_offset=araddr[OFFSET_WIDTH-1:0];
 assign addr_index =araddr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
 assign addr_tag   =araddr[31:OFFSET_WIDTH+INDEX_WIDTH];
@@ -50,18 +49,16 @@ always @(posedge clk)begin
 		cache_state<=CACHE_IDLE;
 end
 //总线信号
-assign inst_update=(state==READ_FINISH);
+//assign inst_update=(state==READ_FINISH);
 
 wire rvalid;
 wire rready;
 wire arready;
 wire rlast;
-wire [31:0]araddr_align;
+wire [31:0]araddr_block;
 reg  [2:0]d_len;
-assign araddr_align=araddr&(~32'b111);
+assign araddr_block=araddr&(~32'b111111);
 
-//寄存器
-reg [63:0]r_rdata;
 //状态机
 parameter   READ_IDLE        = 3'd0 ,
 						READ_ARREADY		 =3'd1,
@@ -71,7 +68,7 @@ reg [2:0]state;
 always @(posedge clk)begin
 	if(rst)
 		state<=READ_IDLE;
-	else if((state==READ_IDLE)&arready)
+	else if((state==READ_IDLE)&arready&arvalid)
 		state<=READ_ARREADY;
 	else if((state==READ_ARREADY)&rvalid)
 		state<=READ_TRANS;
@@ -81,18 +78,13 @@ always @(posedge clk)begin
 		state<=READ_IDLE;
 end
 //arvalid信号
-assign arvalid=(state==READ_IDLE);
-assign inst_update=(state==READ_FINISH);
+wire arvalid;
+assign arvalid=(state==READ_IDLE)&(cache_state==CACHE_MEMREAD);
 //r_data信号
 //mem_read
 always @(posedge clk)begin
-	if(rst)begin
-		for(integer i=0;i<NUM_LINES;i=i+1)
-			tagarray[i]<=0;
-		d_len<=0;
-	end
-	if(rvalid&rready)begin
-		dataarray[addr_index][d_len]<=rdata;
+		if(rvalid&rready)begin
+		dataarray[addr_index][d_len]<=rdata_axi;
 		d_len<=d_len+1;
 	end
 	if(rlast)begin
@@ -100,12 +92,18 @@ always @(posedge clk)begin
 		tagarray[addr_index][19:0]<=addr_tag;
 		d_len<=0;
 	end
+	if(rst)begin
+		for(integer i=0;i<NUM_LINES;i=i+1)
+			tagarray[i]<=0;
+		d_len<=0;
+	end
+
 end
 //chache_get阶段
-assign rdata=dataarray[addr_index][addr_offset[5:3]];
+assign rdata=dataarray[addr_index][addr_offset[5:3]];//对齐
 assign inst_update=(cache_state==CACHE_GET);
 //rready信号
-assign rready=(state==READ_ARREADY);
+assign rready=(state==READ_ARREADY)|(state==READ_TRANS);
 wire [1:0]arburst;
 wire [7:0]arlen;
 wire [2:0]arsize;
@@ -117,13 +115,13 @@ assign arsize='d3;
 axi_full_s axi_full_s0(
 .clk(clk),
 .rst(rst),
-.araddr(araddr_align),
+.araddr(araddr_block),
 .arvalid(arvalid),
 .arburst(arburst),
 .arlen(arlen),
 .arsize(arsize),
 .arready(arready),
-.rdata(rdata),
+.rdata(rdata_axi),
 .rresp(rresp),
 .rvalid(rvalid),
 .rlast(rlast),

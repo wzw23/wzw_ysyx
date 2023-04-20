@@ -44,7 +44,7 @@ always@(posedge clk)begin
 		master_state<=IDLE;
 	else if((arvalid_0)&(master_state==IDLE))
 		master_state<=S_MASTER_0;
-	else if((arvalid_1)&(master_state==IDLE))
+	else if((arvalid_1|awvalid_1)&(master_state==IDLE))
 		master_state<=S_MASTER_1;
 	else if((master_state==S_MASTER_0)&(inst_update))
 		master_state<=IDLE;

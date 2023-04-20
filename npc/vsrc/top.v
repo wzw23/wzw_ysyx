@@ -29,7 +29,8 @@ module top(
 	//IF模块
 	//wire [31:0]inst;
 	wire [31:0]araddr_0;wire arvalid_0;wire arready_0;wire [63:0]rdata_0;wire [1:0]rresp_0;wire rvalid_0;wire rready_0;
-  If i0(clk, rst,cpupc,sel_nextpc,imm,src1,inst,dnpc,c_rdata,inst_update,mem_finish,.araddr(araddr_0),.arvalid(arvalid_0),.arready(arready_0),.rdata(rdata_0),.rresp(rresp_0),.rvalid(rvalid_0),.rready(rready_0));//if
+  //If i0(clk, rst,cpupc,sel_nextpc,imm,src1,inst,dnpc,c_rdata,inst_update,mem_finish,.araddr(araddr_0),.arvalid(arvalid_0),.arready(arready_0),.rdata(rdata_0),.rresp(rresp_0),.rvalid(rvalid_0),.rready(rready_0));//if
+  If i0(clk, rst,cpupc,sel_nextpc,imm,src1,inst,dnpc,c_rdata,inst_update,mem_finish);//if
   //decode_exec de(clk,inst,cpupc,dnpc);
 ///////////////////////////////////////////
 	
@@ -85,50 +86,65 @@ module top(
 	wire [1:0]bresp_1;
 	wire bvalid_1;
 	wire bready_1;
-	mem #(64,64) mem0(.clk(clk),.rst(rst),.r_ren(data_ram_en),.r_raddr(ram_addr),.r_rdata(ram_data),.r_waddr(ram_addr),.r_mask(wmask),.r_wen(data_ram_wen),.r_wdata(src2),.l_choose(l_choose),.inst_update(inst_update),.mem_finish(mem_finish),.inst_finish(inst_finish),.araddr(araddr_1),.arvalid(arvalid_1),.arready(arready_1),.rdata(rdata_1),.rresp(rresp_1),.rvalid(rvalid_1),.rready(rready_1),.awaddr(awaddr_1),.awvalid(awvalid_1),.awready(awready_1),.wdata(wdata_1),.wstrb(wstrb_1),.wvalid(wvalid_1),.wready(wready_1),.bresp(bresp_1),.bvalid(bvalid_1),.bready(bready_1));
+	//mem #(64,64) mem0(.clk(clk),.rst(rst),.r_ren(data_ram_en),.r_raddr(ram_addr),.r_rdata(ram_data),.r_waddr(ram_addr),.r_mask(wmask),.r_wen(data_ram_wen),.r_wdata(src2),.l_choose(l_choose),.inst_update(inst_update),.mem_finish(mem_finish),.inst_finish(inst_finish),.araddr(araddr_1),.arvalid(arvalid_1),.arready(arready_1),.rdata(rdata_1),.rresp(rresp_1),.rvalid(rvalid_1),.rready(rready_1),.awaddr(awaddr_1),.awvalid(awvalid_1),.awready(awready_1),.wdata(wdata_1),.wstrb(wstrb_1),.wvalid(wvalid_1),.wready(wready_1),.bresp(bresp_1),.bvalid(bvalid_1),.bready(bready_1));
+mem2 #(64,64)mem1(
+.clk(clk),
+.rst(rst),
+.r_ren(data_ram_en),
+.r_raddr(ram_addr),
+.r_rdata(ram_data),
+.r_waddr(ram_addr),
+.r_mask(wmask),
+.r_wen(data_ram_wen),
+.r_wdata(src2),
+.l_choose(l_choose),
+.inst_update(inst_update),
+.mem_finish(mem_finish),
+.inst_finish(inst_finish)
+);
 
 	//写回模块
 	wb wb0(.r_data(ram_data),.alu_result(alu_result),.sel_rf_res(sel_rf_res),.wdata(wdata),c_rdata);
 	//总线仲裁器
-arbiter arbiter_0(
-.clk(clk),
-.rst(rst),
-.araddr_0(araddr_0),
-.araddr_1(araddr_1),
-.arvalid_0(arvalid_0),
-.arvalid_1(arvalid_1),
-.arready_0(arready_0),
-.arready_1(arready_1),
-.rdata_0(rdata_0),
-.rdata_1(rdata_1),
-.rresp_0(rresp_0),
-.rresp_1(rresp_1),
-.rvalid_0(rvalid_0),
-.rvalid_1(rvalid_1),
-.rready_0(rready_0),
-.rready_1(rready_1),
-.awaddr_1(awaddr_1),
-.awvalid_1(awvalid_1),
-.awready_1(awready_1),
-.wdata_1(wdata_1),
-.wstrb_1(wstrb_1),
-.wvalid_1(wvalid_1),
-.wready_1(wready_1),
-.bresp_1(bresp_1),
-.bvalid_1(bvalid_1),
-.bready_1(bready_1),
-.inst_update(inst_update),
-.mem_finish(mem_finish)
-);
+/*arbiter arbiter_0(*/
+/*.clk(clk),*/
+/*.rst(rst),*/
+/*.araddr_0(araddr_0),*/
+/*.araddr_1(araddr_1),*/
+/*.arvalid_0(0),*/
+/*.arvalid_1(arvalid_1),*/
+/*.arready_0(arready_0),*/
+/*.arready_1(arready_1),*/
+/*.rdata_0(rdata_0),*/
+/*.rdata_1(rdata_1),*/
+/*.rresp_0(rresp_0),*/
+/*.rresp_1(rresp_1),*/
+/*.rvalid_0(rvalid_0),*/
+/*.rvalid_1(rvalid_1),*/
+/*.rready_0(rready_0),*/
+/*.rready_1(rready_1),*/
+/*.awaddr_1(awaddr_1),*/
+/*.awvalid_1(awvalid_1),*/
+/*.awready_1(awready_1),*/
+/*.wdata_1(wdata_1),*/
+/*.wstrb_1(wstrb_1),*/
+/*.wvalid_1(wvalid_1),*/
+/*.wready_1(wready_1),*/
+/*.bresp_1(bresp_1),*/
+/*.bvalid_1(bvalid_1),*/
+/*.bready_1(bready_1),*/
+/*.inst_update(inst_update),*/
+/*.mem_finish(mem_finish)*/
+/*);*/
 
  	/////////////////////////////开启波形图/////////////////////
-	initial begin
-		if ($test$plusargs("trace") != 0) begin
-			$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
-			$dumpfile("logs/vlt_dump.vcd");
-			$dumpvars();
-		end
-		$display("[%0t] Model running...\n", $time);
-	end
+	/*initial begin*/
+		/*if ($test$plusargs("trace") != 0) begin*/
+			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/
+			/*$dumpfile("logs/vlt_dump.vcd");*/
+			/*$dumpvars();*/
+		/*end*/
+		/*$display("[%0t] Model running...\n", $time);*/
+	/*end*/
 	/*/*//////////////////////////////////////////////////////////
 	endmodule

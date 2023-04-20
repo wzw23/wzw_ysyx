@@ -1,4 +1,4 @@
-module If(input clk,input rst,output [63:0]cpupc,input [1:0]sel_nextpc,input [63:0]imm,input [63:0]src1,output [31:0]inst,output [63:0]dnpc,input[63:0]c_rdata,output inst_update,input mem_finish,output [31:0]araddr,output arvalid,input arready,input [63:0]rdata,input [1:0]rresp,input rvalid,output rready);
+module If(input clk,input rst,output [63:0]cpupc,input [1:0]sel_nextpc,input [63:0]imm,input [63:0]src1,output [31:0]inst,output [63:0]dnpc,input[63:0]c_rdata,output inst_update,input mem_finish);
 //位宽为32bit，复位值为0x80000000,写使能一直有效
 //wire [31:0]zhongjian;
 //assign zhongjian=cpupc+4;
@@ -19,58 +19,65 @@ MuxKey #(2,1,64) mux5(dnpc,mem_finish,{//alu_src2赋值
   1'b0,cpupc,
 	1'b1,dnpc_0
 	});
+wire [63:0]rdata_u;
+wire [31:0]araddr;
+assign araddr=cpupc[31:0];
+assign inst=(araddr[2]==1)?rdata_u[63:32]:rdata_u[31:0];
 Reg #(64,64'h80000000) i0 (clk,rst,dnpc,cpupc,1'b1);
-/*wire [63:0]inst_64;*/
-/*always @(*)begin*/
-		/*vpmem_read(cpupc, inst_64);*/
-/*end*/
-//assign inst=inst_64[31:0];
+icache icache0(
+	.clk(clk),
+	.rst(rst),
+	.araddr(araddr),
+	.rdata(rdata_u),
+	.inst_update(inst_update),
+	.mem_finish(mem_finish)
+ );
 
 //总线信号
 
-wire rvalid_rready;
+/*wire rvalid_rready;*/
 
-assign inst_update=(state==READ_FINISH);
+/*assign inst_update=(state==READ_FINISH);*/
 
-assign rvalid_rready=rvalid&rready;
+/*assign rvalid_rready=rvalid&rready;*/
 
-assign araddr=cpupc[31:0];
-//寄存器
-reg [63:0]r_rdata;
-//状态机
-parameter   READ_IDLE        = 3'd0 ,
-						READ_ARREADY		 =3'd1,
-						READ_FINISH 		 =3'd2;
-reg [2:0]state;
-always @(posedge clk)begin
-	if(rst)
-		state<=READ_IDLE;
-	else if((state==READ_IDLE)&arready)
-		state<=READ_ARREADY;
-	else if(state==READ_IDLE)
-		state<=READ_IDLE;
-	else if((state==READ_ARREADY)&rvalid)
-		state<=READ_FINISH;
-	else if(state==READ_ARREADY)
-		state<=READ_ARREADY;
-	else if(state==READ_FINISH&(mem_finish))
-		state<=READ_IDLE;
-end
-//arvalid信号
-assign arvalid=(state==READ_IDLE);
-//r_data信号
-always @(posedge clk)begin
-	if(rvalid&rready)
-		r_rdata<=rdata;
-	else
-		r_rdata<=r_rdata;
-end
-//rready信号
-MuxKey #(3,3,1) mux1(rready,state,{
-		READ_ARREADY,1'd1,
-		READ_FINISH,1'd0,
-		READ_IDLE,1'd0
-		});
-///////////////////////////////////////
-assign inst=r_rdata[31:0];
+/*assign araddr=cpupc[31:0];*/
+/*//寄存器*/
+/*reg [63:0]r_rdata;*/
+/*//状态机*/
+/*parameter   READ_IDLE        = 3'd0 ,*/
+						/*READ_ARREADY		 =3'd1,*/
+						/*READ_FINISH 		 =3'd2;*/
+/*reg [2:0]state;*/
+/*always @(posedge clk)begin*/
+	/*if(rst)*/
+		/*state<=READ_IDLE;*/
+	/*else if((state==READ_IDLE)&arready)*/
+		/*state<=READ_ARREADY;*/
+	/*else if(state==READ_IDLE)*/
+		/*state<=READ_IDLE;*/
+	/*else if((state==READ_ARREADY)&rvalid)*/
+		/*state<=READ_FINISH;*/
+	/*else if(state==READ_ARREADY)*/
+		/*state<=READ_ARREADY;*/
+	/*else if(state==READ_FINISH&(mem_finish))*/
+		/*state<=READ_IDLE;*/
+/*end*/
+/*//arvalid信号*/
+/*assign arvalid=(state==READ_IDLE);*/
+/*//r_data信号*/
+/*always @(posedge clk)begin*/
+	/*if(rvalid&rready)*/
+		/*r_rdata<=rdata;*/
+	/*else*/
+		/*r_rdata<=r_rdata;*/
+/*end*/
+/*//rready信号*/
+/*MuxKey #(3,3,1) mux1(rready,state,{*/
+		/*READ_ARREADY,1'd1,*/
+		/*READ_FINISH,1'd0,*/
+		/*READ_IDLE,1'd0*/
+		/*});*/
+/*///////////////////////////////////////*/
+/*assign inst=r_rdata[31:0];*/
 endmodule

@@ -3,7 +3,7 @@ module axi_full_s(
 	input  rst,
 	//读地址通道 
 	input  [31:0]araddr,
-	input  reg arvalid,
+	input  arvalid,
 	input  [1:0]arburst,//常为01 因为是通过cache传输
 	input  [7:0]arlen,
 	input  [2:0]arsize,//因为传输rdata为64bit 所以arsize恒为3 因为主机从机rdata宽度一样 所以用不到
@@ -65,17 +65,22 @@ end
 //rdata信号
 always @(posedge clk)begin
 	//if(rvalid&rready)begin
-	if(rst|(rlast==1))begin
+	if(rst|(c_arlen==arlen))begin
 		c_arlen<=0;
-		rvalid<=0;
 	end
 	if(state==READ_TRANS&(arburst==2'b01))begin
-	vpmem_read({{32'b0},r_araddr}, rdata);
-	rresp<='d0;
-	rvalid<='d1;//只有读出数据之后才能让其有效
-	r_araddr<=r_araddr+32'd8;//因为一次限制读8B 所以每读上一个数据地址移动8位
-	c_arlen<=c_arlen+1;
+		vpmem_read({{32'b0},r_araddr}, rdata);
+		rresp<='d0;
+		rvalid<='d1;//只有读出数据之后才能让其有效
+		r_araddr<=r_araddr+32'd8;//因为一次限制读8B 所以每读上一个数据地址移动8位
+		c_arlen<=c_arlen+1;
 end
+  else 
+		rvalid<='d0;
+	if(rlast)begin
+		rvalid<='d0;
+		c_arlen<=0;
+	end
 end
 //
 //rlast信号
