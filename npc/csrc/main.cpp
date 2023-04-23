@@ -95,8 +95,16 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 		// 总是读取地址为`raddr & ~0x7ull`的8字节返回给`rdata`
 		if(TEST){
 		log_write("raddr=%llx\n",raddr);}
-		if(raddr==0xa000004c)
-		{	uint64_t us=get_time(); 
+		if(raddr>=0x80000000&&raddr<=0x87ffffff){
+		 *rdata=pmem_read(raddr,8);
+			//printf("use pmem_read and the rdata=%lx\n",*rdata);
+		}
+		else	if(raddr==0xa000004c)
+		{	
+			if(TEST){
+				log_write("use skip and the raddr=%lx\n",raddr);
+			}
+			uint64_t us=get_time(); 
 			us_bigger=us>>32;
 			us_less=(uint32_t)us;
 			*rdata=us_bigger;
@@ -104,21 +112,27 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 			return;
 		}
 		else if(raddr==0xa0000100){
+			if(TEST){
+				log_write("use skip and the raddr=%lx\n",raddr);
+			}
 			*rdata=width_height();
 			//printf("the width_high=%d\n",*rdata);
 			skip_test=1;
 			return;
 		}
 		else if(raddr==0xa0000048){
+			if(TEST){
+				log_write("use skip and the raddr=%lx\n",raddr);
+			}
 			*rdata=us_less;
 			skip_test=1;
 			return;	
 		}
-		else if(raddr>=0x80000000&&raddr<=0x87ffffff){
-		 *rdata=pmem_read(raddr,8);
-			//printf("use pmem_read and the rdata=%lx\n",*rdata);
-		}
+		
 		else if(raddr==0xa0000060){
+			if(TEST){
+				log_write("use skip and the raddr=%lx\n",raddr);
+			}
 			skip_test=1;
 			*rdata=key_dequeue();
 		}
@@ -126,7 +140,7 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 			//static int first=0;
 			//if(first==0)
 			//skip_test=1;
-			//printf("the raddr=%llx\n",raddr);
+			//printf("the worse read addr=%llx\n",raddr);
 
 			//first=1;
 
@@ -163,11 +177,17 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long lo
 	 return;
 	}
 	else if(waddr==0xa0000104){
+		if(TEST){
+			log_write("use skip and the waddr=%lx\n",waddr);
+		}
 		skip_test=1;
 		c_update();
 		return;
 	}
 	else if((waddr>=0xa1000000)&&(waddr<=0xa10752ff)){
+		if(TEST){
+			log_write("use skip and the waddr=%lx\n",waddr);
+		}
 		//printf("the waddr=%lx len=%d wdata=%lx\n",waddr,len,wdata);
 		update_vmem(waddr,wdata,len);
 		skip_test=1;
