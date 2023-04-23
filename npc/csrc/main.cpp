@@ -150,7 +150,6 @@ extern "C" void vpmem_read(long long raddr, long long *rdata) {
 }
 extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long long wen) {
 	if(wen==0){
-		//printf("wzw add write unuse\n");
 		return;
 	}
 	//if((circle>=4)&&(circle%2==0)){
@@ -381,7 +380,7 @@ int main(int argc, char** argv, char** env) {
             //top->in=rand()%10;
         }
 				if(!top->clk){
-        if(top->ebreak)
+        if(top->ebreak&top->inst_update)
         {   
 						if(cpu_gpr[10]==0)
 							printf(GREEN"\nHIT GOOD TAP\n"NONE);
