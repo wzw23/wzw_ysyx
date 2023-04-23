@@ -86,6 +86,8 @@ dcache dcache_0(
 .inst_update(inst_update),
 .cache_finish(cache_finish)
 );
+///////////////////////////////crossbar绕过cache///////////////////
+//////////////////////////////直接访问mem_read和mem_write访问cache
 wire device_finish;
 always @(*)begin
 	//if((use_cache==0)&inst_update)begin
@@ -96,6 +98,21 @@ always @(*)begin
 		//else if(r_wen)begin
 		//end
 	end
+/*mem_read_write mem_read_write_0(*/
+/*.clk(clk),*/
+/*.rst(rst),*/
+/*.ren(r_ren),*/
+/*.r_raddr(r_raddr),*/
+/*.r_rdata(r_rdata_ld_device),*/
+/*.wen(r_wen),*/
+/*.r_waddr(r_waddr),*/
+/*.r_wdata(r_wdata),*/
+/*.r_mask(r_mask),*/
+/*.inst_update(inst_update),*/
+/*.use_device_en(~use_cache),*/
+/*.use_device_finish(device_finish)*/
+/*);*/
+///////////////////////////////////////////////////////////////////
 assign device_finish=((use_cache==0)&inst_update);
 assign mem_finish=(use_cache&cache_finish)|((!use_cache)&device_finish);
 assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:

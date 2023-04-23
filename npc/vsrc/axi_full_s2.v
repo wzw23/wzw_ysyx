@@ -105,7 +105,9 @@ always @(posedge clk)begin
 		write_state<=WRITE_IDLE;
 	else if((write_state==WRITE_IDLE)&awvalid)
 		write_state<=WRITE_AW_VALID;
-	else if((write_state==WRITE_AW_VALID)&wvalid)
+	else if((write_state==WRITE_AW_VALID)&(wvalid&wlast))
+		write_state<=WRITE_FINISH;
+	else if((write_state==WRITE_AW_VALID)&(wvalid&(~wlast)))
 		write_state<=WRITE_W_VALID;
 	else if((write_state==WRITE_W_VALID)&wlast)
 		write_state<=WRITE_FINISH;

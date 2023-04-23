@@ -3,8 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-int TEST=0; 
-int DIFFTEST=0;
+int TEST=1; 
+int DIFFTEST=1;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -154,7 +154,10 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long lo
 	else if(wmask==-1)
 		len=8;
 	if(waddr==0xa00003f8)
-	{char putdata=(char)wdata;
+	{
+	 if(TEST)
+		 log_write("use uart here\n");
+	 char putdata=(char)wdata;
 	 putchar(putdata);
 	 skip_test=1;
 	 return;
@@ -451,6 +454,11 @@ XunHuan:
         VL_PRINTF("[%" VL_PRI64 "d]  finish cpupc=%lx inst=%lx\n",
                   contextp->time()/2,  
                   top->cpupc,top->inst);
+				if(TEST){
+				log_write("[%" VL_PRI64 "d]  finish cpupc=%lx inst=%lx\n",
+                  contextp->time()/2,  
+                  top->cpupc,top->inst);
+				}
     }
     // Final model cleanup
     top->final();
