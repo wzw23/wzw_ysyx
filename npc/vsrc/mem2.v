@@ -93,7 +93,7 @@ always @(*)begin
 	//if((use_cache==0)&inst_update)begin
 		//if(r_ren)begin
 			vpmem_read({r_raddr}, r_rdata_ld_device);
-			vpmem_write({r_waddr}, r_wdata, r_mask,{63'b0,r_wen&inst_update});
+			vpmem_write({r_waddr}, r_wdata, r_mask,{63'b0,r_wen&inst_update&(~use_cache)});
 		//end
 		//else if(r_wen)begin
 		//end
