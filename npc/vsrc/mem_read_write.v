@@ -39,7 +39,9 @@ always @(posedge clk)begin
 		read_state<=READ_IDLE;
 	else if((read_state==READ_IDLE)&arready&arvalid)
 		read_state<=READ_ARREADY;
-	else if((read_state==READ_ARREADY)&rvalid&rready)
+	else if((read_state==READ_ARREADY)&rvalid&rready&rlast)
+		read_state<=READ_FINISH;
+	else if((read_state==READ_ARREADY)&rvalid&rready&(~rlast))
 		read_state<=READ_TRANS;
 	else if((read_state==READ_TRANS)&rlast)
 		read_state<=READ_FINISH;

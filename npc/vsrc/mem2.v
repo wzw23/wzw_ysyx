@@ -41,6 +41,7 @@ import "DPI-C" function void vpmem_read(
 
 import "DPI-C" function void vpmem_write(
 	input longint waddr, input longint wdata, input byte wmask,input longint use_wen);
+
 	wire cache_finish;	
 	wire use_cache;
   wire [DATA_WIDTH-1:0]r_rdata_ld;
@@ -88,34 +89,34 @@ dcache dcache_0(
 );
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache
-wire [63:0]device_wen;
-assign device_wen={63'b0,r_wen&inst_update&(~use_cache)};
+/*wire [63:0]device_wen;*/
+/*assign device_wen={63'b0,r_wen&inst_update&(~use_cache)};*/
 wire device_finish;
-always @(*)begin
-	//if((use_cache==0)&inst_update)begin
-		//if(r_ren)begin
-			vpmem_read({r_raddr}, r_rdata_ld_device);
-			vpmem_write({r_waddr}, r_wdata, r_mask,device_wen);
-		//end
-		//else if(r_wen)begin
-		//end
-	end
-/*mem_read_write mem_read_write_0(*/
-/*.clk(clk),*/
-/*.rst(rst),*/
-/*.ren(r_ren),*/
-/*.r_raddr(r_raddr),*/
-/*.r_rdata(r_rdata_ld_device),*/
-/*.wen(r_wen),*/
-/*.r_waddr(r_waddr),*/
-/*.r_wdata(r_wdata),*/
-/*.r_mask(r_mask),*/
-/*.inst_update(inst_update),*/
-/*.use_device_en(~use_cache),*/
-/*.use_device_finish(device_finish)*/
-/*);*/
+/*always @(*)begin*/
+	/*//if((use_cache==0)&inst_update)begin*/
+		/*//if(r_ren)begin*/
+			/*vpmem_read({r_raddr}, r_rdata_ld_device);*/
+			/*vpmem_write({r_waddr}, r_wdata, r_mask,device_wen);*/
+		/*//end*/
+		/*//else if(r_wen)begin*/
+		/*//end*/
+	/*end*/
+mem_read_write mem_read_write_0(
+.clk(clk),
+.rst(rst),
+.ren(r_ren&(~use_cache)),
+.r_raddr(r_raddr),
+.r_rdata(r_rdata_ld_device),
+.wen(r_wen&(~use_cache)),
+.r_waddr(r_waddr),
+.r_wdata(r_wdata),
+.r_mask(r_mask),
+.inst_update(inst_update),
+.use_device_en(~use_cache),
+.use_device_finish(device_finish)
+);
 ///////////////////////////////////////////////////////////////////
-assign device_finish=((use_cache==0)&inst_update);
+//assign device_finish=((use_cache==0)&inst_update);
 assign mem_finish=(use_cache&cache_finish)|((!use_cache)&device_finish);
 assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:
 									r_rdata_ld_device;

@@ -3,8 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-int TEST=1; 
-int DIFFTEST=1;
+int TEST=0; 
+int DIFFTEST=0;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -155,6 +155,7 @@ extern "C" void vpmem_write(long long waddr, long long wdata, char wmask,long lo
 	//if((circle>=4)&&(circle%2==0)){
 	int len;
 	if(TEST){
+	log_write(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
 	printf(RED"\nwaddr=%llx,wdata=%llx,wmask=%d\n"NONE,waddr,wdata,wmask);
 	printf("deng=%d\n",(waddr==0x00000000a00003f8));}
 	
