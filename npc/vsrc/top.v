@@ -69,25 +69,25 @@ module top(
 
 	//访存模块
 	
-	wire [31:0]araddr_1;
-	wire arvalid_1;
-	wire arready_1;
-	wire [63:0]rdata_1;
-	wire [1:0]rresp_1;
-	wire rvalid_1;
-	wire rready_1;
-	wire [31:0]awaddr_1;
-	wire awvalid_1;
-	wire awready_1;
-	wire [63:0]wdata_1;
-	wire [7:0]wstrb_1;
-	wire wvalid_1;
-	wire wready_1;
-	wire [1:0]bresp_1;
-	wire bvalid_1;
-	wire bready_1;
+ /* wire [31:0]araddr_1;*/
+	/*wire arvalid_1;*/
+	/*wire arready_1;*/
+	/*wire [63:0]rdata_1;*/
+	/*wire [1:0]rresp_1;*/
+	/*wire rvalid_1;*/
+	/*wire rready_1;*/
+	/*wire [31:0]awaddr_1;*/
+	/*wire awvalid_1;*/
+	/*wire awready_1;*/
+	/*wire [63:0]wdata_1;*/
+	/*wire [7:0]wstrb_1;*/
+	/*wire wvalid_1;*/
+	/*wire wready_1;*/
+	/*wire [1:0]bresp_1;*/
+	/*wire bvalid_1;*/
+	/*wire bready_1;*/
 	//mem #(64,64) mem0(.clk(clk),.rst(rst),.r_ren(data_ram_en),.r_raddr(ram_addr),.r_rdata(ram_data),.r_waddr(ram_addr),.r_mask(wmask),.r_wen(data_ram_wen),.r_wdata(src2),.l_choose(l_choose),.inst_update(inst_update),.mem_finish(mem_finish),.inst_finish(inst_finish),.araddr(araddr_1),.arvalid(arvalid_1),.arready(arready_1),.rdata(rdata_1),.rresp(rresp_1),.rvalid(rvalid_1),.rready(rready_1),.awaddr(awaddr_1),.awvalid(awvalid_1),.awready(awready_1),.wdata(wdata_1),.wstrb(wstrb_1),.wvalid(wvalid_1),.wready(wready_1),.bresp(bresp_1),.bvalid(bvalid_1),.bready(bready_1));
-mem2 #(64,64)mem1(
+mem2 #(64,64)mem_2(
 .clk(clk),
 .rst(rst),
 .r_ren(data_ram_en),

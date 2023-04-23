@@ -88,12 +88,14 @@ dcache dcache_0(
 );
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache
+wire [63:0]device_wen;
+assign device_wen={63'b0,r_wen&inst_update&(~use_cache)};
 wire device_finish;
 always @(*)begin
 	//if((use_cache==0)&inst_update)begin
 		//if(r_ren)begin
 			vpmem_read({r_raddr}, r_rdata_ld_device);
-			vpmem_write({r_waddr}, r_wdata, r_mask,{63'b0,r_wen&inst_update&(~use_cache)});
+			vpmem_write({r_waddr}, r_wdata, r_mask,device_wen);
 		//end
 		//else if(r_wen)begin
 		//end
