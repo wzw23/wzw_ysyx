@@ -3,8 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-int TEST=0; 
-int DIFFTEST=0;
+int TEST=1; 
+int DIFFTEST=1;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"

@@ -1,4 +1,28 @@
-module If(input clk,input rst,output [63:0]cpupc,input [1:0]sel_nextpc,input [63:0]imm,input [63:0]src1,output [31:0]inst,output [63:0]dnpc,input[63:0]c_rdata,output inst_update,input mem_finish);
+module If(
+	input clk,
+	input rst,
+	output [63:0]cpupc,
+	input [1:0]sel_nextpc,
+	input [63:0]imm,
+	input [63:0]src1,
+	output [31:0]inst,
+	output [63:0]dnpc,
+	input[63:0]c_rdata,
+	output inst_update,
+	input mem_finish,
+	output [31:0]araddr1,
+	output arvalid1,
+	output [1:0]arburst1,
+	output [7:0]arlen1,
+	output [2:0]arsize1,
+	input arready1,
+	input [63:0]rdata1,
+	input [1:0]rresp1,
+	input rvalid1,
+	input rlast1,
+	output rready1
+	//总线接口
+);
 //位宽为32bit，复位值为0x80000000,写使能一直有效
 //wire [31:0]zhongjian;
 //assign zhongjian=cpupc+4;
@@ -30,7 +54,18 @@ icache icache0(
 	.araddr(araddr),
 	.rdata(rdata_u),
 	.inst_update(inst_update),
-	.mem_finish(mem_finish)
+	.mem_finish(mem_finish),
+	.araddr1(araddr1),
+	.arvalid1(arvalid1),
+	.arburst1(arburst1),
+	.arlen1(arlen1),
+	.arsize1(arsize1),
+	.arready1(arready1),
+	.rdata1(rdata1),
+	.rresp1(rresp1),
+	.rvalid1(rvalid1),
+	.rlast1(rlast1),
+	.rready1(rready1)
  );
 
 //总线信号

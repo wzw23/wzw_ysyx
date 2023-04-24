@@ -14,7 +14,36 @@ module dcache(
 	input  [63:0]wdata,
 	input  [7:0]wmask,
 	input  inst_update,
-	output  cache_finish
+	output  cache_finish,
+	//总线信号
+	output [31:0]araddr2,
+	output arvalid2,
+	output [1:0]arburst2,
+	output [7:0]arlen2,
+	output [2:0]arsize2,
+	input arready2,
+	input [63:0]rdata2,
+	input [1:0]rresp2,
+	input rvalid2,
+	input rlast2,
+	output rready2,
+	//写地址通道
+	output [31:0]awaddr2,
+	output awvalid2,
+	output [1:0]awburst2,
+	output [7:0]awlen2,
+	input awready2,
+	//写数据通道
+	output [63:0]wdata2,
+  output wlast2,
+	output [7:0]wstrb2,
+	output wvalid2,
+	input wready2,
+	//写回复通道
+	input [1:0]bresp2,
+	input bvalid2,
+	output bready2
+
 );
  parameter CACHE_SIZE=4096;//cache大小为4kB 4096B
  parameter LINE_SIZE=64;//line size 64B
@@ -288,32 +317,58 @@ assign testaraddr_index =testaraddr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
 assign testdata=dataarray[testaraddr_index][testaraddr_offset[5:3]];
 
 ///////////////////////////////////////
-axi_full_s2 axi_full_s2_0(
-	.clk(clk),
-	.rst(rst),
-	.araddr(araddr_block),
-	.arvalid(arvalid),
-	.arburst(arburst),
-	.arlen(arlen),
-	.arsize(arsize),
-	.arready(arready),
-	.rdata(rdata_axi),
-	.rresp(rresp),
-	.rvalid(rvalid),
-	.rlast(rlast),
-	.rready(rready),
-	.awaddr(awaddr),
-	.awvalid(awvalid),
-	.awburst(awburst),
-	.awlen(awlen),
-	.awready(awready),
-	.wdata(wdata_axi),
-	.wlast(wlast),
-	.wstrb(wstrb),
-	.wvalid(wvalid),
-	.wready(wready),
-	.bresp(bresp),
-	.bvalid(bvalid),
-	.bready(bready)
-);
+/*axi_full_s2 axi_full_s2_0(*/
+	/*.clk(clk),*/
+	/*.rst(rst),*/
+	/*.araddr(araddr_block),*/
+	/*.arvalid(arvalid),*/
+	/*.arburst(arburst),*/
+	/*.arlen(arlen),*/
+	/*.arsize(arsize),*/
+	/*.arready(arready),*/
+	/*.rdata(rdata_axi),*/
+	/*.rresp(rresp),*/
+	/*.rvalid(rvalid),*/
+	/*.rlast(rlast),*/
+	/*.rready(rready),*/
+	/*.awaddr(awaddr),*/
+	/*.awvalid(awvalid),*/
+	/*.awburst(awburst),*/
+	/*.awlen(awlen),*/
+	/*.awready(awready),*/
+	/*.wdata(wdata_axi),*/
+	/*.wlast(wlast),*/
+	/*.wstrb(wstrb),*/
+	/*.wvalid(wvalid),*/
+	/*.wready(wready),*/
+	/*.bresp(bresp),*/
+	/*.bvalid(bvalid),*/
+	/*.bready(bready)*/
+/*);*/
+assign araddr2=araddr_block;
+assign arvalid2=arvalid;
+assign arburst2=arburst;
+assign arlen2=arlen;
+assign arsize2=arsize;
+assign arready=arready2;
+assign rdata_axi=rdata2;
+assign rresp=rresp2;
+assign rvalid=rvalid2;
+assign rlast=rlast2;
+assign rready2=rready;
+
+assign awaddr2=awaddr;
+assign awvalid2=awvalid;
+assign awburst2=awburst;
+assign awlen2=awlen;
+assign awready=awready2;
+assign wdata2=wdata_axi;
+assign wlast2=wlast;
+assign wstrb2=wstrb;
+assign wvalid2=wvalid;
+assign wready=wready2;
+assign bresp=bresp2;
+assign bvalid=bvalid2;
+assign bready2=bready;
+
 endmodule

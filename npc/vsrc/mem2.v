@@ -14,27 +14,35 @@ module mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	input [6:0]l_choose,
 	input inst_update,
 	output mem_finish,
-	output inst_finish
-	/*output [31:0]araddr,*/
-	/*output arvalid,*/
-	/*input arready,*/
-	/*input [63:0]rdata,*/
-	/*input [1:0]rresp,*/
-	/*input rvalid,*/
-	/*output rready,*/
-	/*//写地址通道*/
-	/*output [31:0]awaddr,*/
-	/*output awvalid,*/
-	/*input awready,*/
-	/*//写数据通道*/
-	/*output [63:0]wdata,*/
-	/*output [7:0]wstrb,*/
-	/*output wvalid,*/
-	/*input wready,*/
-	/*//写回复通道*/
-	/*input [1:0]bresp,*/
-	/*input bvalid,*/
-	/*output bready*/
+	output inst_finish,
+	//总线信号
+	output [31:0]araddr2,
+	output arvalid2,
+	output [1:0]arburst2,
+	output [7:0]arlen2,
+	output [2:0]arsize2,
+	input arready2,
+	input [63:0]rdata2,
+	input [1:0]rresp2,
+	input rvalid2,
+	input rlast2,
+	output rready2,
+	//写地址通道
+	output [31:0]awaddr2,
+	output awvalid2,
+	output [1:0]awburst2,
+	output [7:0]awlen2,
+	input awready2,
+	//写数据通道
+	output [63:0]wdata2,
+  output wlast2,
+	output [7:0]wstrb2,
+	output wvalid2,
+	input wready2,
+	//写回复通道
+	input [1:0]bresp2,
+	input bvalid2,
+	output bready2
 );
 import "DPI-C" function void vpmem_read(
 	input longint mraddr, output longint mrdata);
@@ -85,7 +93,32 @@ dcache dcache_0(
 .wdata(r_wdata),
 .wmask(r_mask),
 .inst_update(inst_update),
-.cache_finish(cache_finish)
+.cache_finish(cache_finish),
+//总线信号
+.araddr2(araddr2),
+.arvalid2(arvalid2),
+.arburst2(arburst2),
+.arlen2(arlen2),
+.arsize2(arsize2),
+.arready2(arready2),
+.rdata2(rdata2),
+.rresp2(rresp2),
+.rvalid2(rvalid2),
+.rlast2(rlast2),
+.rready2(rready2),
+.awaddr2(awaddr2),
+.awvalid2(awvalid2),
+.awburst2(awburst2),
+.awlen2(awlen2),
+.awready2(awready2),
+.wdata2(wdata2),
+.wlast2(wlast2),
+.wstrb2(wstrb2),
+.wvalid2(wvalid2),
+.wready2(wready2),
+.bresp2(bresp2),
+.bvalid2(bvalid2),
+.bready2(bready2)
 );
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache

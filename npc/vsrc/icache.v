@@ -8,7 +8,32 @@ module icache(
 	input  [31:0]araddr,
 	output [63:0]rdata,
 	output inst_update,
-	input  mem_finish
+	input  mem_finish,
+	//总线接口
+	output [31:0]araddr1,
+	output arvalid1,
+	output [1:0]arburst1,
+	output [7:0]arlen1,
+	output [2:0]arsize1,
+	input arready1,
+	input [63:0]rdata1,
+	input [1:0]rresp1,
+	input rvalid1,
+	input rlast1,
+	output rready1
+	//写地址通道
+	/*output [31:0]awaddr1,*/
+	/*output awvalid1,*/
+	/*input awready1,*/
+	/*//写数据通道*/
+	/*output [63:0]wdata1,*/
+	/*output [7:0]wstrb1,*/
+	/*output wvalid1,*/
+	/*input wready1,*/
+	/*//写回复通道*/
+	/*input [1:0]bresp1,*/
+	/*input bvalid1,*/
+	/*output bready1*/
  );
  parameter CACHE_SIZE=4096;//cache大小为4kB 4096B
  parameter LINE_SIZE=64;//line size 64B
@@ -112,20 +137,60 @@ assign arburst=2'b01;
 assign arlen=8;
 assign arsize='d3;
 
-axi_full_s axi_full_s0(
-.clk(clk),
-.rst(rst),
-.araddr(araddr_block),
-.arvalid(arvalid),
-.arburst(arburst),
-.arlen(arlen),
-.arsize(arsize),
-.arready(arready),
-.rdata(rdata_axi),
-.rresp(rresp),
-.rvalid(rvalid),
-.rlast(rlast),
-.rready(rready)
-);
+/*axi_full_s axi_full_s0(*/
+/*.clk(clk),*/
+/*.rst(rst),*/
+/*.araddr(araddr_block),*/
+/*.arvalid(arvalid),*/
+/*.arburst(arburst),*/
+/*.arlen(arlen),*/
+/*.arsize(arsize),*/
+/*.arready(arready),*/
+/*.rdata(rdata_axi),*/
+/*.rresp(rresp),*/
+/*.rvalid(rvalid),*/
+/*.rlast(rlast),*/
+/*.rready(rready)*/
+/*);*/
+assign araddr1=araddr_block;
+assign arvalid1=arvalid;
+assign arburst1=arburst;
+assign arlen1=arlen;
+assign arsize1=arsize;
+assign arready=arready1;
+assign rdata_axi=rdata1;
+assign rresp=rresp1;
+assign rvalid=rvalid1;
+assign rready1=rready;
+assign rlast=rlast1;
+
+/*axi_full_s2 axi_full_s2_1(*/
+	/*.clk(clk),*/
+	/*.rst(rst),*/
+	/*.araddr(araddr_block),*/
+	/*.arvalid(arvalid),*/
+	/*.arburst(arburst),*/
+	/*.arlen(arlen),*/
+	/*.arsize(arsize),*/
+	/*.arready(arready),*/
+	/*.rdata(rdata_axi),*/
+	/*.rresp(rresp),*/
+	/*.rvalid(rvalid),*/
+	/*.rlast(rlast),*/
+	/*.rready(rready),*/
+	/*.awaddr(0),*/
+	/*.awvalid(0),*/
+	/*.awburst(0),*/
+	/*.awlen(0),*/
+	/*.awready(awready),*/
+	/*.wdata(0),*/
+	/*.wlast(0),*/
+	/*.wstrb(0),*/
+	/*.wvalid(0),*/
+	/*.wready(wready),*/
+	/*.bresp(bresp),*/
+	/*.bvalid(bvalid),*/
+	/*.bready(0)*/
+/*);*/
 ///////////
 endmodule
