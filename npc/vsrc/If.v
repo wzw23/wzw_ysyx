@@ -48,7 +48,7 @@ wire [31:0]araddr;
 assign araddr=cpupc[31:0];
 assign inst=(araddr[2]==1)?rdata_u[63:32]:rdata_u[31:0];
 Reg #(64,64'h80000000) i0 (clk,rst,dnpc,cpupc,1'b1);
-icache icache0(
+icache icache_9(
 	.clk(clk),
 	.rst(rst),
 	.araddr(araddr),

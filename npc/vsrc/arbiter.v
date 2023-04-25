@@ -15,8 +15,8 @@ module arbiter(
 	output arready_1,
 	output arready_2,
 	//读数据通道
-	output [63:0]rdata_1,
-	output [63:0]rdata_2,
+	output reg[63:0]rdata_1,
+	output reg[63:0]rdata_2,
 	output [1:0]rresp_1,
 	output [1:0]rresp_2,
 	output rvalid_1,

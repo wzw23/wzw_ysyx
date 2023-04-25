@@ -11,7 +11,7 @@ module axi_full_s2(
 	//读数据通道
 	output [63:0]rdata,
 	output reg [1:0]rresp,
-	output rvalid,
+	output reg rvalid,
 	output rlast,
 	input reg rready,
 	//写地址通道
@@ -41,9 +41,9 @@ import "DPI-C" function void vpmem_write(
 //寄存器 写回馈信号也需要寄存器
 reg [31:0]r_araddr;
 reg [7:0] c_arlen;
-reg [7:0] c_awlen;
+//reg [7:0] c_awlen;
 reg [31:0]r_awaddr;
-reg testwrite;
+//reg testwrite;
 //状态机
 parameter   READ_IDLE        = 3'd0 ,
 						READ_ARVALID=3'd1,
@@ -131,9 +131,9 @@ always @(posedge clk)begin
 	if(wvalid&wready&(awburst==2'b01))begin
 		vpmem_write({{32'b0},r_awaddr}, wdata, wstrb,64'd1);
 		r_awaddr<=r_awaddr+32'd8;
-		testwrite<=1;
+		//testwrite<=1;
 end
-	else testwrite<=0;
+	//else testwrite<=0;
 if(wlast)
 		bresp<='d1;
 else begin

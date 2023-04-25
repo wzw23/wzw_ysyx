@@ -107,11 +107,17 @@ wire arvalid;
 assign arvalid=(state==READ_IDLE)&(cache_state==CACHE_MEMREAD);
 //r_data信号
 //mem_read
+reg rvalid_rready;
+reg [63:0]rdata_test3;
 always @(posedge clk)begin
-		if(rvalid&rready)begin
+	if(rvalid&rready)begin
 		dataarray[addr_index][d_len]<=rdata_axi;
+		rdata_test3<=rdata_axi;
 		d_len<=d_len+1;
+		rvalid_rready<=1;
 	end
+	else 
+		rvalid_rready<=0;
 	if(rlast)begin
 		tagarray[addr_index][20]<='d1;
 		tagarray[addr_index][19:0]<=addr_tag;
@@ -120,12 +126,16 @@ always @(posedge clk)begin
 	if(rst)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=0;
+		for(integer j=0;j<NUM_LINES;j=j+1)
+			for(integer k=0;k<8;k++)
+				dataarray[j][k]<=0;
 		d_len<=0;
 	end
-
 end
 //chache_get阶段
 assign rdata=dataarray[addr_index][addr_offset[5:3]];//对齐
+//wire   [63:0]rdata_test;
+//assign rdata_test=dataarray[0][0];//对齐
 assign inst_update=(cache_state==CACHE_GET);
 //rready信号
 assign rready=(state==READ_ARREADY)|(state==READ_TRANS);
@@ -192,5 +202,6 @@ assign rlast=rlast1;
 	/*.bvalid(bvalid),*/
 	/*.bready(0)*/
 /*);*/
+
 ///////////
 endmodule

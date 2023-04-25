@@ -64,7 +64,7 @@ wire   [INDEX_WIDTH-1:0]araddr_index;
 wire   [TAG_WIDTH-1:0]araddr_tag;
 wire   [INDEX_WIDTH-1:0]waddr_index;
 wire   [OFFSET_WIDTH-1:0]waddr_offset;
-wire   [TAG_WIDTH-1:0]waddr_tag;
+//wire   [TAG_WIDTH-1:0]waddr_tag;
 wire   [63:0]rdata_axi;
 wire   rlast;
 assign araddr_offset=araddr[OFFSET_WIDTH-1:0];
@@ -73,7 +73,7 @@ assign araddr_tag   =araddr[31:OFFSET_WIDTH+INDEX_WIDTH];
 
 assign waddr_offset=waddr[OFFSET_WIDTH-1:0];
 assign waddr_index =waddr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
-assign waddr_tag   =waddr[31:OFFSET_WIDTH+INDEX_WIDTH];
+//assign waddr_tag   =waddr[31:OFFSET_WIDTH+INDEX_WIDTH];
 
 parameter CACHE_IDLE=0,
         	CACHE_UPDATE_BEGIN=1,
@@ -88,7 +88,7 @@ wire rcache_en;//读写cache使能信号
 wire wcache_en;
 wire mem_write_begin;
 wire mem_write_finish;
-wire mem_read_finish;
+//wire mem_read_finish;
 wire mem_read_begin;
 assign araddr=(rcache_en)?raddr:
 							(wcache_en)?waddr:
@@ -174,7 +174,7 @@ always @(posedge clk)begin
 		read_state<=READ_IDLE;
 end
 //read_finish信号
-assign mem_read_finish=(read_state==READ_FINISH); 
+//assign mem_read_finish=(read_state==READ_FINISH); 
 assign mem_write_finish=(write_state==WRITE_FINISH);
 //arvalid信号
 assign arvalid=(read_state==READ_IDLE)&mem_read_begin;
@@ -305,16 +305,16 @@ always @(posedge clk)
 		//{dataarray[waddr_index][waddr_offset[5:3]+1][31:0],dataarray[waddr_index][waddr_offset[5:3]][63:32]}<=({dataarray[waddr_index][waddr_offset[5:3]+1][31:0],dataarray[waddr_index][araddr_offset[5:3]][63:32]}&(~wmask_full))|(wdata&wmask_full);
 end
 //////////////
-wire   [31:0]testaraddr;
-assign testaraddr=32'h82395E18;
-wire   [OFFSET_WIDTH-1:0]testaraddr_offset;
-wire   [INDEX_WIDTH-1:0]testaraddr_index;
-wire   [63:0]testdata;
-wire   [21:0]testtag;
-assign testtag=tagarray[0];
-assign testaraddr_offset=testaraddr[OFFSET_WIDTH-1:0];
-assign testaraddr_index =testaraddr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
-assign testdata=dataarray[testaraddr_index][testaraddr_offset[5:3]];
+//wire   [31:0]testaraddr;
+//assign testaraddr=32'h82395E18;
+//wire   [OFFSET_WIDTH-1:0]testaraddr_offset;
+//wire   [INDEX_WIDTH-1:0]testaraddr_index;
+//wire   [63:0]testdata;
+//wire   [21:0]testtag;
+//assign testtag=tagarray[0];
+//assign testaraddr_offset=testaraddr[OFFSET_WIDTH-1:0];
+//assign testaraddr_index =testaraddr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
+//assign testdata=dataarray[testaraddr_index][testaraddr_offset[5:3]];
 
 ///////////////////////////////////////
 /*axi_full_s2 axi_full_s2_0(*/

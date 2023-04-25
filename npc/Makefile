@@ -26,7 +26,7 @@ endif
 #VERILATOR_FLAGS += -Os -x-assign 0
 #VERILATOR_FLAGS += -O3 --x-assign fast --x-initial fast
 ## Warn abount lint issues; may not want this on less solid designs
-##VERILATOR_FLAGS += -Wall
+#VERILATOR_FLAGS += -Wall
 ## Make waveforms
 #VERILATOR_FLAGS += --trace
 ## Check SystemVerilog assertions
@@ -40,7 +40,7 @@ endif
 				#-O3 --x-assign fast --x-initial fast --noassert
 
 VERILATOR_FLAGS += -MMD --build -cc --exe \
-				-O3 --x-assign fast --x-initial fast --noassert --trace
+				-Os -x-assign 0 --trace  #--coverage
 
 # Run Verilator in debug mode
 #VERILATOR_FLAGS += --debug

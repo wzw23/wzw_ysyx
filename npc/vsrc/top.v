@@ -28,7 +28,7 @@ module top(
 	
 	//IF模块
 	//wire [31:0]inst;
-	wire [31:0]araddr_1;wire arvalid_1;wire arready_1;wire [63:0]rdata_1;wire [1:0]rresp_1;wire rvalid_1;wire rready_1;
+	//wire [31:0]araddr_1;wire arvalid_1;wire arready_1;wire [63:0]rdata_1;wire [1:0]rresp_1;wire rvalid_1;wire rready_1;
   //If i0(clk, rst,cpupc,sel_nextpc,imm,src1,inst,dnpc,c_rdata,inst_update,mem_finish,.araddr(araddr_1),.arvalid(arvalid_1),.arready(arready_1),.rdata(rdata_1),.rresp(rresp_1),.rvalid(rvalid_1),.rready(rready_1));//if
 
 wire [31:0]araddr1;
@@ -70,7 +70,7 @@ wire bvalid2;
 wire bready2;
 
 
- If i0(
+ If if_0(
 .clk(clk), 
 .rst(rst),
 .cpupc(cpupc),
@@ -191,7 +191,7 @@ mem2 #(64,64)mem_2(
 );
 
 	//写回模块
-	wb wb0(.r_data(ram_data),.alu_result(alu_result),.sel_rf_res(sel_rf_res),.wdata(wdata),c_rdata);
+wb wb0(.r_data(ram_data),.alu_result(alu_result),.sel_rf_res(sel_rf_res),.wdata(wdata),.c_rdata(c_rdata));
 	//总线仲裁器
 arbiter arbiter_1(
 .clk(clk),
