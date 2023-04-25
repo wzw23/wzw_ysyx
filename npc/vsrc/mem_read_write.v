@@ -10,7 +10,35 @@ module mem_read_write(
 	input  [7:0]r_mask,
 	input  inst_update,
 	input  use_device_en,
-	output use_device_finish
+	output use_device_finish,
+		//总线信号
+	output [31:0]araddr2,
+	output arvalid2,
+	output [1:0]arburst2,
+	output [7:0]arlen2,
+	output [2:0]arsize2,
+	input arready2,
+	input [63:0]rdata2,
+	input [1:0]rresp2,
+	input rvalid2,
+	input rlast2,
+	output rready2,
+	//写地址通道
+	output [31:0]awaddr2,
+	output awvalid2,
+	output [1:0]awburst2,
+	output [7:0]awlen2,
+	input awready2,
+	//写数据通道
+	output [63:0]wdata2,
+  output wlast2,
+	output [7:0]wstrb2,
+	output wvalid2,
+	input wready2,
+	//写回复通道
+	input [1:0]bresp2,
+	input bvalid2,
+	output bready2
 );
 ///////////////////mem_read////////////////////////可以看成一个相对独立的模块
 //输入:mem_read_begin araddr_block 输出:mem_read_end,dataarray
@@ -151,33 +179,60 @@ assign wlast=(c_awlen==awlen);
 assign bready=(write_state==WRITE_AW_READY)&(write_state==WRITE_TRANS);
 ///////////////////////////////////////
 /////////////////cache_write//////////
-axi_full_s2 axi_full_s2_1(
-	.clk(clk),
-	.rst(rst),
-	.araddr(r_raddr[31:0]),
-	.arvalid(arvalid),
-	.arburst(arburst),
-	.arlen(arlen),
-	.arsize(arsize),
-	.arready(arready),
-	.rdata(rdata_axi),
-	.rresp(rresp),
-	.rvalid(rvalid),
-	.rlast(rlast),
-	.rready(rready),
-	.awaddr(awaddr),
-	.awvalid(awvalid),
-	.awburst(awburst),
-	.awlen(awlen),
-	.awready(awready),
-	.wdata(wdata_axi),
-	.wlast(wlast),
-	.wstrb(wstrb),
-	.wvalid(wvalid),
-	.wready(wready),
-	.bresp(bresp),
-	.bvalid(bvalid),
-	.bready(bready)
-);
+/*axi_full_s2 axi_full_s2_1(*/
+	/*.clk(clk),*/
+	/*.rst(rst),*/
+	/*.araddr(r_raddr[31:0]),*/
+	/*.arvalid(arvalid),*/
+	/*.arburst(arburst),*/
+	/*.arlen(arlen),*/
+	/*.arsize(arsize),*/
+	/*.arready(arready),*/
+	/*.rdata(rdata_axi),*/
+	/*.rresp(rresp),*/
+	/*.rvalid(rvalid),*/
+	/*.rlast(rlast),*/
+	/*.rready(rready),*/
+	/*.awaddr(awaddr),*/
+	/*.awvalid(awvalid),*/
+	/*.awburst(awburst),*/
+	/*.awlen(awlen),*/
+	/*.awready(awready),*/
+	/*.wdata(wdata_axi),*/
+	/*.wlast(wlast),*/
+	/*.wstrb(wstrb),*/
+	/*.wvalid(wvalid),*/
+	/*.wready(wready),*/
+	/*.bresp(bresp),*/
+	/*.bvalid(bvalid),*/
+	/*.bready(bready)*/
+/*);*/
+assign araddr2=r_raddr[31:0];
+assign arvalid2=arvalid;
+assign arburst2=arburst;
+assign arlen2=arlen;
+assign arsize2=arsize;
+assign arready=arready2;
+assign rdata_axi=rdata2;
+assign rresp=rresp2;
+assign rvalid=rvalid2;
+assign rlast=rlast2;
+assign rready2=rready;
+
+assign awaddr2=awaddr;
+assign awvalid2=awvalid;
+assign awburst2=awburst;
+assign awlen2=awlen;
+assign awready=awready2;
+assign wdata2=wdata_axi;
+assign wlast2=wlast;
+assign wstrb2=wstrb;
+assign wvalid2=wvalid;
+assign wready=wready2;
+assign bresp=bresp2;
+assign bvalid=bvalid2;
+assign bready2=bready;
+
+
 assign use_device_finish=inst_update&use_device_en&(((ren&mem_read_finish)|(wen&mem_write_finish))|((~ren)&(~wen)));
 endmodule

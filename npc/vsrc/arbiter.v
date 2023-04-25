@@ -74,20 +74,20 @@ wire [1:0]arburst;
 wire [7:0]arlen;
 wire [2:0]arsize;
 assign araddr=master_1?araddr_1:
-						  master_2?araddr_2:
-						  0;
+							master_2?araddr_2:
+							0;
 assign arvalid=master_1?arvalid_1:
-						   master_2?arvalid_2:
-						   0;
+							 master_2?arvalid_2:
+							 0;
 assign arburst=master_1?arburst_1:
-						   master_2?arburst_2:
-						   0;
+							 master_2?arburst_2:
+							 0;
 assign arlen=master_1?arlen_1:
-	           master_2?arlen_2:
+						 master_2?arlen_2:
 						 0;
 assign arsize=master_1?arsize_1:
-	            master_2?arsize_2:
-						  0;
+							master_2?arsize_2:
+							0;
 assign arready_1=master_1?arready:
 								0;
 assign arready_2=master_2?arready:
@@ -99,8 +99,8 @@ wire rready;
 wire rvalid;
 wire rlast;
 assign rready= master_1?rready_1:
-						   master_2?rready_2:
-						   0;
+							 master_2?rready_2:
+							 0;
 assign rdata_1=master_1?rdata:
 								0;
 assign rdata_2=master_2?rdata:
@@ -127,17 +127,17 @@ wire [7:0]awlen;
 wire wlast;
 
 assign awaddr =master_2?awaddr_2:
-						  0;
+							0;
 assign awvalid=master_2?awvalid_2:
-						  0;
+							0;
 assign awburst =master_2?awburst_2:
-						  0;
+							0;
 assign awlen =master_2?awlen_2:
-						  0;
+							0;
 assign awready_2=master_2?awready:
 								0;
 assign wlast =master_2?wlast_2:
-						  0;
+							0;
 
 /////////////////////////////
 wire wready;
@@ -145,11 +145,11 @@ wire wvalid;
 wire [63:0]wdata;
 wire [7:0]wstrb;
 assign wdata  =master_2?wdata_2:
-						  0;
+							0;
 assign wstrb  =master_2?wstrb_2:
-						  0;
+							0;
 assign wvalid =master_2?wvalid_2:
-						  0;
+							0;
 assign wready_2=master_2?wready:
 								0;
 ///////////////////////////
@@ -157,7 +157,7 @@ wire [1:0]bresp;
 wire bvalid;
 wire bready;
 assign bready=master_2?bready_2:
-						  0;
+							0;
 assign bresp_2=master_2?bresp:
 								0;
 assign bvalid_2=master_2?bvalid:
@@ -183,7 +183,39 @@ assign bvalid_2=master_2?bvalid:
 				/*.bvalid(bvalid),*/
 				/*.bready(bready)*/
 			/*);*/
-axi_full_s2 axi_full_s2_0(
+/*axi_full_s2 axi_full_s2_0(*/
+	/*.clk(clk),*/
+	/*.rst(rst),*/
+	/*.araddr(araddr_1),*/
+	/*.arvalid(arvalid_1),*/
+	/*.arburst(arburst_1),*/
+	/*.arlen(arlen_1),*/
+	/*.arsize(arsize_1),*/
+	/*.arready(arready_1),*/
+	/*.rdata(rdata_1),*/
+	/*.rresp(rresp_1),*/
+	/*.rvalid(rvalid_1),*/
+	/*.rlast(rlast_1),*/
+	/*.rready(rready_1),*/
+	/*.awaddr(0),*/
+	/*.awvalid(0),*/
+	/*.awburst(0),*/
+	/*.awlen(0),*/
+	/*.awready(awready1),*/
+	/*.wdata(0),*/
+	/*.wlast(0),*/
+	/*.wstrb(0),*/
+	/*.wvalid(0),*/
+	/*.wready(wready1),*/
+	/*.bresp(bresp1),*/
+	/*.bvalid(bvalid1),*/
+	/*.bready(0)*/
+/*);*/
+/*wire awready1;*/
+/*wire wready1;*/
+/*wire [1:0]bresp1;*/
+/*wire bvalid1;*/
+axi_full_s2 axi_full_s2_test(
 	.clk(clk),
 	.rst(rst),
 	.araddr(araddr),
