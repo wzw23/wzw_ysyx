@@ -1,6 +1,6 @@
 //`include "hong.v"
 `define alu_length 17
-module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [2:0]e_inst,input inst_update,output c_wen1_2,input mem_finish);
+module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,input inst_update,output c_wen1_2,input mem_finish);
 
 //下标标识
 //op_d
@@ -87,10 +87,10 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 	assign lui=(op_d[0]);
 
 	wire jal;
-	assign jal=(op_d[2]);
+	assign jal=e_j_b_inst[3];
   
 	wire jalr;
-	assign jalr=(fu_3_d[3'b000])&(op_d[3]);
+	assign jalr=e_j_b_inst[4];
 	
 	wire sd;
 	assign sd=(fu_3_d[3'b011])&(op_d[6]);
@@ -198,22 +198,22 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 	assign srli=(fu_7_d[3])&(fu_3_d[3'b101])&(op_d[7]);	
 	
 	wire beq;
-	assign beq=(fu_3_d[3'b000])&(op_d[4]);
+	assign beq=e_j_b_inst[5];
 	
 	wire bne;
-	assign bne=(fu_3_d[3'b001])&(op_d[4]);
+	assign bne=e_j_b_inst[6];
 	
 	wire bge;
-	assign bge=(fu_3_d[3'b101])&(op_d[4]);
+	assign bge=e_j_b_inst[7];
 	
 	wire bgeu;
-	assign bgeu=(fu_3_d[3'b111])&(op_d[4]);
+	assign bgeu=e_j_b_inst[8];
 	
 	wire bltu;
-	assign bltu=(fu_3_d[3'b110])&(op_d[4]);
+	assign bltu=e_j_b_inst[9];
 	
   wire blt;
-  assign blt=(fu_3_d[3'b100]) &(op_d[4]);
+  assign blt=e_j_b_inst[10];
 
 	//////////////////////////控制信号书写////////////////////////////
 	//此处jalr可能有问题//
@@ -284,12 +284,12 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 	/////////////////////////////////////////////////////////////////
 	assign sel_nextpc=({2{{beq&alu_equal[0]}|{bne&(!alu_equal[0])}|jal|{bltu&(alu_equal[1])}|{blt&(alu_equal[2])}|{bgeu&{(~alu_equal[1])|(alu_equal[0])}}|{bge&{(~alu_equal[2])|alu_equal[0]}}}}&2'b01)
 					|					({2{jalr}}&2'b10)
-					|					({2{e_inst[1]|e_inst[2]}}&2'b11)	
+					|					({2{e_j_b_inst[1]|e_j_b_inst[2]}}&2'b11)	
 					;
 	assign c_wchoose=csrrs;
 	assign c_wen=(csrrw|csrrs)&mem_finish;
-	assign c_wen1_2=mem_finish&e_inst[1];
+	assign c_wen1_2=mem_finish&e_j_b_inst[1];
 	
-	assign not_have=addi|andi|xori|ori|sll|srl|sra|lui|jal|jalr|sd|sh|sw|sb|lw|lwu|lh|lhu|lb|lbu|ld|divu|Add|Mul|And|Xor|Or|sltu|slt|sub|sltiu|beq|bne|bge|bgeu|bltu|blt|auipc|rem|remu|div|addw|subw|mulw|remuw|divw|divuw|remw|addiw|srliw|slliw|sraiw|slli|srli|srai|sllw|sraw|srlw|csrrs|csrrw|e_inst[1]|e_inst[2]|e_inst[0];
+	assign not_have=addi|andi|xori|ori|sll|srl|sra|lui|jal|jalr|sd|sh|sw|sb|lw|lwu|lh|lhu|lb|lbu|ld|divu|Add|Mul|And|Xor|Or|sltu|slt|sub|sltiu|beq|bne|bge|bgeu|bltu|blt|auipc|rem|remu|div|addw|subw|mulw|remuw|divw|divuw|remw|addiw|srliw|slliw|sraiw|slli|srli|srai|sllw|sraw|srlw|csrrs|csrrw|e_j_b_inst[1]|e_j_b_inst[2]|e_j_b_inst[0];
 	assign w_choose=addw|subw|mulw|divw|divuw|remw|sllw|srlw|sraw|addiw|sraiw|slliw|srliw|remuw;
 endmodule

@@ -1,117 +1,49 @@
-# Check for sanity to avoid later confusion
-# 解决动态链接问题https://www.tsingfun.com/it/cpp/asan-issue-with-asan-library-loading.html
 #export ASAN_OPTIONS=verify_asan_link_order=0
 #export LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.6
-ifneq ($(words $(CURDIR)),1)
-  $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
-endif
-
-# If $VERILATOR_ROOT isn't in the environment, we assume it is part of a
-# # package install, and verilator is in your path. Otherwise find the
-# # binary relative to $VERILATOR_ROOT (such as when inside the git sources).
-ifeq ($(VERILATOR_ROOT),)
+TOPNAME = top
 VERILATOR = verilator
-VERILATOR_COVERAGE = verilator_coverage
-else
-export VERILATOR_ROOT
-VERILATOR = $(VERILATOR_ROOT)/bin/verilator
-VERILATOR_COVERAGE = $(VERILATOR_ROOT)/bin/verilator_coverage
-endif
+VERILATOR_CFLAGS += -MMD --build -cc  \
+				-O3 --x-assign fast --x-initial fast --noassert --trace
+BUILD_DIR = ./build
+OBJ_DIR = $(BUILD_DIR)/obj_dir
+BIN = $(BUILD_DIR)/$(TOPNAME)
 
-# Generate C++ in executable form
-#VERILATOR_FLAGS += -cc --exe
-## Generate makefile dependencies (not shown as complicates the Makefile)
-#VERILATOR_FLAGS += -MMD
-## Optimize
-#VERILATOR_FLAGS += -Os -x-assign 0
-#VERILATOR_FLAGS += -O3 --x-assign fast --x-initial fast
-## Warn abount lint issues; may not want this on less solid designs
-#VERILATOR_FLAGS += -Wall
-## Make waveforms
-#VERILATOR_FLAGS += --trace
-## Check SystemVerilog assertions
-#VERILATOR_FLAGS += --assert
-# Generate coverage analysis
-#由于加了coverage导致运行速度减慢
-#VERILATOR_FLAGS += --coverage
-#VERILATOR_FLAGS += -j 20
+default: $(BIN)
 
-#VERILATOR_FLAGS += -MMD --build -cc --exe \
-				#-O3 --x-assign fast --x-initial fast --noassert
+$(shell mkdir -p $(BUILD_DIR))
 
-VERILATOR_FLAGS += -MMD --build -cc --exe \
-				-Os -x-assign 0 --trace  #--coverage
-
-# Run Verilator in debug mode
-#VERILATOR_FLAGS += --debug
-# Add this trace to get a backtrace in gdb
-#VERILATOR_FLAGS += --gdbbt
-VRCS = $(shell find $(NPC_HOME)/vsrc -name "*.v" -or -name "*.vh") #所有的verilog文件
+VSRCS =$(shell find $(NPC_HOME)/vsrc -name "*.v" -or -name "*.vh") #所有的verilog文件
 CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" -or -name "*.cc") #所有的c类文件
-pri:
-	echo $(CSRCS)
-LIBS ="$(shell llvm-config --libs) "  
-#export LD_PRELOAD=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
-#LDFLAGS=-rdynamic -shared -fPIC
+
+CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
+CFLAGS +=$(shell llvm-config --cxxflags) -fPIE #-fPIC
+
+#LDFLAGS += -lSDL2 -lSDL2_image
+LDFLAGS+=-lSDL2main -lSDL2
 #-fsanitize=address 解决链接问题的第二个方法
-LDFLAGS=-rdynamic -ldl -fsanitize=address
-#用于添加sdl用法
-LDFLAGS+=-lSDL2main -lSDL2 
-#LDFLAGS=-L. /home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
-#CFLAGS+=-L. -lriscv64-nemu-interpreter-so
-
-#CSRCS+=$(NPC_HOME)/csrc/utils/disasm.cc
-CFLAGS=$(shell llvm-config --cxxflags) -fPIE #-fPIC
-LDFLAGS+=-fsanitize=address
-#CFLAGS +=  -ffreestanding -fno-rtti -fno-exceptions
-#CFLAGS += -lSDL2main -lSDL2 
-#CXX       = g++
+LDFLAGS +=-rdynamic -ldl -fsanitize=address
+LIBS ="$(shell llvm-config --libs) "
 $(NPC_HOME)/csrc/utils/disasm.o:$(CXXSRCS)
-	#@mkdir -p $(dir $@) && echo + CXX $<
-	#@$(CXX) -std=c++17 $(CXXFLAGS) -c -o $@ $(realpath $<) 
-	# Input files for Verilator
-#VERILATOR_INPUT = -f  input.vc vsrc/top.v vsrc/pc.v  vsrc/Reg.v vsrc/MuxKeyInternal.v  vsrc/RegisterFile.v vsrc/decode_exec.v vsrc/MuxKey.v vsrc/MuxKeyWithDefault.v vsrc/Alu.v --top-module top csrc/sim_main.cpp
-#VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS) $(NPC_HOME)/csrc/utils/disasm.o
-VERILATOR_INPUT = -f  input.vc $(VRCS) --top-module top $(CSRCS)  
-#VERILATOR_INPUT+=/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so
 
-IMG?=
-################################
+$(BIN): $(VSRCS) $(CSRCS) 
+	@rm -rf $(OBJ_DIR)
+	$(VERILATOR) $(VERILATOR_CFLAGS) \
+		--top-module $(TOPNAME) $^ \
+		$(addprefix -CFLAGS , $(CFLAGS)) $(addprefix -LDFLAGS , $(LDFLAGS)) $(addprefix -LDFLAGS ,$(LIBS)) \
+		--Mdir $(OBJ_DIR) --exe -o $(abspath $(BIN))
 
-default:sim
-all:
-	@echo "Write this Makefile by your self."
+all:default
 
-sim:
-	@echo "Verilator sim"
-	@echo "verilator---------------------"
-	$(VERILATOR) $(VERILATOR_FLAGS) $(VERILATOR_INPUT) $(addprefix -CFLAGS ,$(CFLAGS)) $(addprefix -LDFLAGS ,$(LDFLAGS)) $(addprefix -LDFLAGS ,$(LIBS)) 
-	@echo "------------------------------"
-	@echo "build-------------------------"
-# To compile, we can either
-# 1. Pass --build to Verilator by editing VERILATOR_FLAGS above.
-# 2. Or, run the make rules Verilator does:
-#	$(MAKE) -j -C obj_dir -f Vtop.mk
-# 3. Or, call a submakefile where we can override the rules ourselves:
-	$(MAKE) -j -C obj_dir -f ../Makefile_obj
-	@echo "------------------------------"
-	@echo "run--------------------------"
-	@rm -rf logs
-	@mkdir -p logs
-	obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so" -m $(IMG)
-	#obj_dir/Vtop +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/npc/riscv64-nemu-interpreter-so" -m $(IMG)
-	#@echo "converage--------------------"
-	#@rm -rf logs/annotated
-	#$(VERILATOR_COVERAGE) --annotate logs/annotated logs/coverage.dat
-	#@echo
-	#@echo "-----------------------------"
-	@echo "To see waveforms, open vlt_dump.vcd in a waveform viewer"
-	@echo
+
+sim: $(BIN)
 	$(call git_commit, "sim RTL") # DO NOT REMOVE THIS LINE!!!
-	@echo "------------------------------"
-	@echo $(IMG)
-	@gtkwave $(NPC_HOME)/logs/vlt_dump.vcd
-maintainer-copy::
-clean mostlyclean distclean maintainer-clean::
-	-rm -rf obj_dir logs *.log *.dmp *.vpd coverage.dat core
-include ../Makefile
+	@$^ +trace $(ARGS) --diff="/home/wzw/ysyx-workbench/nemu/build/riscv64-nemu-interpreter-so" -m $(IMG)
+clean:
+	rm -rf $(BUILD_DIR)
+#cleanall:
+	#-rm -rf obj_dir logs *.log *.dmp *.vpd coverage.dat core
+
+
+.PHONY: default all clean run
+
+

@@ -1,4 +1,4 @@
-module id(input [31:0]inst,output [4:0]rs1,output [4:0]rs2,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,output [2:0]e_inst,output [1:0]c_raddr,output [1:0]c_waddr);
+module id(input clk,input rst,input [31:0]inst,output [4:0]rs1,output [4:0]rs2,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,output [1:0]c_waddr,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc);
   
 	assign rs1=inst[19:15];
 	assign rs2=inst[24:20];
@@ -69,14 +69,23 @@ module id(input [31:0]inst,output [4:0]rs1,output [4:0]rs2,output [4:0]rd,output
 		//14'b01000000000000,immi,//重复
 		12'b010000000000,immi
 	//15'b100000000000000,immr
-});	
+});	 
+    wire[1:0]c_raddr;
 		assign c_raddr=(imm==64'h300)?0:
-									 ((imm==64'h305)|(e_inst[1]==1))?1:
-									 ((imm==64'h341)|(e_inst[2]==1))?2:
+									 ((imm==64'h305)|(e_j_b_inst[1]==1))?1:
+									 ((imm==64'h341)|(e_j_b_inst[2]==1))?2:
 									 3;
 		assign c_waddr=c_raddr;
-		assign e_inst=(inst==32'b0000000_00001_00000_000_00000_11100_11)?3'b001:
-		(inst==32'b00000000000000000000000001110011)?3'b010:
-		(inst==32'b00110000001000000000000001110011)?3'b100
-		:3'b000;
+		/*assign e_j_b_inst=(inst==32'b0000000_00001_00000_000_00000_11100_11)?3'b001:*/
+									/*(inst==32'b00000000000000000000000001110011)?3'b010://ecall*/
+									/*(inst==32'b00110000001000000000000001110011)?3'b100//mret*/
+		//:3'b000;
+		wire [63:0]c_wdata;
+		MuxKey #(2,1,64) mux3(c_wdata,c_wchoose,{//alu_src2赋值
+		1'b0,src1,
+			1'b1,src1|c_rdata
+			});
+
+RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen),.wdata(wdata),.waddr(rd),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
+
 endmodule
