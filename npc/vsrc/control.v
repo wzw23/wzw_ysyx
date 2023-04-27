@@ -1,6 +1,7 @@
 //`include "hong.v"
 `define alu_length 17
-module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,input inst_update,output c_wen1_2,input mem_finish);
+//module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,input inst_update,output c_wen1_2,input mem_finish);
+module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2,input mem_finish);
 
 //下标标识
 //op_d
@@ -282,10 +283,10 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 							 8'b00000000
 							 ;
 	/////////////////////////////////////////////////////////////////
-	assign sel_nextpc=({2{{beq&alu_equal[0]}|{bne&(!alu_equal[0])}|jal|{bltu&(alu_equal[1])}|{blt&(alu_equal[2])}|{bgeu&{(~alu_equal[1])|(alu_equal[0])}}|{bge&{(~alu_equal[2])|alu_equal[0]}}}}&2'b01)
-					|					({2{jalr}}&2'b10)
-					|					({2{e_j_b_inst[1]|e_j_b_inst[2]}}&2'b11)	
-					;
+	//assign sel_nextpc=({2{{beq&alu_equal[0]}|{bne&(!alu_equal[0])}|jal|{bltu&(alu_equal[1])}|{blt&(alu_equal[2])}|{bgeu&{(~alu_equal[1])|(alu_equal[0])}}|{bge&{(~alu_equal[2])|alu_equal[0]}}}}&2'b01)
+					//|					({2{jalr}}&2'b10)
+					//|					({2{e_j_b_inst[1]|e_j_b_inst[2]}}&2'b11)	
+					//;
 	assign c_wchoose=csrrs;
 	assign c_wen=(csrrw|csrrs)&mem_finish;
 	assign c_wen1_2=mem_finish&e_j_b_inst[1];

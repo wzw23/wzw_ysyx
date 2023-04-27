@@ -68,8 +68,9 @@ wire wready2;
 wire [1:0]bresp2;
 wire bvalid2;
 wire bready2;
+wire [63:0]dnpc_jump_data;
 
-
+wire [11:0]e_j_b_inst;
  If if_1(
 .clk(clk), 
 .rst(rst),
@@ -92,13 +93,15 @@ wire bready2;
 .rresp1(rresp1),
 .rvalid1(rvalid1),
 .rlast1(rlast1),
-.rready1(rready1)
+.rready1(rready1),
+.e_j_b_inst(e_j_b_inst),
+.dnpc_jump_data(dnpc_jump_data)
 );//if
   //decode_exec de(clk,inst,cpupc,dnpc);
 
-wire [11:0]e_j_b_inst;
-wire not_jump;
-pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
+/*wire [11:0]e_j_b_inst;*/
+/*wire not_jump;*/
+/*pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));*/
 ///////////////////////////////////////////
 	
 	wire [4:0]rs1;
@@ -125,7 +128,7 @@ pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),
 	wire c_wen;
 	wire [7:0]wmask;
 	wire c_wen1_2;
-	control control_1(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.alu_equal(alu_equal),.sel_nextpc(sel_nextpc),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst),.inst_update(inst_update),.c_wen1_2(c_wen1_2),.mem_finish(mem_finish)) ;//控制模块
+	control control_1(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst),.c_wen1_2(c_wen1_2),.mem_finish(mem_finish)) ;//控制模块
 	/////////////////////////////////////////
 
 	wire [63:0]alu_result;
@@ -133,7 +136,7 @@ pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),
 	wire [63:0]ram_data;
 	wire [63:0]wdata;
 	//exe exe_1(.clk(clk),.rst(rst),.imm(imm),.rs1(rs1),.rs2(rs2),.rd(rd),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.wdata(wdata),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1),.alu_equal(alu_equal),.cpupc(cpupc),.w_choose(w_choose),.src2(src2),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_raddr(c_raddr),.c_waddr(c_waddr),.c_rdata(c_rdata),.e_inst(e_inst),.c_wen1_2(c_wen1_2));
-	exe exe_1(.clk(clk),.rst(rst),.imm(imm),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1),.alu_equal(alu_equal),.cpupc(cpupc),.w_choose(w_choose),.src2(src2));
+	exe exe_1(.clk(clk),.rst(rst),.imm(imm),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1),.alu_equal(alu_equal),.cpupc(cpupc),.w_choose(w_choose),.src2(src2),.e_j_b_inst(e_j_b_inst),.c_rdata(c_rdata),.dnpc_jump_data(dnpc_jump_data));
 
 	//访存模块
 	
@@ -241,13 +244,13 @@ arbiter arbiter_1(
 );
 
  	/////////////////////////////开启波形图/////////////////////
-	initial begin
-		if ($test$plusargs("trace") != 0) begin
-			$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
-			$dumpfile("logs/vlt_dump.vcd");
-			$dumpvars();
-		end
-		$display("[%0t] Model running...\n", $time);
-	end
+	/*initial begin*/
+		/*if ($test$plusargs("trace") != 0) begin*/
+			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/
+			/*$dumpfile("logs/vlt_dump.vcd");*/
+			/*$dumpvars();*/
+		/*end*/
+		/*$display("[%0t] Model running...\n", $time);*/
+	/*end*/
 	/*/*//////////////////////////////////////////////////////////
 	endmodule

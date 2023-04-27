@@ -20,7 +20,9 @@ module If(
 	input [1:0]rresp1,
 	input rvalid1,
 	input rlast1,
-	output rready1
+	output rready1,
+	output [11:0]e_j_b_inst,
+	input  [63:0]dnpc_jump_data
 	//总线接口
 );
 //位宽为32bit，复位值为0x80000000,写使能一直有效
@@ -33,11 +35,16 @@ import "DPI-C" function void vpmem_read(
 wire [63:0]dnpc_0;
 //reg  inst_finish;//完成一条指令的信号
 //Reg #(1,1'b0) finish(clk,rst,inst_update,inst_finish,1'b1);
-MuxKey #(4,2,64) mux4(dnpc_0,sel_nextpc,{//alu_src2赋值
-  2'b00,cpupc+4,
-	2'b01,cpupc+imm,
-	2'b10,(src1+imm)&~1,
-	2'b11,c_rdata
+/*MuxKey #(4,2,64) mux4(dnpc_0,sel_nextpc,{//alu_src2赋值*/
+  /*2'b00,cpupc+4,*/
+	/*2'b01,cpupc+imm,*/
+	/*2'b10,(src1+imm)&~1,*/
+	/*2'b11,c_rdata*/
+	/*});*/
+wire not_jump;
+MuxKey #(2,1,64) mux4(dnpc_0,not_jump,{//alu_src2赋值
+  1'b1,cpupc+4,
+	1'b0,dnpc_jump_data
 	});
 MuxKey #(2,1,64) mux5(dnpc,mem_finish,{//alu_src2赋值
   1'b0,cpupc,
@@ -115,4 +122,5 @@ icache icache_9(
 		/*});*/
 /*///////////////////////////////////////*/
 /*assign inst=r_rdata[31:0];*/
+pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
 endmodule
