@@ -27,11 +27,14 @@ static const uint32_t img [] = {
 	/*0x0c4b0b13, //addi    s6,s6,196 */
 	/*0x00100073  //break*/
   0x800002b7,  // lui t0,0x80000
-	0x0c4b0b13, //addi    s6,s6,196
+	0x0c4b0b13, //addi    s6,s6,196//s6:22
 	0x2f0b8b93, //addi    s7,s7,752
-	0x0002a023,  // sw  zero,0(t0)
+	0x00c000ef,  //          jal ra,80000018
 	0x0002a503,  // lw  a0,0(t0)
 	0x0c4b0b13, //addi    s6,s6,196
+	//0x0002a023,  // sw  zero,0(t0)
+	0x0162a023,// sw  s6,0(t0)
+	0x0002a503,  // lw  a0,0(t0)
   0x00100073,  // ebreak (used as nemu_trap)
 
 };

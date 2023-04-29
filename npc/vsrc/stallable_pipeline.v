@@ -5,6 +5,7 @@ module stallable_pipeline(
 	input validin,
 	input [31:0]inst,
 	//id
+	input not_jump,
 	input [63:0]dnpc,
 	input [63:0]cpupc,
 	input [11:0]e_j_b_inst,
@@ -51,6 +52,7 @@ module stallable_pipeline(
 	//input rf_wen,
 	input [63:0]alu_result,
 	input [63:0]ram_data,
+	input [63:0]set_dnpc_data,
 	//input [63:0]rd,
 	//input  [63:0]c_rdata,
 	output reg [11:0]e_j_b_inst_reg_wb,
@@ -86,6 +88,9 @@ module stallable_pipeline(
 	//reg pipe2_valid;
 	reg pipe3_valid;
 
+	reg not_jump_reg_id;
+	reg not_jump_reg_is;
+	reg not_jump_reg_wb;
 	wire pipe1_allow_in;
 	wire pipe1_ready_go;
 	wire pipe1_to_pipe2_valid;
@@ -112,6 +117,7 @@ module stallable_pipeline(
 			e_j_b_inst_reg_id<=e_j_b_inst;
 			cpupc_reg_id<=cpupc;
 			dnpc_reg_id<=dnpc;
+			not_jump_reg_id<=not_jump;
 		end
 	end
 //pipe2
@@ -143,6 +149,7 @@ module stallable_pipeline(
 			e_j_b_inst_reg_is<=e_j_b_inst_reg_id;
 			cpupc_reg_is<=cpupc_reg_id;
 			dnpc_reg_is<=dnpc_reg_id;
+			not_jump_reg_is<=not_jump_reg_id;
 		end
 	end
 //pipe3
@@ -163,8 +170,9 @@ module stallable_pipeline(
 			rd_reg_wb<=rd_reg_is;
 			c_rdata_reg_wb<=c_rdata_reg_is;
 			cpupc_reg_wb<=cpupc_reg_is;
-			dnpc_reg_wb<=dnpc_reg_is;
+			dnpc_reg_wb<=set_dnpc_data;
 			e_j_b_inst_reg_wb<=e_j_b_inst_reg_is;
+			not_jump_reg_wb<=not_jump_reg_is;
 
 		end
 	end
@@ -175,9 +183,11 @@ module stallable_pipeline(
 			ebreak_finish<=0;
 		end
 		else begin
-			cpupc_reg_finish<=dnpc_reg_wb;
 			ebreak_finish<=e_j_b_inst_reg_wb[0];
-
+			if(not_jump_reg_wb)
+				cpupc_reg_finish<=cpupc_reg_wb+4;
+			else
+				cpupc_reg_finish<=dnpc_reg_wb;
 		end
 	end
 

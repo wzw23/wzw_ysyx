@@ -21,7 +21,11 @@ module icache(
 	input rvalid1,
 	input rlast1,
 	output rready1,
-	input id_reg_finish
+	input id_reg_finish,
+	input not_jump,
+	input [63:0]cpupc,
+	input [63:0]cpupc_reg_is,
+	output pc_update
 	//写地址通道
 	/*output [31:0]awaddr1,*/
 	/*output awvalid1,*/
@@ -58,7 +62,10 @@ assign addr_tag   =araddr[31:OFFSET_WIDTH+INDEX_WIDTH];
 parameter CACHE_IDLE=0,
         	CACHE_UPDATE_BEGIN=1,
         	CACHE_MEMREAD=2,
-        	CACHE_GET=3;
+        	CACHE_GET=3,
+					CACHE_FINISH=4,
+					CACHE_WAIT_EXE=5
+					;
 reg [2:0]cache_state;
 always @(posedge clk)begin
 	if(rst)
@@ -71,9 +78,16 @@ always @(posedge clk)begin
 		cache_state<=CACHE_MEMREAD;
 	else if((cache_state==CACHE_MEMREAD)&rlast)
 		cache_state<=CACHE_GET;
-	else if(cache_state==CACHE_GET&&(id_reg_finish))
+	else if(cache_state==CACHE_GET&(id_reg_finish)&(not_jump))//已经取完指令 此时已经完成预译码 not_jump可以生效
+		cache_state<=CACHE_FINISH;
+	else if(cache_state==CACHE_FINISH)
 		cache_state<=CACHE_IDLE;
+	else if(cache_state==CACHE_GET&(id_reg_finish)&(~not_jump))
+		cache_state<=CACHE_WAIT_EXE;
+	else if(cache_state==CACHE_WAIT_EXE&(cpupc==cpupc_reg_is))
+		cache_state<=CACHE_FINISH;
 end
+assign pc_update=(cache_state==CACHE_FINISH);
 //总线信号
 //assign inst_update=(state==READ_FINISH);
 

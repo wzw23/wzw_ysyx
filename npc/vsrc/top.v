@@ -20,6 +20,7 @@ module top(
 ///////////wire信号////////
 wire ebreak_finish;
 //if
+  wire not_jump;
 	wire [63:0]c_rdata;
 	//wire [1:0]sel_nextpc;
 	wire [63:0]imm;
@@ -154,6 +155,7 @@ wire ebreak_finish;
 	.validin(validin),
 	.inst(inst),
 	//id
+	.not_jump(not_jump),
 	.dnpc(dnpc),
 	.cpupc(cpupc),
 	.e_j_b_inst(e_j_b_inst),
@@ -198,6 +200,7 @@ wire ebreak_finish;
 	 //wb
 	.alu_result(alu_result),
 	.ram_data(ram_data),
+	.set_dnpc_data(dnpc_jump_data),
 	.e_j_b_inst_reg_wb(e_j_b_inst_reg_wb),
 	.dnpc_reg_wb(dnpc_reg_wb),
 	.cpupc_reg_wb(cpupc_reg_wb),
@@ -247,7 +250,9 @@ wire ebreak_finish;
 		.rready1(rready1),
 		.e_j_b_inst(e_j_b_inst),
 		.dnpc_jump_data(dnpc_jump_data),
-		.id_reg_finish(id_reg_finish)
+		.id_reg_finish(id_reg_finish),
+		.cpupc_reg_is(cpupc_reg_is),
+		.not_jump(not_jump)
 	);//if
 /////////////////////id//////////////////////
 	id id_1(.clk(clk),.rst(rst),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen_reg_wb&validout),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb));
