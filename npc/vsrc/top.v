@@ -10,13 +10,18 @@ module top(
   output ebreak,
 	output not_have,
 	output [63:0]dnpc,
-	output inst_finish,
+	output reg inst_finish,
 	output mem_finish,
-	output inst_update
+	output inst_update,
+	output [63:0]dnpc_reg_wb,
+	output [63:0]cpupc_reg_wb,
+	output [63:0]cpupc_reg_finish
 );
-//////////////////if///////////////////////
+///////////wire信号////////
+wire ebreak_finish;
+//if
 	wire [63:0]c_rdata;
-	wire [1:0]sel_nextpc;
+	//wire [1:0]sel_nextpc;
 	wire [63:0]imm;
 	wire [63:0]src1;
 	wire [63:0]src2;
@@ -61,16 +66,172 @@ module top(
 	wire [63:0]dnpc_jump_data;
 
 	wire [11:0]e_j_b_inst;
+//id
+	//wire [4:0]rs1;
+	//wire [4:0]rs2;
+	wire [4:0]rd;
+	wire [11:0]op_d;
+	wire [4:0]fu_7_d;
+	wire [7:0]fu_3_d;
+	//wire [1:0]c_waddr;
+//control
+	wire [3:0]sel_alu_src1;
+	wire [2:0]sel_alu_src2;
+	wire [`alu_length-1:0]alu_control;
+	wire rf_wen;
+	wire [2:0]sel_rf_res;
+	wire data_ram_en;
+	wire data_ram_wen;
+	//wire [2:0]alu_equal;
+	wire [6:0]l_choose;
+	wire w_choose;
+	wire c_wchoose;
+	wire c_wen;
+	wire [7:0]wmask;
+	wire c_wen1_2;
+//is
+	wire [63:0]alu_result;
+	wire [63:0]ram_addr;
+	wire [63:0]ram_data;
+	wire [63:0]wdata;
+///////////pipe////////////
+  wire validin;
+	wire [63:0]cpupc_reg_id;
+	wire [31:0]inst_reg_id;
+	wire [11:0]e_j_b_inst_reg_id;
+	//wire [3:0]alu_src1;
+	//wire [2:0]alu_src2;
+	wire data_ram_ren;
+	assign data_ram_ren=data_ram_en;
+	wire [63:0]cpupc_reg_is;
+	wire [3:0]alu_src1_reg_is;
+	wire [2:0]alu_src2_reg_is;
+	wire [16:0]alu_control_reg_is;
+	wire data_ram_ren_reg_is;
+	wire data_ram_wen_reg_is;
+	wire [7:0]wmask_reg_is;
+	//wire [2:0]sel_rf_res_reg_is;
+	wire [6:0]l_choose_reg_is;
+	wire w_choose_reg_is;
+	//wire rf_wen_reg_is;
+	wire [63:0]src1_reg_is;
+	wire [63:0]src2_reg_is;
+	//wire [4:0]rd_reg_is;//rf wadd;
+	wire [63:0]imm_reg_is;
+	wire [63:0]c_rdata_reg_is;
+	wire [11:0]e_j_b_inst_reg_is;
+	wire [11:0]e_j_b_inst_reg_wb;
+	wire [63:0]dnpc_reg_id;
+	wire [63:0]dnpc_reg_is;
+	wire [2:0]sel_rf_res_reg_wb;
+	wire rf_wen_reg_wb;
+	wire [63:0]alu_result_reg_wb;
+	wire [63:0]ram_data_reg_wb;
+	wire [4:0]rd_reg_wb;
+	wire [63:0]c_rdata_reg_wb;
+	wire out_allow;
+	wire validout;
+	wire id_reg_finish;
+  wire is_reg_finish;
+	wire wb_reg_finish;
+	wire pipe2_valid;
+	assign out_allow=1;
+	always@(posedge clk)begin
+		if(rst)
+			inst_finish<='d0;
+		else if(validout)
+			inst_finish<='d1;
+		else 
+			inst_finish<='d0;
+	end
+
+	
+	assign validin=inst_update;
+	stallable_pipeline stallable_pipeline_0(
+	.clk(clk),
+	.rst(rst),
+	.mem_finish(mem_finish),
+	.validin(validin),
+	.inst(inst),
+	//id
+	.dnpc(dnpc),
+	.cpupc(cpupc),
+	.e_j_b_inst(e_j_b_inst),
+	.dnpc_reg_id(dnpc_reg_id),
+	.cpupc_reg_id(cpupc_reg_id),
+	.inst_reg_id(inst_reg_id),
+	.e_j_b_inst_reg_id(e_j_b_inst_reg_id),
+	//is
+	.alu_src1(sel_alu_src1),
+	.alu_src2(sel_alu_src2),
+	.alu_control(alu_control),
+	.data_ram_ren(data_ram_ren),
+	.data_ram_wen(data_ram_wen),
+	.wmask(wmask),
+	.sel_rf_res(sel_rf_res),
+	.l_choose(l_choose),
+	.w_choose(w_choose),
+	.rf_wen(rf_wen),
+	.src1(src1),
+	.src2(src2),
+	.rd(rd),//rf waddr
+	.imm(imm),
+	.c_rdata(c_rdata),
+	.dnpc_reg_is(dnpc_reg_is),
+	.cpupc_reg_is(cpupc_reg_is),
+	.alu_src1_reg_is(alu_src1_reg_is),
+	.alu_src2_reg_is(alu_src2_reg_is),
+	.alu_control_reg_is(alu_control_reg_is),
+	.data_ram_ren_reg_is(data_ram_ren_reg_is),
+	.data_ram_wen_reg_is(data_ram_wen_reg_is),
+	.wmask_reg_is(wmask_reg_is),
+	//.sel_rf_res_reg_is(sel_rf_res_reg_is),
+	.l_choose_reg_is(l_choose_reg_is),
+	.w_choose_reg_is(w_choose_reg_is),
+	//.rf_wen_reg_is(rf_wen_reg_is),
+	.src1_reg_is(src1_reg_is),
+	.src2_reg_is(src2_reg_is),
+	//.rd_reg_is(rd_reg_is),//rf waddr
+	.imm_reg_is(imm_reg_is),
+	.c_rdata_reg_is(c_rdata_reg_is),
+	.e_j_b_inst_reg_is(e_j_b_inst_reg_is),
+	 //wb
+	.alu_result(alu_result),
+	.ram_data(ram_data),
+	.e_j_b_inst_reg_wb(e_j_b_inst_reg_wb),
+	.dnpc_reg_wb(dnpc_reg_wb),
+	.cpupc_reg_wb(cpupc_reg_wb),
+
+	.sel_rf_res_reg_wb(sel_rf_res_reg_wb),
+	.rf_wen_reg_wb(rf_wen_reg_wb),
+	.alu_result_reg_wb(alu_result_reg_wb),
+	.ram_data_reg_wb(ram_data_reg_wb),
+	.rd_reg_wb(rd_reg_wb),
+	.c_rdata_reg_wb(c_rdata_reg_wb),
+	.cpupc_reg_finish(cpupc_reg_finish),
+
+	.out_allow(out_allow),
+	.validout(validout),
+
+	.id_reg_finish(id_reg_finish),
+  .is_reg_finish(is_reg_finish),
+	.wb_reg_finish(wb_reg_finish),
+
+	.pipe2_valid(pipe2_valid),
+	.ebreak_finish(ebreak_finish)
+
+);
+//////////////////if///////////////////////
 	If if_1(
 		.clk(clk), 
 		.rst(rst),
 		.cpupc(cpupc),
-		.sel_nextpc(sel_nextpc),
-		.imm(imm),
-		.src1(src1),
+		//.sel_nextpc(sel_nextpc),
+		//.imm(imm),
+		//.src1(src1),
 		.inst(inst),
 		.dnpc(dnpc),
-		.c_rdata(c_rdata),
+		//.c_rdata(c_rdata),
 		.inst_update(inst_update),
 		.mem_finish(mem_finish),
 		.araddr1(araddr1),
@@ -85,56 +246,32 @@ module top(
 		.rlast1(rlast1),
 		.rready1(rready1),
 		.e_j_b_inst(e_j_b_inst),
-		.dnpc_jump_data(dnpc_jump_data)
+		.dnpc_jump_data(dnpc_jump_data),
+		.id_reg_finish(id_reg_finish)
 	);//if
 /////////////////////id//////////////////////
-	wire [4:0]rs1;
-	wire [4:0]rs2;
-	wire [4:0]rd;
-	wire [11:0]op_d;
-	wire [4:0]fu_7_d;
-	wire [7:0]fu_3_d;
-	wire [1:0]c_waddr;
-	id id_1(.clk(clk),.rst(rst),.inst(inst),.rs1(rs1),.rs2(rs2),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst),.c_waddr(c_waddr),.rf_wen(rf_wen),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc));
-	assign ebreak=e_j_b_inst[0];
-	wire [3:0]sel_alu_src1;
-	wire [2:0]sel_alu_src2;
-	wire [`alu_length-1:0]alu_control;
-	wire rf_wen;
-	wire [2:0]sel_rf_res;
-	wire data_ram_en;
-	wire data_ram_wen;
-	wire [2:0]alu_equal;
-	wire [6:0]l_choose;
-	wire w_choose;
-	wire c_wchoose;
-	wire c_wen;
-	wire [7:0]wmask;
-	wire c_wen1_2;
-	control control_1(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst),.c_wen1_2(c_wen1_2),.mem_finish(mem_finish)) ;//控制模块
+	id id_1(.clk(clk),.rst(rst),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen_reg_wb&validout),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb));
+	//assign ebreak=e_j_b_inst[0];
+	//assign ebreak=e_j_b_inst_reg_wb[0];
+	assign ebreak=ebreak_finish;
+	control control_1(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst_reg_id),.c_wen1_2(c_wen1_2)) ;//控制模块
 /////////////////////////////////////////
 ///////////////////is//////////////////////
-
-	wire [63:0]alu_result;
-	wire [63:0]ram_addr;
-	wire [63:0]ram_data;
-	wire [63:0]wdata;
-	exe exe_1(.clk(clk),.rst(rst),.imm(imm),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1),.alu_equal(alu_equal),.cpupc(cpupc),.w_choose(w_choose),.src2(src2),.e_j_b_inst(e_j_b_inst),.c_rdata(c_rdata),.dnpc_jump_data(dnpc_jump_data));
+	exe exe_1(.clk(clk),.rst(rst),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data));
 	//访存模块
 	mem2 #(64,64)mem_2(
 		.clk(clk),
 		.rst(rst),
-		.r_ren(data_ram_en),
+		.r_ren(data_ram_ren_reg_is),
 		.r_raddr(ram_addr),
 		.r_rdata(ram_data),
 		.r_waddr(ram_addr),
-		.r_mask(wmask),
-		.r_wen(data_ram_wen),
-		.r_wdata(src2),
-		.l_choose(l_choose),
-		.inst_update(inst_update),
+		.r_mask(wmask_reg_is),
+		.r_wen(data_ram_wen_reg_is),
+		.r_wdata(src2_reg_is),
+		.l_choose(l_choose_reg_is),
+		.pipe2_valid(pipe2_valid),
 		.mem_finish(mem_finish),
-		.inst_finish(inst_finish),
 		.araddr2(araddr2),
 		.arvalid2(arvalid2),
 		.arburst2(arburst2),
@@ -158,12 +295,13 @@ module top(
 		.wready2(wready2),
 		.bresp2(bresp2),
 		.bvalid2(bvalid2),
-		.bready2(bready2)
+		.bready2(bready2),
+		.wb_reg_finish(wb_reg_finish)
 	);
 /////////////////////////////////////////
 ///////////////////wb////////////////////
 	//写回模块
-	wb wb0(.r_data(ram_data),.alu_result(alu_result),.sel_rf_res(sel_rf_res),.wdata(wdata),.c_rdata(c_rdata));
+	wb wb0(.r_data(ram_data_reg_wb),.alu_result(alu_result_reg_wb),.sel_rf_res(sel_rf_res_reg_wb),.wdata(wdata),.c_rdata(c_rdata_reg_wb));
 ////////////////////////////////////////
 	//总线仲裁器
 	arbiter arbiter_1(
@@ -210,13 +348,13 @@ module top(
 ///////////////////////////////////////////
 
  	/////////////////////////////开启波形图/////////////////////
-	/*initial begin*/
-		/*if ($test$plusargs("trace") != 0) begin*/
-			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/
-			/*$dumpfile("logs/vlt_dump.vcd");*/
-			/*$dumpvars();*/
-		/*end*/
-		/*$display("[%0t] Model running...\n", $time);*/
-	/*end*/
+	initial begin
+		if ($test$plusargs("trace") != 0) begin
+			$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
+			$dumpfile("logs/vlt_dump.vcd");
+			$dumpvars();
+		end
+		$display("[%0t] Model running...\n", $time);
+	end
 	/*/*//////////////////////////////////////////////////////////
 	endmodule

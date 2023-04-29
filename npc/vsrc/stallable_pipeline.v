@@ -1,10 +1,15 @@
 module stallable_pipeline(
 	input clk,
 	input rst,
+	input mem_finish,
 	input validin,
 	input [31:0]inst,
 	//id
+	input [63:0]dnpc,
+	input [63:0]cpupc,
 	input [11:0]e_j_b_inst,
+	output reg [63:0]dnpc_reg_id,
+	output reg [63:0]cpupc_reg_id,
 	output reg [31:0]inst_reg_id,
 	output reg [11:0]e_j_b_inst_reg_id,
 	//is
@@ -20,22 +25,24 @@ module stallable_pipeline(
 	input rf_wen,
 	input [63:0]src1,
 	input [63:0]src2,
-	input [63:0]rd,//rf waddr
+	input [4:0]rd,//rf waddr
 	input [63:0]imm,
 	input [63:0]c_rdata,
+	output reg [63:0]dnpc_reg_is,
+	output reg [63:0]cpupc_reg_is,
 	output reg [3:0]alu_src1_reg_is,
 	output reg [2:0]alu_src2_reg_is,
 	output reg [16:0]alu_control_reg_is,
 	output reg data_ram_ren_reg_is,
 	output reg data_ram_wen_reg_is,
 	output reg [7:0]wmask_reg_is,
-	output reg [2:0]sel_rf_res_reg_is,
+	//output reg [2:0]sel_rf_res_reg_is,
 	output reg [6:0]l_choose_reg_is,
 	output reg w_choose_reg_is,
-	output reg rf_wen_reg_is,
+	//output reg rf_wen_reg_is,
 	output reg [63:0]src1_reg_is,
 	output reg [63:0]src2_reg_is,
-	output reg [63:0]rd_reg_is,//rf waddr
+	//output reg [4:0]rd_reg_is,//rf waddr
 	output reg [63:0]imm_reg_is,
 	output reg [63:0]c_rdata_reg_is,
 	output reg [11:0]e_j_b_inst_reg_is,
@@ -46,26 +53,37 @@ module stallable_pipeline(
 	input [63:0]ram_data,
 	//input [63:0]rd,
 	//input  [63:0]c_rdata,
+	output reg [11:0]e_j_b_inst_reg_wb,
+	output reg [63:0]dnpc_reg_wb,
+	output reg [63:0]cpupc_reg_wb,
 	output reg [2:0]sel_rf_res_reg_wb,
 	output reg rf_wen_reg_wb,
 	output reg [63:0]alu_result_reg_wb,
 	output reg [63:0]ram_data_reg_wb,
-	output reg [63:0]rd_reg_wb,
+	output reg [4:0]rd_reg_wb,
 	output reg [63:0]c_rdata_reg_wb,
+	output reg [63:0]cpupc_reg_finish,
 	
 	input out_allow,
 	output validout,
 
 	output id_reg_finish,
   output is_reg_finish,
-	output wb_reg_finish
+	output wb_reg_finish,
+
+	output reg pipe2_valid,
+	output reg ebreak_finish
 
 );
+
+	reg [2:0]sel_rf_res_reg_is;
+	reg rf_wen_reg_is;
+	reg [4:0]rd_reg_is;//rf waddr
 //pipe1 id
 //pipe2 ls
 //pipe3 wb
 	reg pipe1_valid;
-	reg pipe2_valid;
+	//reg pipe2_valid;
 	reg pipe3_valid;
 
 	wire pipe1_allow_in;
@@ -92,10 +110,12 @@ module stallable_pipeline(
 		if(validin&&pipe1_allow_in)begin
 			inst_reg_id<=inst;
 			e_j_b_inst_reg_id<=e_j_b_inst;
+			cpupc_reg_id<=cpupc;
+			dnpc_reg_id<=dnpc;
 		end
 	end
 //pipe2
- assign pipe2_ready_go=1;//mem_finish时表示exe（is）完成
+ assign pipe2_ready_go=mem_finish;//mem_finish时表示exe（is）完成
  	assign pipe2_allow_in=!pipe2_valid||pipe2_ready_go&&pipe3_allow_in;
 	assign pipe2_to_pipe3_valid=pipe2_valid&&pipe2_ready_go;
 	assign is_reg_finish=pipe1_to_pipe2_valid&&pipe2_allow_in;
@@ -121,6 +141,8 @@ module stallable_pipeline(
 			imm_reg_is<=imm;
 			c_rdata_reg_is<=c_rdata;
 			e_j_b_inst_reg_is<=e_j_b_inst_reg_id;
+			cpupc_reg_is<=cpupc_reg_id;
+			dnpc_reg_is<=dnpc_reg_id;
 		end
 	end
 //pipe3
@@ -140,7 +162,23 @@ module stallable_pipeline(
 			ram_data_reg_wb<=ram_data;
 			rd_reg_wb<=rd_reg_is;
 			c_rdata_reg_wb<=c_rdata_reg_is;
+			cpupc_reg_wb<=cpupc_reg_is;
+			dnpc_reg_wb<=dnpc_reg_is;
+			e_j_b_inst_reg_wb<=e_j_b_inst_reg_is;
+
 		end
 	end
 	assign validout=pipe3_valid&&pipe3_ready_go;//新的结束信号
+	always@(posedge clk)begin
+		if(rst)begin
+			cpupc_reg_finish<=64'h80000000;
+			ebreak_finish<=0;
+		end
+		else begin
+			cpupc_reg_finish<=dnpc_reg_wb;
+			ebreak_finish<=e_j_b_inst_reg_wb[0];
+
+		end
+	end
+
 endmodule

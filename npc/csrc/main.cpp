@@ -3,8 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-int TEST=0; 
-int DIFFTEST=0;
+int TEST=1; 
+int DIFFTEST=1;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -328,6 +328,7 @@ int main(int argc, char** argv, char** env) {
     top->rst = !0;
     top->clk = 0;
     top->cpupc=0x80000000;
+		top->dnpc_reg_wb=0x80000000;
     //top->in=0;
 		int testdata=0;
 		 while (!contextp->gotFinish()) {
@@ -353,7 +354,8 @@ int main(int argc, char** argv, char** env) {
         // Toggle a fast (time/2 period) clock
         top->clk = !top->clk;
         //add read memory
-				upc=top->cpupc;
+				//upc=top->cpupc;
+				upc=top->cpupc_reg_finish;
 				udnpc=top->dnpc;
 
 				if(TEST){
@@ -381,7 +383,7 @@ int main(int argc, char** argv, char** env) {
             //top->in=rand()%10;
         }
 				if(!top->clk){
-        if(top->ebreak&top->inst_update)
+        if(top->ebreak)
         {   
 						if(cpu_gpr[10]==0)
 							printf(GREEN"\nHIT GOOD TAP\n"NONE);
@@ -453,7 +455,7 @@ XunHuan:
 				////////////////////////////////////////////////////////////////////////////////////
 				//////////////////////////////////////itrace//////////////////////
 			if(DIFFTEST){
-				if(!top->clk&&!top->rst&&top->inst_update){
+				if(!top->clk&&!top->rst&&top->inst_finish){
 					itrace_use(logbuf,upc,instval);
 					if(!top->not_have)	{
 					printf(YELLOW"%s is not have, please add\n"NONE,logbuf);

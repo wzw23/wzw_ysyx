@@ -1,5 +1,7 @@
-module id(input clk,input rst,input [31:0]inst,output [4:0]rs1,output [4:0]rs2,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,output [1:0]c_waddr,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc);
-  
+module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr);
+  wire [1:0]c_waddr;
+  wire [4:0]rs1;
+	wire [4:0]rs2;
 	assign rs1=inst[19:15];
 	assign rs2=inst[24:20];
 	assign rd =inst[11:7];
@@ -86,6 +88,6 @@ module id(input clk,input rst,input [31:0]inst,output [4:0]rs1,output [4:0]rs2,o
 			1'b1,src1|c_rdata
 			});
 
-RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen),.wdata(wdata),.waddr(rd),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
+RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
 
 endmodule

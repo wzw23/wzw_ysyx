@@ -1,10 +1,10 @@
 //`include "hong.v"
 `define alu_length 17
 //module exe(input clk,input rst,input [63:0]imm,input [4:0]rs1,input[4:0]rs2,input[4:0]rd,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,[>input rf_wen,input [63:0]wdata,<]output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,output [2:0]alu_equal,input [63:0]cpupc,input w_choose,input [63:0]src2,input c_wchoose,input c_wen,input [1:0]c_raddr,input [1:0]c_waddr,output [63:0]c_rdata,input [2:0]e_inst,input c_wen1_2);
-module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,output [2:0]alu_equal,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data);
+module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data);
 	//wire [63:0]src1;
 	//wire [63:0]src2;
-
+	wire [2:0]alu_equal;
 	reg [63:0]alu_src1;
 	reg [63:0]alu_src2;
 

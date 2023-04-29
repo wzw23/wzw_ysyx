@@ -13,7 +13,7 @@ module dcache(
 	input  [31:0]waddr,
 	input  [63:0]wdata,
 	input  [7:0]wmask,
-	input  inst_update,
+	input  pipe2_valid,
 	output  cache_finish,
 	//总线信号
 	output [31:0]araddr2,
@@ -42,7 +42,10 @@ module dcache(
 	//写回复通道
 	input [1:0]bresp2,
 	input bvalid2,
-	output bready2
+	output bready2,
+	
+	input wb_reg_finish
+
 
 );
  parameter CACHE_SIZE=4096;//cache大小为4kB 4096B
@@ -93,18 +96,18 @@ wire mem_read_begin;
 assign araddr=(rcache_en)?raddr:
 							(wcache_en)?waddr:
 							0;
-assign rcache_en=r_ren&inst_update;
-assign wcache_en=r_wen&inst_update;
+assign rcache_en=r_ren&pipe2_valid;
+assign wcache_en=r_wen&pipe2_valid;
 always @(posedge clk)begin
 	if(rst)
 		cache_state<=CACHE_IDLE;
-	else if((cache_state==CACHE_IDLE)&(!rcache_en)&(!wcache_en)&(inst_update)&(use_cache))
-		cache_state<=CACHE_FINISH;
-	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(rcache_en)&inst_update&(use_cache))
+	//else if((cache_state==CACHE_IDLE)&(!rcache_en)&(!wcache_en)&(pipe2_valid)&(use_cache))
+		//cache_state<=CACHE_FINISH;
+	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(rcache_en)&pipe2_valid&(use_cache))
 		cache_state<=CACHE_GET;
-	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(wcache_en)&inst_update&(use_cache))
+	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(wcache_en)&pipe2_valid&(use_cache))
 		cache_state<=CACHE_WRITE;
-	else if(cache_state==CACHE_IDLE&(rcache_en|wcache_en)&inst_update&(use_cache))
+	else if(cache_state==CACHE_IDLE&(rcache_en|wcache_en)&pipe2_valid&(use_cache))
 		cache_state<=CACHE_UPDATE_BEGIN;
 	else if(cache_state==CACHE_UPDATE_BEGIN&(tagarray[araddr_index][21]==0))
 		cache_state<=CACHE_MEMREAD;
@@ -122,7 +125,7 @@ always @(posedge clk)begin
 		cache_state<=CACHE_FINISH;
 	else if(cache_state==CACHE_WRITE)
 		cache_state<=CACHE_FINISH;
-	else if(cache_state==CACHE_FINISH)
+	else if(cache_state==CACHE_FINISH&wb_reg_finish)
 		cache_state<=CACHE_IDLE;
 end
 assign cache_finish=(cache_state==CACHE_FINISH);

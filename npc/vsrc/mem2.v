@@ -12,9 +12,8 @@ module mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	input r_wen,
 	input [DATA_WIDTH-1:0]r_wdata,
 	input [6:0]l_choose,
-	input inst_update,
+	input pipe2_valid,
 	output mem_finish,
-	output inst_finish,
 	//总线信号
 	output [31:0]araddr2,
 	output arvalid2,
@@ -42,7 +41,8 @@ module mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	//写回复通道
 	input [1:0]bresp2,
 	input bvalid2,
-	output bready2
+	output bready2,
+	input wb_reg_finish
 );
 
 //////////////////////////////////////////////crossbar/////////////
@@ -184,6 +184,7 @@ import "DPI-C" function void vpmem_write(
 
 	wire cache_finish;	
 	wire use_cache;
+	wire use_device;
   wire [DATA_WIDTH-1:0]r_rdata_ld;
   wire [DATA_WIDTH-1:0]r_rdata_ld_cache;
   wire [DATA_WIDTH-1:0]r_rdata_ld_device;
@@ -193,7 +194,8 @@ import "DPI-C" function void vpmem_write(
 	wire [DATA_WIDTH-1:0]r_rdata_lhu;
 	wire [DATA_WIDTH-1:0]r_rdata_lb;
 	wire [DATA_WIDTH-1:0]r_rdata_lbu;
-	assign use_cache=((r_raddr[31:0]>=32'h80000000)&(r_raddr[31:0]<=32'h87ffffff))|((r_waddr[31:0]>=32'h80000000)&(r_waddr[31:0]<=32'h87ffffff));//当访问内存时调用cache 当访问设备时为了缓存一致性 另其直接访问内存
+	assign use_cache=(((r_raddr[31:0]>=32'h80000000)&(r_raddr[31:0]<=32'h87ffffff))|((r_waddr[31:0]>=32'h80000000)&(r_waddr[31:0]<=32'h87ffffff)))&(r_wen|r_ren);//当访问内存时调用cache 当访问设备时为了缓存一致性 另其直接访问内存
+	assign use_device=(~(((r_raddr[31:0]>=32'h80000000)&(r_raddr[31:0]<=32'h87ffffff))|((r_waddr[31:0]>=32'h80000000)&(r_waddr[31:0]<=32'h87ffffff))))&(r_wen|r_ren);
 
 	assign r_rdata_lw ={{32{r_rdata_ld[31]}},r_rdata_ld[31:0]};
 	assign r_rdata_lwu={{32'b0},r_rdata_ld[31:0]};
@@ -212,7 +214,6 @@ import "DPI-C" function void vpmem_write(
 		7'b0100000,r_rdata_lb,
 		7'b1000000,r_rdata_lbu
 		});
-		Reg #(1,1'b0) finish(clk,rst,mem_finish,inst_finish,1'b1);
 dcache dcache_0(
 .clk(clk),
 .rst(rst),
@@ -224,7 +225,7 @@ dcache dcache_0(
 .waddr(r_waddr[31:0]),
 .wdata(r_wdata),
 .wmask(r_mask),
-.inst_update(inst_update),
+.pipe2_valid(pipe2_valid),
 .cache_finish(cache_finish),
 //总线信号
 .araddr2(araddr2_0),
@@ -250,15 +251,17 @@ dcache dcache_0(
 .wready2(wready2_0),
 .bresp2(bresp2_0),
 .bvalid2(bvalid2_0),
-.bready2(bready2_0)
+.bready2(bready2_0),
+.wb_reg_finish(wb_reg_finish)
+
 );
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache
 /*wire [63:0]device_wen;*/
-/*assign device_wen={63'b0,r_wen&inst_update&(~use_cache)};*/
+/*assign device_wen={63'b0,r_wen&pipe2_valid&(~use_cache)};*/
 wire device_finish;
 /*always @(*)begin*/
-	/*//if((use_cache==0)&inst_update)begin*/
+	/*//if((use_cache==0)&pipe2_valid)begin*/
 		/*//if(r_ren)begin*/
 			/*vpmem_read({r_raddr}, r_rdata_ld_device);*/
 			/*vpmem_write({r_waddr}, r_wdata, r_mask,device_wen);*/
@@ -276,7 +279,7 @@ mem_read_write mem_read_write_0(
 .r_waddr(r_waddr),
 .r_wdata(r_wdata),
 .r_mask(r_mask),
-.inst_update(inst_update),
+.pipe2_valid(pipe2_valid),
 .use_device_en(~use_cache),
 .use_device_finish(device_finish),
 .araddr2(araddr2_1),
@@ -302,11 +305,12 @@ mem_read_write mem_read_write_0(
 .wready2(wready2_1),
 .bresp2(bresp2_1),
 .bvalid2(bvalid2_1),
-.bready2(bready2_1)
+.bready2(bready2_1),
+.wb_reg_finish
 );
 ///////////////////////////////////////////////////////////////////
-//assign device_finish=((use_cache==0)&inst_update);
-assign mem_finish=(use_cache&cache_finish)|((!use_cache)&device_finish);
+//assign device_finish=((use_cache==0)&pipe2_valid);
+assign mem_finish=(use_cache&cache_finish)|((!use_cache)&device_finish)|((~(r_wen))&(~(r_ren)));
 assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:
 									r_rdata_ld_device;
 endmodule

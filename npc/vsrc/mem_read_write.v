@@ -8,7 +8,7 @@ module mem_read_write(
 	input  [63:0]r_waddr,
 	input  [63:0]r_wdata,
 	input  [7:0]r_mask,
-	input  inst_update,
+	input  pipe2_valid,
 	input  use_device_en,
 	output use_device_finish,
 		//总线信号
@@ -38,7 +38,8 @@ module mem_read_write(
 	//写回复通道
 	input [1:0]bresp2,
 	input bvalid2,
-	output bready2
+	output bready2,
+	input wb_reg_finish
 );
 ///////////////////mem_read////////////////////////可以看成一个相对独立的模块
 //输入:mem_read_begin araddr_block 输出:mem_read_end,dataarray
@@ -73,7 +74,7 @@ always @(posedge clk)begin
 		read_state<=READ_TRANS;
 	else if((read_state==READ_TRANS)&rlast)
 		read_state<=READ_FINISH;
-	else if(read_state==READ_FINISH)
+	else if(read_state==READ_FINISH&wb_reg_finish)
 		read_state<=READ_IDLE;
 end
 //read_finish信号
@@ -82,7 +83,7 @@ wire mem_write_finish;
 assign mem_read_finish=(read_state==READ_FINISH);
 assign mem_write_finish=(write_state==WRITE_FINISH);
 //arvalid信号
-assign arvalid=(read_state==READ_IDLE)&ren&inst_update;
+assign arvalid=(read_state==READ_IDLE)&ren&pipe2_valid;
 //r_data信号
 //mem_read
 always @(posedge clk)begin
@@ -133,7 +134,7 @@ always @(posedge clk)begin
 	else if((write_state==WRITE_TRANS)&wlast)
 		write_state<=WRITE_FINISH;
 	//else if(write_state==WRITE_FINISH&(cache_finish))
-	else if(write_state==WRITE_FINISH)
+	else if(write_state==WRITE_FINISH&wb_reg_finish)
 		write_state<=WRITE_IDLE;
 end
 //awvalid wvalid wdata wstrb信号
@@ -145,7 +146,7 @@ wire [31:0]awaddr;
 reg  [63:0]wdata;
 wire [7:0]wstrb;
 reg  [7:0]c_awlen;
-assign awvalid=(write_state==WRITE_IDLE)&(wen)&(inst_update);
+assign awvalid=(write_state==WRITE_IDLE)&(wen)&(pipe2_valid);
 assign awaddr=r_waddr[31:0];
 assign wdata_axi =wdata;
 assign wstrb =r_mask;
@@ -234,5 +235,6 @@ assign bvalid=bvalid2;
 assign bready2=bready;
 
 
-assign use_device_finish=inst_update&use_device_en&(((ren&mem_read_finish)|(wen&mem_write_finish))|((~ren)&(~wen)));
+//assign use_device_finish=pipe2_valid&use_device_en&(((ren&mem_read_finish)|(wen&mem_write_finish))|((~ren)&(~wen)));
+assign use_device_finish=pipe2_valid&use_device_en&((ren&mem_read_finish)|(wen&mem_write_finish));
 endmodule

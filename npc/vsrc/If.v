@@ -2,12 +2,12 @@ module If(
 	input clk,
 	input rst,
 	output [63:0]cpupc,
-	input [1:0]sel_nextpc,
-	input [63:0]imm,
-	input [63:0]src1,
+	//input [1:0]sel_nextpc,
+	//input [63:0]imm,
+	//input [63:0]src1,
 	output [31:0]inst,
 	output [63:0]dnpc,
-	input[63:0]c_rdata,
+	//input[63:0]c_rdata,
 	output inst_update,
 	input mem_finish,
 	output [31:0]araddr1,
@@ -22,8 +22,9 @@ module If(
 	input rlast1,
 	output rready1,
 	output [11:0]e_j_b_inst,
-	input  [63:0]dnpc_jump_data
+	input  [63:0]dnpc_jump_data,
 	//总线接口
+	input id_reg_finish
 );
 //位宽为32bit，复位值为0x80000000,写使能一直有效
 //wire [31:0]zhongjian;
@@ -46,7 +47,7 @@ MuxKey #(2,1,64) mux4(dnpc_0,not_jump,{//alu_src2赋值
   1'b1,cpupc+4,
 	1'b0,dnpc_jump_data
 	});
-MuxKey #(2,1,64) mux5(dnpc,mem_finish,{//alu_src2赋值
+MuxKey #(2,1,64) mux5(dnpc,id_reg_finish&(~e_j_b_inst[0]),{//alu_src2赋值
   1'b0,cpupc,
 	1'b1,dnpc_0
 	});
@@ -72,7 +73,8 @@ icache icache_9(
 	.rresp1(rresp1),
 	.rvalid1(rvalid1),
 	.rlast1(rlast1),
-	.rready1(rready1)
+	.rready1(rready1),
+	.id_reg_finish(id_reg_finish)
  );
 
 //总线信号

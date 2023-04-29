@@ -46,5 +46,5 @@ module pre_decode(input clk,input rst,input [31:0]inst,output [11:0]e_j_b_inst,o
 																																	bltu?12'b001000000000://9
 																																	 blt?12'b010000000000://10
 	                      	                                             12'b100000000000;//11
- assign not_jump=e_j_b_inst[11];
+ assign not_jump=e_j_b_inst[11]|e_j_b_inst[0];
 endmodule

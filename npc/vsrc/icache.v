@@ -20,7 +20,8 @@ module icache(
 	input [1:0]rresp1,
 	input rvalid1,
 	input rlast1,
-	output rready1
+	output rready1,
+	input id_reg_finish
 	//写地址通道
 	/*output [31:0]awaddr1,*/
 	/*output awvalid1,*/
@@ -70,7 +71,7 @@ always @(posedge clk)begin
 		cache_state<=CACHE_MEMREAD;
 	else if((cache_state==CACHE_MEMREAD)&rlast)
 		cache_state<=CACHE_GET;
-	else if(cache_state==CACHE_GET&&(mem_finish))
+	else if(cache_state==CACHE_GET&&(id_reg_finish))
 		cache_state<=CACHE_IDLE;
 end
 //总线信号
@@ -99,7 +100,7 @@ always @(posedge clk)begin
 		state<=READ_TRANS;
 	else if((state==READ_TRANS)&rlast)
 		state<=READ_FINISH;
-	else if(state==READ_FINISH&(mem_finish))
+	else if(state==READ_FINISH&(id_reg_finish))
 		state<=READ_IDLE;
 end
 //arvalid信号
