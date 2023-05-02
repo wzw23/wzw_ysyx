@@ -1,7 +1,7 @@
 //`include "hong.v"
 `define alu_length 17
 //module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,input inst_update,output c_wen1_2,input mem_finish);
-module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2);
+module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2,output rf_ren_src1,output rf_ren_src2);
 
 //下标标识
 //op_d
@@ -292,4 +292,6 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 	
 	assign not_have=addi|andi|xori|ori|sll|srl|sra|lui|jal|jalr|sd|sh|sw|sb|lw|lwu|lh|lhu|lb|lbu|ld|divu|Add|Mul|And|Xor|Or|sltu|slt|sub|sltiu|beq|bne|bge|bgeu|bltu|blt|auipc|rem|remu|div|addw|subw|mulw|remuw|divw|divuw|remw|addiw|srliw|slliw|sraiw|slli|srli|srai|sllw|sraw|srlw|csrrs|csrrw|e_j_b_inst[1]|e_j_b_inst[2]|e_j_b_inst[0];
 	assign w_choose=addw|subw|mulw|divw|divuw|remw|sllw|srlw|sraw|addiw|sraiw|slliw|srliw|remuw;
+	assign rf_ren_src1={Add|addi|ld|sd|slt|sll|srl|sra|And|Or|Xor|sltiu|andi|ori|xori|Mul|divu|bge|bgeu|blt|bltu|lw|lwu|lh|lhu|lb|lbu|sw|sh|sb|div|rem|remu|addw|subw|sub|mulw|divw|divuw|remw|beq|bne|addiw|slli|srli|srai|sltu|remuw}|{slliw|srliw|sraiw|jalr|sraw|sllw};
+	assign rf_ren_src2={Add|slt|sll|srl|sra|And|Or|Xor|Mul|divu|bge|bgeu|blt|bltu|rem|remu|div|addw|subw|sub|mulw|remuw|divw|divuw|remw|beq|bne|sllw|srlw|sraw|sltu}|{sw|sh|sb|sd};
 endmodule

@@ -14,7 +14,7 @@ char *diff_so_file = NULL;
 char *img_file = NULL;
 static int difftest_port = 1234;
 static const uint32_t img [] = {
-		// 0x800002b7,  // lui t0,0x80000
+	0x800002b7,  // lui t0,0x80000
 		// 0x0002a023,  // sw  zero,0(t0)
 		// 0x0002a503,  // lw  a0,0(t0)
 		// 0x00100073,  // ebreak (used as nemu_trap)
@@ -26,16 +26,23 @@ static const uint32_t img [] = {
 	/*0x2f0b8b93, //addi    s7,s7,752*/
 	/*0x0c4b0b13, //addi    s6,s6,196 */
 	/*0x00100073  //break*/
-  0x800002b7,  // lui t0,0x80000
-	0x0c4b0b13, //addi    s6,s6,196//s6:22
-	0x2f0b8b93, //addi    s7,s7,752
-	0x00c000ef,  //          jal ra,80000018
+  //0x800002b7,  // lui t0,0x80000
+	//0x0c4b0b13, //addi    s6,s6,196//s6:22
+	//0x2f0b8b93, //addi    s7,s7,752
+	//0x00c000ef,  //          jal ra,80000018
 	0x0002a503,  // lw  a0,0(t0)
-	0x0c4b0b13, //addi    s6,s6,196
+	//0x0c4b0b13, //addi    s6,s6,196
 	//0x0002a023,  // sw  zero,0(t0)
 	0x0162a023,// sw  s6,0(t0)
 	0x0002a503,  // lw  a0,0(t0)
-  0x00100073,  // ebreak (used as nemu_trap)
+	//0x0002a503,  // lw  a0,0(t0)
+	//0x0d4b0b13,
+	//0x00440413,//addi s0 s0 4
+	//0x01442503,          	//lw	a0,20(s0),
+  0xffd50513,          	//addi	a0,a0,-3
+
+	0x00100073,  // ebreak (used as nemu_trap)
+	
 
 };
 int parse_args(int argc, char *argv[]) {

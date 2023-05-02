@@ -3,8 +3,8 @@
 #include "svdpi.h"
 // Include common routines
 #include <verilated.h>
-int TEST=1; 
-int DIFFTEST=1;
+int TEST=0; 
+int DIFFTEST=0;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
@@ -367,7 +367,7 @@ int main(int argc, char** argv, char** env) {
 					}
 				}
 //      ///////////////////////////////////////////////////
-				uint32_t instval=top->inst;
+				uint32_t instval=top->inst_reg_wb;
 				// Toggle control signals on an edge that doesn't correspond
         // to where the controls are sampled; in this example we do
         // this only on a negedge of clk, because we know

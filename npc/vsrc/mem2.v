@@ -310,7 +310,7 @@ mem_read_write mem_read_write_0(
 );
 ///////////////////////////////////////////////////////////////////
 //assign device_finish=((use_cache==0)&pipe2_valid);
-assign mem_finish=(use_cache&cache_finish)|((!use_cache)&device_finish)|((~(r_wen))&(~(r_ren)));
+assign mem_finish=(use_cache&cache_finish)|((use_device)&device_finish)|((~(r_wen))&(~(r_ren)));
 assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:
 									r_rdata_ld_device;
 endmodule

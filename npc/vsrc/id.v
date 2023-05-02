@@ -1,10 +1,13 @@
-module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr);
+module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
   wire [1:0]c_waddr;
   wire [4:0]rs1;
 	wire [4:0]rs2;
+	wire same_inst_r_w;
 	assign rs1=inst[19:15];
 	assign rs2=inst[24:20];
 	assign rd =inst[11:7];
+	assign same_inst_r_w=(rf_ren_src1&rf_wen&(rd==rs1))|(rf_ren_src2&rf_wen&(rd==rs2));
+	reg [4:0]waddr_test;
 
 	wire [6:0]op;
 	wire	 [2:0]fu_3;
@@ -12,6 +15,23 @@ module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]i
 	assign op =inst[6:0];
 	assign fu_7=inst[31:25];
 	assign fu_3=inst[14:12];
+	reg  [31:0]buzy;
+	always@(posedge clk)begin
+		if(rst)begin
+			for(integer i=0;i<32;i=i+1)
+				buzy[i]<=0;
+		end
+		if(is_reg_finish&rf_wen)begin
+			buzy[rd]<=1;
+		end
+		if(validout&rf_wen_reg_wb)begin
+			buzy[rf_waddr]<=0;
+			waddr_test<=rf_waddr;
+		end
+	end
+
+		assign control_hazard=(pipe1_valid&((rf_ren_src1&buzy[rs1])|(rf_ren_src2&buzy[rs2])));
+			
 
 	//将fu_3转化成独热码的方式
 	de_len_olen  #(3,8)   de_3_8     (fu_3,fu_3_d);
@@ -88,6 +108,6 @@ module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]i
 			1'b1,src1|c_rdata
 			});
 
-RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
+RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen_reg_wb&validout),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
 
 endmodule

@@ -55,6 +55,7 @@ module stallable_pipeline(
 	input [63:0]set_dnpc_data,
 	//input [63:0]rd,
 	//input  [63:0]c_rdata,
+	output reg [31:0]inst_reg_wb,
 	output reg [11:0]e_j_b_inst_reg_wb,
 	output reg [63:0]dnpc_reg_wb,
 	output reg [63:0]cpupc_reg_wb,
@@ -73,8 +74,12 @@ module stallable_pipeline(
   output is_reg_finish,
 	output wb_reg_finish,
 
+
+	output reg pipe1_valid,
 	output reg pipe2_valid,
-	output reg ebreak_finish
+	output reg pipe3_valid,
+	output reg ebreak_finish,
+	input  control_hazard
 
 );
 
@@ -84,9 +89,10 @@ module stallable_pipeline(
 //pipe1 id
 //pipe2 ls
 //pipe3 wb
-	reg pipe1_valid;
+	//reg pipe1_valid;
+	reg [31:0]inst_reg_is;
 	//reg pipe2_valid;
-	reg pipe3_valid;
+	//reg pipe3_valid;
 
 	reg not_jump_reg_id;
 	reg not_jump_reg_is;
@@ -103,7 +109,7 @@ module stallable_pipeline(
 	wire pipe3_ready_go;
 
 //pipe1
-	assign pipe1_ready_go=1;//译码是瞬时完成的
+	assign pipe1_ready_go=~control_hazard;//译码是瞬时完成的
 	assign pipe1_allow_in=!pipe1_valid||pipe1_ready_go&&pipe2_allow_in;//若!pipe1_valid&&pipe2_allowin表示pipe1向pipe2传输的是无效数据 并且已经传输 若pipe1_valid&&pipe1_ready_go&&pipe2_allowin表示传输的是有效数据 并且将在下个周期传输
 	assign pipe1_to_pipe2_valid=pipe1_valid&&pipe1_ready_go;//认为教科书上解释错误 此处信号表示的原因是pipe1传输给pipe2的信号是否有效 即总线上的valid信号
 	assign id_reg_finish=validin&&pipe1_allow_in;
@@ -150,6 +156,7 @@ module stallable_pipeline(
 			cpupc_reg_is<=cpupc_reg_id;
 			dnpc_reg_is<=dnpc_reg_id;
 			not_jump_reg_is<=not_jump_reg_id;
+			inst_reg_is<=inst_reg_id;
 		end
 	end
 //pipe3
@@ -173,6 +180,7 @@ module stallable_pipeline(
 			dnpc_reg_wb<=set_dnpc_data;
 			e_j_b_inst_reg_wb<=e_j_b_inst_reg_is;
 			not_jump_reg_wb<=not_jump_reg_is;
+			inst_reg_wb<=inst_reg_is;
 
 		end
 	end
