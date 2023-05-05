@@ -19,6 +19,8 @@ module top(
 	output [31:0]inst_reg_wb
 );
 ///////////wire信号////////
+wire isu_finish;
+wire alu_finish;
 wire ebreak_finish;
 wire control_hazard;
 //if
@@ -157,7 +159,7 @@ wire control_hazard;
 	stallable_pipeline stallable_pipeline_0(
 	.clk(clk),
 	.rst(rst),
-	.mem_finish(mem_finish),
+	.isu_finish(isu_finish),
 	.validin(validin),
 	.inst(inst),
 	//id
@@ -272,7 +274,7 @@ wire control_hazard;
 	control control_1(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst_reg_id),.c_wen1_2(c_wen1_2),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2)) ;//控制模块
 /////////////////////////////////////////
 ///////////////////is//////////////////////
-	exe exe_1(.clk(clk),.rst(rst),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data));
+	exe exe_1(.clk(clk),.rst(rst),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data),.wb_reg_finish(wb_reg_finish),.alu_finish(alu_finish),.pipe2_valid(pipe2_valid));
 	//访存模块
 	mem2 #(64,64)mem_2(
 		.clk(clk),
@@ -313,6 +315,7 @@ wire control_hazard;
 		.bready2(bready2),
 		.wb_reg_finish(wb_reg_finish)
 	);
+assign isu_finish=alu_finish&mem_finish;
 /////////////////////////////////////////
 ///////////////////wb////////////////////
 	//写回模块
@@ -363,13 +366,13 @@ wire control_hazard;
 ///////////////////////////////////////////
 
  	/////////////////////////////开启波形图/////////////////////
-	/*initial begin*/
-		/*if ($test$plusargs("trace") != 0) begin*/
-			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/
-			/*$dumpfile("logs/vlt_dump.vcd");*/
-			/*$dumpvars();*/
-		/*end*/
-		/*$display("[%0t] Model running...\n", $time);*/
-	/*end*/
+	initial begin
+		if ($test$plusargs("trace") != 0) begin
+			$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
+			$dumpfile("logs/vlt_dump.vcd");
+			$dumpvars();
+		end
+		$display("[%0t] Model running...\n", $time);
+	end
 	/*/*//////////////////////////////////////////////////////////
 	endmodule

@@ -311,7 +311,7 @@ int main(int argc, char** argv, char** env) {
     // May be overridden by commandArgs argument parsing
     contextp->randReset(2);
     // Verilator must compute traced signals
-    contextp->traceEverOn(true);
+		contextp->traceEverOn(true);
     // Pass arguments so Verilated code can see them, e.g. $value$plusargs
     // This needs to be called before you create any model
     contextp->commandArgs(argc, argv);

@@ -1,7 +1,7 @@
 module stallable_pipeline(
 	input clk,
 	input rst,
-	input mem_finish,
+	input isu_finish,
 	input validin,
 	input [31:0]inst,
 	//id
@@ -127,7 +127,7 @@ module stallable_pipeline(
 		end
 	end
 //pipe2
- assign pipe2_ready_go=mem_finish;//mem_finish时表示exe（is）完成
+ assign pipe2_ready_go=isu_finish;//isu_finish时表示exe（is）完成
  	assign pipe2_allow_in=!pipe2_valid||pipe2_ready_go&&pipe3_allow_in;
 	assign pipe2_to_pipe3_valid=pipe2_valid&&pipe2_ready_go;
 	assign is_reg_finish=pipe1_to_pipe2_valid&&pipe2_allow_in;
