@@ -40,6 +40,35 @@ module icache(
 	/*input bvalid1,*/
 	/*output bready1*/
  );
+ wire [5:0]io_sram0_addr;
+ wire io_sram0_cen;
+ wire io_sram0_wen;
+ wire [127:0]io_sram0_wmask;
+ wire [127:0] io_sram0_wdata;
+ wire [127:0] io_sram0_rdata;
+ 
+ wire [5:0] io_sram1_addr;
+ wire io_sram1_cen;
+ wire io_sram1_wen;
+ wire [127:0]io_sram1_wmask;
+ wire [127:0] io_sram1_wdata;
+ wire [127:0] io_sram1_rdata;
+ 
+ wire [5:0] io_sram2_addr;
+ wire io_sram2_cen;
+ wire io_sram2_wen;
+ wire [127:0]io_sram2_wmask;
+ wire [127:0] io_sram2_wdata;
+ wire [127:0] io_sram2_rdata;
+ 
+ wire [5:0] io_sram3_addr;
+ wire io_sram3_cen;
+ wire io_sram3_wen;
+ wire [127:0]io_sram3_wmask;
+ wire [127:0] io_sram3_wdata;
+ wire [127:0] io_sram3_rdat;
+
+
  parameter CACHE_SIZE=4096;//cache大小为4kB 4096B
  parameter LINE_SIZE=64;//line size 64B
  parameter NUM_LINES=CACHE_SIZE/LINE_SIZE;//行数
@@ -47,6 +76,8 @@ module icache(
  parameter INDEX_WIDTH=6;//index width
  parameter OFFSET_WIDTH=6;//offset width
  parameter TAG_WIDTH=20;//tag width
+
+
 //tag array
  reg [TAGARRAY_WIDTH-1:0]tagarray[NUM_LINES-1:0];//21位代表valid 因为icache是只读cache 所以没有dirty位
 //dataarray
