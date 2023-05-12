@@ -26,4 +26,6 @@ always @(posedge CLK) begin
     Q <= cen && !wen ? ram[A] : {4{$random}};
 end
 
+wire [Wen_Width-1:0]ram_0 ;
+assign ram_0=ram[0];
 endmodule
