@@ -6,7 +6,7 @@ module icache(
 	input  clk,
 	input  rst,
 	input  [31:0]araddr,
-	output reg [63:0]rdata,
+	output [63:0]rdata,
 	output inst_update,
 	input  mem_finish,
 	//总线接口
@@ -287,35 +287,13 @@ sram sram_0(
  assign io_sram2_wmask=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
  assign io_sram3_wmask=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
 
-/* always@(posedge clk)begin*/
-	 /*if(rlast_delay_delay|((cache_state==CACHE_IDLE)&(addr_tag==tagarray[addr_index][19:0])&(tagarray[addr_index][20])))*/
-		 /*case (addr_offset)*/
-			 /*'d0:*/
-				 /*rdata<=io_sram0_rdata[63:0];*/
-			 /*'d1:*/
-				 /*rdata<=io_sram0_rdata[127:64];*/
-			 /*'d2:*/
-				 /*rdata<=io_sram1_rdata[63:0];*/
-			 /*'d3:*/
-				 /*rdata<=io_sram1_rdata[127:64];*/
-			 /*'d4:*/
-				 /*rdata<=io_sram2_rdata[63:0];*/
-			 /*'d5:*/
-				 /*rdata<=io_sram2_rdata[127:64];*/
-			 /*'d6:*/
-				 /*rdata<=io_sram3_rdata[63:0];*/
-			 /*default:*/
-				 /*rdata<=io_sram3_rdata[127:64];*/
-
-		 /*endcase*/
-	 /*end*/
-	assign rdata= (addr_offset[5:3]==0)?io_sram0_rdata[63:0]:
-								(addr_offset[5:3]==1)?io_sram0_rdata[127:64]:
-								(addr_offset[5:3]==2)?io_sram1_rdata[63:0]:
-								(addr_offset[5:3]==3)?io_sram1_rdata[127:64]:
-								(addr_offset[5:3]==4)?io_sram2_rdata[63:0]:
-								(addr_offset[5:3]==5)?io_sram2_rdata[127:64]:
-								(addr_offset[5:3]==6)?io_sram3_rdata[63:0]:
-								io_sram3_rdata[127:64];
+ assign rdata= (addr_offset[5:3]==0)?io_sram0_rdata[63:0]:
+							 (addr_offset[5:3]==1)?io_sram0_rdata[127:64]:
+							 (addr_offset[5:3]==2)?io_sram1_rdata[63:0]:
+							 (addr_offset[5:3]==3)?io_sram1_rdata[127:64]:
+							 (addr_offset[5:3]==4)?io_sram2_rdata[63:0]:
+							 (addr_offset[5:3]==5)?io_sram2_rdata[127:64]:
+							 (addr_offset[5:3]==6)?io_sram3_rdata[63:0]:
+							 io_sram3_rdata[127:64];
  ///////////
 endmodule

@@ -58,15 +58,23 @@ module dcache(
  //tag array
  reg [TAGARRAY_WIDTH-1:0]tagarray[NUM_LINES-1:0];//21位代表valid 22位代表dirty
 //dataarray
- reg  [63:0]dataarray[NUM_LINES-1:0][(LINE_SIZE)/8-1:0];//生成line列 长为64B大小的cache 由于每一行是以8字节为存储单位 所以设置为8个8字节
+ //reg  [63:0]dataarray[NUM_LINES-1:0][(LINE_SIZE)/8-1:0];//生成line列 长为64B大小的cache 由于每一行是以8字节为存储单位 所以设置为8个8字节
 //addr:index tag offset
+//状态机
+parameter    WRITE_IDLE       = 3'd0 ,
+	WRITE_AW_READY	 =3'd1,
+	WRITE_W_READY	 =3'd2,
+	WRITE_FINISH 		 =3'd3;
+
 wire   [31:0]araddr;
-wire	 [63:0]rdata;
+wire 	 [63:0]rdata;
+wire awvalid;
 wire   [OFFSET_WIDTH-1:0]araddr_offset;
 wire   [INDEX_WIDTH-1:0]araddr_index;
 wire   [TAG_WIDTH-1:0]araddr_tag;
 wire   [INDEX_WIDTH-1:0]waddr_index;
 wire   [OFFSET_WIDTH-1:0]waddr_offset;
+reg [2:0]write_state;
 //wire   [TAG_WIDTH-1:0]waddr_tag;
 wire   [63:0]rdata_axi;
 wire   rlast;
@@ -101,8 +109,6 @@ assign wcache_en=r_wen&pipe2_valid;
 always @(posedge clk)begin
 	if(rst)
 		cache_state<=CACHE_IDLE;
-	//else if((cache_state==CACHE_IDLE)&(!rcache_en)&(!wcache_en)&(pipe2_valid)&(use_cache))
-		//cache_state<=CACHE_FINISH;
 	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(rcache_en)&pipe2_valid&(use_cache))
 		cache_state<=CACHE_GET;
 	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(wcache_en)&pipe2_valid&(use_cache))
@@ -130,10 +136,11 @@ always @(posedge clk)begin
 end
 assign cache_finish=(cache_state==CACHE_FINISH);
 //chache_finish阶段 rdata成立
-//assign rdata=(araddr_offset[2]==0)?dataarray[araddr_index][araddr_offset[5:3]]:
-						 //{dataarray[araddr_index][araddr_offset[5:3]+1][31:0],dataarray[araddr_index][araddr_offset[5:3]][63:32]}//如果是lw的话 访问的可能是4的倍数导致出错
 //;//对齐
-assign rdata=dataarray[araddr_index][araddr_offset[5:3]];
+/*always @(posedge clk)begin*/
+	/*if(cache_state==CACHE_GET)*/
+		/*rdata<=dataarray[araddr_index][araddr_offset[5:3]];*/
+/*end*/
 assign rdata_align=rdata>>((araddr&{29'b0,3'b111})*8);//读数据对齐 如果是ld 右移8位 lh16 lw32
 //总线读写地址
 wire [31:0]araddr_block;
@@ -185,7 +192,7 @@ assign arvalid=(read_state==READ_IDLE)&mem_read_begin;
 //mem_read
 always @(posedge clk)begin
 		if(rvalid&rready)begin
-		dataarray[araddr_index][d_r_len]<=rdata_axi;
+		//dataarray[araddr_index][d_r_len]<=rdata_axi;
 		d_r_len<=d_r_len+1;
 	end
 	if(rlast)begin
@@ -196,9 +203,9 @@ always @(posedge clk)begin
 	if(rst)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=22'b0;
-		for(integer i=0;i<NUM_LINES;i=i+1)
-			for(integer j=0;j<OFFSET_WIDTH;j=j+1)
-				dataarray[i][j]<=0;
+		/*for(integer i=0;i<NUM_LINES;i=i+1)*/
+			/*for(integer j=0;j<OFFSET_WIDTH;j=j+1)*/
+				/*dataarray[i][j]<=0;*/
 		d_r_len<=0;
 	end
 end
@@ -213,7 +220,6 @@ assign mem_write_begin=(cache_state==CACHE_MEMWRITE);
 //输入:mem_write_begin awaddr_block dataarray输出:mem_write_finish
 //写通道信号
 //写信号
-reg [2:0]write_state;
 wire [1:0]awburst;
 wire [7:0]awlen;
 wire awready;
@@ -224,11 +230,6 @@ wire bready;
 wire bvalid;
 assign awburst=2'b01;
 assign awlen=8;
-//状态机
-parameter    WRITE_IDLE       = 3'd0 ,
-	WRITE_AW_READY	 =3'd1,
-	WRITE_W_READY	 =3'd2,
-	WRITE_FINISH 		 =3'd3;
 always @(posedge clk)begin
 	if(rst)
 		write_state<=WRITE_IDLE;
@@ -243,7 +244,6 @@ always @(posedge clk)begin
 end
 //awvalid wvalid wdata wstrb信号
 
-wire awvalid;
 reg   wvalid;
 wire [63:0]wdata_axi;
 wire [31:0]awaddr;
@@ -258,14 +258,14 @@ assign wstrb =8'b11111111;
 //r_wdata信号
 always@(posedge clk)begin
 	if(wready)begin
-		r_wdata<=dataarray[araddr_index][d_w_len];
+		//r_wdata<=dataarray[araddr_index][d_w_len];
 		d_w_len<=d_w_len+1;
 		c_awlen<=c_awlen+1;
 		wvalid<=1;
 	end
 	else begin 
 		//r_wdata<=dataarray[araddr_index][0];
-		r_wdata<=64'hffffffff;
+		//r_wdata<=64'hffffffff;
 	end
 	if(wlast)
 	begin
@@ -299,55 +299,11 @@ assign wmask_align=wmask_full<<((waddr&{29'b0,3'b111})*8);
 always @(posedge clk)
 	if(cache_state==CACHE_WRITE)begin
 	  tagarray[waddr_index][21]<=1'b1;
-		//if(waddr_offset[2]==0)
-		dataarray[waddr_index][waddr_offset[5:3]]<=(dataarray[waddr_index][waddr_offset[5:3]]&(~wmask_align))|(wdata_align&wmask_align);
+		//dataarray[waddr_index][waddr_offset[5:3]]<=(dataarray[waddr_index][waddr_offset[5:3]]&(~wmask_align))|(wdata_align&wmask_align);
 	if(rst)
 	  tagarray[waddr_index][21]<=1'b0;
 		
-		//else 
-		//{dataarray[waddr_index][waddr_offset[5:3]+1][31:0],dataarray[waddr_index][waddr_offset[5:3]][63:32]}<=({dataarray[waddr_index][waddr_offset[5:3]+1][31:0],dataarray[waddr_index][araddr_offset[5:3]][63:32]}&(~wmask_full))|(wdata&wmask_full);
-end
-//////////////
-//wire   [31:0]testaraddr;
-//assign testaraddr=32'h82395E18;
-//wire   [OFFSET_WIDTH-1:0]testaraddr_offset;
-//wire   [INDEX_WIDTH-1:0]testaraddr_index;
-//wire   [63:0]testdata;
-//wire   [21:0]testtag;
-//assign testtag=tagarray[0];
-//assign testaraddr_offset=testaraddr[OFFSET_WIDTH-1:0];
-//assign testaraddr_index =testaraddr[OFFSET_WIDTH+INDEX_WIDTH-1:OFFSET_WIDTH];
-//assign testdata=dataarray[testaraddr_index][testaraddr_offset[5:3]];
-
-///////////////////////////////////////
-/*axi_full_s2 axi_full_s2_0(*/
-	/*.clk(clk),*/
-	/*.rst(rst),*/
-	/*.araddr(araddr_block),*/
-	/*.arvalid(arvalid),*/
-	/*.arburst(arburst),*/
-	/*.arlen(arlen),*/
-	/*.arsize(arsize),*/
-	/*.arready(arready),*/
-	/*.rdata(rdata_axi),*/
-	/*.rresp(rresp),*/
-	/*.rvalid(rvalid),*/
-	/*.rlast(rlast),*/
-	/*.rready(rready),*/
-	/*.awaddr(awaddr),*/
-	/*.awvalid(awvalid),*/
-	/*.awburst(awburst),*/
-	/*.awlen(awlen),*/
-	/*.awready(awready),*/
-	/*.wdata(wdata_axi),*/
-	/*.wlast(wlast),*/
-	/*.wstrb(wstrb),*/
-	/*.wvalid(wvalid),*/
-	/*.wready(wready),*/
-	/*.bresp(bresp),*/
-	/*.bvalid(bvalid),*/
-	/*.bready(bready)*/
-/*);*/
+		end
 assign araddr2=araddr_block;
 assign arvalid2=arvalid;
 assign arburst2=arburst;
@@ -374,4 +330,172 @@ assign bresp=bresp2;
 assign bvalid=bvalid2;
 assign bready2=bready;
 
+wire [5:0]io_sram0_addr;
+wire io_sram0_cen;
+wire io_sram0_wen;
+wire [127:0]io_sram0_wmask;
+wire [127:0] io_sram0_wdata;
+wire [127:0] io_sram0_rdata;
+
+wire [5:0] io_sram1_addr;
+wire io_sram1_cen;
+wire io_sram1_wen;
+wire [127:0]io_sram1_wmask;
+wire [127:0] io_sram1_wdata;
+wire [127:0] io_sram1_rdata;
+
+wire [5:0] io_sram2_addr;
+wire io_sram2_cen;
+wire io_sram2_wen;
+wire [127:0]io_sram2_wmask;
+wire [127:0] io_sram2_wdata;
+wire [127:0] io_sram2_rdata;
+
+wire [5:0] io_sram3_addr;
+wire io_sram3_cen;
+wire io_sram3_wen;
+wire [127:0]io_sram3_wmask;
+wire [127:0] io_sram3_wdata;
+wire [127:0] io_sram3_rdata;
+
+sram sram_1(
+.clk(clk),
+.io_sram0_addr(io_sram0_addr),
+.io_sram0_cen(~io_sram0_cen),
+.io_sram0_wen(~io_sram0_wen),
+.io_sram0_wmask(~io_sram0_wmask),
+.io_sram0_wdata(io_sram0_wdata),
+.io_sram0_rdata(io_sram0_rdata),
+
+.io_sram1_addr(io_sram1_addr),
+.io_sram1_cen(~io_sram1_cen),
+.io_sram1_wen(~io_sram1_wen),
+.io_sram1_wmask(~io_sram1_wmask),
+.io_sram1_wdata(io_sram1_wdata),
+.io_sram1_rdata(io_sram1_rdata),
+
+.io_sram2_addr(io_sram2_addr),
+.io_sram2_cen(~io_sram2_cen),
+.io_sram2_wen(~io_sram2_wen),
+.io_sram2_wmask(~io_sram2_wmask),
+.io_sram2_wdata(io_sram2_wdata),
+.io_sram2_rdata(io_sram2_rdata),
+
+.io_sram3_addr(io_sram3_addr),
+.io_sram3_cen(~io_sram3_cen),
+.io_sram3_wen(~io_sram3_wen),
+.io_sram3_wmask(~io_sram3_wmask),
+.io_sram3_wdata(io_sram3_wdata),
+.io_sram3_rdata(io_sram3_rdata)
+ );
+ assign io_sram0_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
+ assign io_sram1_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
+ assign io_sram2_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
+ assign io_sram3_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
+
+/* assign io_sram0_cen=((wready)&((d_w_len=='d0)|(d_w_len=='d1)))|((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|((araddr_offset[5:3]==0)|(araddr_offset[5:3]==1));*/
+ /*assign io_sram1_cen=((wready)&((d_w_len=='d2)|(d_w_len=='d3)))|((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|((araddr_offset[5:3]==2)|(araddr_offset[5:3]==3));*/
+ /*assign io_sram2_cen=((wready)&((d_w_len=='d4)|(d_w_len=='d5)))|((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|((araddr_offset[5:3]==4)|(araddr_offset[5:3]==5));*/
+ /*assign io_sram3_cen=((wready)&((d_w_len=='d6)|(d_w_len=='d7)))|((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|((araddr_offset[5:3]==6)|(araddr_offset[5:3]==7));*/
+
+ assign io_sram0_cen=1;
+ assign io_sram1_cen=1;
+ assign io_sram2_cen=1;
+ assign io_sram3_cen=1;
+
+
+ assign io_sram0_cen=((wready)&((d_w_len=='d0)|(d_w_len=='d1)))|((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|((araddr_offset[5:3]==0)|(araddr_offset[5:3]==1));
+ assign io_sram1_cen=((wready)&((d_w_len=='d2)|(d_w_len=='d3)))|((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|((araddr_offset[5:3]==2)|(araddr_offset[5:3]==3));
+ assign io_sram2_cen=((wready)&((d_w_len=='d4)|(d_w_len=='d5)))|((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|((araddr_offset[5:3]==4)|(araddr_offset[5:3]==5));
+ assign io_sram3_cen=((wready)&((d_w_len=='d6)|(d_w_len=='d7)))|((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|((araddr_offset[5:3]==6)|(araddr_offset[5:3]==7));
+
+
+ assign io_sram0_wen=((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d0)|(waddr_offset[5:3]=='d1));
+ assign io_sram1_wen=((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d2)|(waddr_offset[5:3]=='d3));
+ assign io_sram2_wen=((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d4)|(waddr_offset[5:3]=='d5));
+ assign io_sram3_wen=((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d6)|(waddr_offset[5:3]=='d7));
+
+assign io_sram0_wdata=((rvalid&rready)&(d_r_len==0))?{64'b0,rdata_axi}:
+                       ((rvalid&rready)&(d_r_len==1))?{rdata_axi,64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d0))?{64'b0,wdata_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d1))?{wdata_align,64'b0}:'d0
+											 ;
+assign io_sram1_wdata=((rvalid&rready)&(d_r_len==2))?{64'b0,rdata_axi}:
+                       ((rvalid&rready)&(d_r_len==3))?{rdata_axi,64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d2))?{64'b0,wdata_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d3))?{wdata_align,64'b0}:'d0
+											 ;
+assign io_sram2_wdata=((rvalid&rready)&(d_r_len==4))?{64'b0,rdata_axi}:
+                       ((rvalid&rready)&(d_r_len==5))?{rdata_axi,64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d4))?{64'b0,wdata_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d5))?{wdata_align,64'b0}:'d0
+											 ;
+assign io_sram3_wdata= ((rvalid&rready)&(d_r_len==6))?{64'b0,rdata_axi}:
+                       ((rvalid&rready)&(d_r_len==7))?{rdata_axi,64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d6))?{64'b0,wdata_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d7))?{wdata_align,64'b0}:'d0
+											 ;
+
+assign io_sram0_wmask=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
+	                     ((rvalid&rready)&(d_r_len==1))?{{64{1'b1}},64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d0))?{64'b0,wmask_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d1))?{wmask_align,64'b0}
+											 :'d0
+											 ;
+ assign io_sram1_wmask=((rvalid&rready)&(d_r_len==2))?{64'b0,{64{1'b1}}}:
+	                     ((rvalid&rready)&(d_r_len==3))?{{64{1'b1}},64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d2))?{64'b0,wmask_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d3))?{wmask_align,64'b0}
+											 :'d0
+											 ;
+ assign io_sram2_wmask=((rvalid&rready)&(d_r_len==4))?{64'b0,{64{1'b1}}}:
+	                     ((rvalid&rready)&(d_r_len==5))?{{64{1'b1}},64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d4))?{64'b0,wmask_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d5))?{wmask_align,64'b0}
+											 :'d0
+											 ;
+ assign io_sram3_wmask=((rvalid&rready)&(d_r_len==6))?{64'b0,{64{1'b1}}}:
+	                     ((rvalid&rready)&(d_r_len==7))?{{64{1'b1}},64'b0}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d6))?{64'b0,wmask_align}:
+                       ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d7))?{wmask_align,64'b0}
+											 :'d0
+											 ;
+ assign rdata=	(araddr_offset[5:3]==0)?io_sram0_rdata[63:0]:
+							 	(araddr_offset[5:3]==1)?io_sram0_rdata[127:64]:
+							 	(araddr_offset[5:3]==2)?io_sram1_rdata[63:0]:
+							 	(araddr_offset[5:3]==3)?io_sram1_rdata[127:64]:
+							 	(araddr_offset[5:3]==4)?io_sram2_rdata[63:0]:
+							 	(araddr_offset[5:3]==5)?io_sram2_rdata[127:64]:
+							 	(araddr_offset[5:3]==6)?io_sram3_rdata[63:0]:
+							 	io_sram3_rdata[127:64];
+/* assign r_wdata=(d_w_len==0)?io_sram0_rdata[63:0]:*/
+								/*(d_w_len==1)?io_sram0_rdata[127:64]:*/
+								/*(d_w_len==2)?io_sram1_rdata[63:0]:*/
+								/*(d_w_len==3)?io_sram1_rdata[127:64]:*/
+								/*(d_w_len==4)?io_sram2_rdata[63:0]:*/
+								/*(d_w_len==5)?io_sram2_rdata[127:64]:*/
+								/*(d_w_len==6)?io_sram3_rdata[63:0]:*/
+								/*(d_w_len==7)?io_sram3_rdata[127:64]:*/
+								/*64'hffffffff;	*/
+ always@(posedge clk)begin
+	 if(wready)begin
+		 if(d_w_len==0)
+			 r_wdata<=io_sram0_rdata[63:0];
+		 else if(d_w_len==1)
+			 r_wdata<=io_sram0_rdata[127:64];
+		 else if(d_w_len==2)
+			 r_wdata<=io_sram1_rdata[63:0];
+		 else if(d_w_len==3)
+			 r_wdata<=io_sram1_rdata[127:64];
+		 else	 if(d_w_len==4)
+			 r_wdata<=io_sram2_rdata[63:0];
+		 else if(d_w_len==5)
+			 r_wdata<=io_sram2_rdata[127:64];
+	   else if(d_w_len==6)
+			 r_wdata<=io_sram3_rdata[63:0];
+		 else if(d_w_len==7)
+			 r_wdata<=io_sram3_rdata[127:64];
+	 end
+							end
 endmodule
+
