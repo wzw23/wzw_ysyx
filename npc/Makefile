@@ -12,7 +12,8 @@ default: $(BIN)
 
 $(shell mkdir -p $(BUILD_DIR))
 
-VSRCS =$(shell find $(NPC_HOME)/vsrc -name "*.v" -or -name "*.vh") #所有的verilog文件
+#VSRCS =$(shell find $(NPC_HOME)/vsrc -name "*.v" -or -name "*.vh") #所有的verilog文件
+VSRCS =$(shell find $(NPC_HOME)/vsrc -name "ysyx_22050533.v") #所有的verilog文件
 CSRCS = $(shell find $(NPC_HOME)/csrc -name "*.c" -or -name "*.cpp" -or -name "*.cc") #所有的c类文件
 
 CFLAGS += $(INCFLAGS) -DTOP_NAME="\"V$(TOPNAME)\""
