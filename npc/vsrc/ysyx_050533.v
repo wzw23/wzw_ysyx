@@ -36,7 +36,6 @@ module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input
 		reg  [63:0]mul_result_r;
 		wire [63:0]product;//乘积
 
-
 		assign op_add=alu_control[0];
 		assign op_sub=alu_control[1];
 		assign op_slt=alu_control[2];//有符号比较
@@ -61,7 +60,6 @@ module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input
     assign div_valid =(op_div|op_divu)&&!div_doing&&!div_out_valid&&!div_finish&&pipe2_valid;
     /*在除法期间，div_out_valid 不为高表示计算结果还为得出，ALU正忙，需要阻塞流水*/
     assign alu_finish= ((op_div|op_divu)&&div_finish)|((op_mul)&&mul_finish)|(~(op_div|op_divu|op_mul));
-    //assign alu_finish=  op_div&&!div_out_valid;
 
 		always @(posedge clk) begin
 			if (rst) begin
@@ -137,9 +135,7 @@ module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input
 		assign xor_result=alu_src1^alu_src2;
 		assign lui_result={alu_src2[63:12],12'b0};
 		assign mul_result=mul_result_r;
-		//assign divu_result=alu_src1/alu_src2;
 		assign divu_result=div_result_r;
-		//assign div_result=$signed(alu_src1)/$signed(alu_src2);
 		assign div_result =div_result_r;
 		assign remu_result=alu_src1%alu_src2;
 		assign rem_result=$signed(alu_src1)%$signed(alu_src2);
@@ -383,59 +379,7 @@ assign bresp_2=master_2?bresp:
 								0;
 assign bvalid_2=master_2?bvalid:
 								0;
-/*axi_lite_s2 axi_lite_s2_1(*/
-				/*.clk(clk),*/
-				/*.rst(rst),*/
-				/*.araddr(araddr),*/
-				/*.arvalid(arvalid),*/
-				/*.arready(arready),*/
-				/*.rdata(rdata),*/
-				/*.rresp(rresp),*/
-				/*.rvalid(rvalid),*/
-				/*.rready(rready),*/
-				/*.awaddr(awaddr),*/
-				/*.awvalid(awvalid),*/
-				/*.awready(awready),*/
-				/*.wdata(wdata),*/
-				/*.wstrb(wstrb),*/
-				/*.wvalid(wvalid),*/
-				/*.wready(wready),*/
-				/*.bresp(bresp),*/
-				/*.bvalid(bvalid),*/
-				/*.bready(bready)*/
-			/*);*/
-/*axi_full_s2 axi_full_s2_0(*/
-	/*.clk(clk),*/
-	/*.rst(rst),*/
-	/*.araddr(araddr_1),*/
-	/*.arvalid(arvalid_1),*/
-	/*.arburst(arburst_1),*/
-	/*.arlen(arlen_1),*/
-	/*.arsize(arsize_1),*/
-	/*.arready(arready_1),*/
-	/*.rdata(rdata_1),*/
-	/*.rresp(rresp_1),*/
-	/*.rvalid(rvalid_1),*/
-	/*.rlast(rlast_1),*/
-	/*.rready(rready_1),*/
-	/*.awaddr(0),*/
-	/*.awvalid(0),*/
-	/*.awburst(0),*/
-	/*.awlen(0),*/
-	/*.awready(awready1),*/
-	/*.wdata(0),*/
-	/*.wlast(0),*/
-	/*.wstrb(0),*/
-	/*.wvalid(0),*/
-	/*.wready(wready1),*/
-	/*.bresp(bresp1),*/
-	/*.bvalid(bvalid1),*/
-	/*.bready(0)*/
-/*);*/
-/*wire awready1;*/
-/*wire wready1;*/
-/*wire [1:0]bresp1;*/
-/*wire bvalid1;*/
+
 axi_full_s2 axi_full_s2_test(
 	.clk(clk),
 	.rst(rst),
@@ -592,15 +536,7 @@ end
 //awready wready信号
 assign awready=(write_state==WRITE_IDLE);
 assign wready =(write_state==WRITE_AW_VALID)|(write_state==WRITE_W_VALID);
-//assign wready =(write_state==WRITE_W_VALID);
-/*always @(posedge clk)begin*/
-	/*//if(write_state==WRITE_AW_VALID)begin*/
-	/*if(wvalid&wready&(awburst==2'b01)&(r_awlen<=awlen))begin*/
-		/*r_awlen=r_awlen+1;*/
-		/*//vpmem_write(awaddr, wdata, wstrb,{{63'b0},r_wen});*/
-		/*vpmem_write({{32'b0},r_awaddr}, wdata, wstrb,64'd1);*/
-		/*r_awaddr<=r_awaddr+32'd8;*/
-/*end*/
+
 always @(posedge clk)begin
 	//if(write_state==WRITE_AW_VALID)begin
 	if(wvalid&wready&(awburst==2'b01))begin
@@ -621,9 +557,8 @@ always @(posedge clk)begin
 		r_awaddr<=awaddr;
 end
 endmodule
-//`include "hong.v"
 `define alu_length 17
-//module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask,input [2:0]alu_equal,output [1:0]sel_nextpc,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,input inst_update,output c_wen1_2,input mem_finish);
+
 module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2,output rf_ren_src1,output rf_ren_src2);
 
 //下标标识
@@ -889,14 +824,12 @@ module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]s
 							|   ({7{lbu}}&{7'b1000000})
 	;
 
-	//assign rf_wen=(Add|addi|ld|jal|jalr|slt|sltu|sll|srl|sra|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|auipc|sub|sllw|srlw|sraw|addiw|slliw|srliw|sraiw|addw|srli|srai|slli|And|Or|mulw|divw|remw|lui|subw|Mul|Xor|divu|divuw|rem|div|csrrs|csrrw|remu|remuw)&mem_finish;
 	assign rf_wen=(Add|addi|ld|jal|jalr|slt|sltu|sll|srl|sra|sltiu|andi|ori|xori|lw|lwu|lh|lhu|lb|lbu|auipc|sub|sllw|srlw|sraw|addiw|slliw|srliw|sraiw|addw|srli|srai|slli|And|Or|mulw|divw|remw|lui|subw|Mul|Xor|divu|divuw|rem|div|csrrs|csrrw|remu|remuw);
 
 	assign sel_rf_res=(ld|lw|lwu|lh|lhu|lb|lbu)?3'b010:
 										(csrrw|csrrs)?3'b100:
 										3'b001;
 
-	//assign data_ram_en=1;
 	assign data_ram_en=ld|lw|lwu|lh|lhu|lb|lbu;
 	assign data_ram_wen=(sd|sb|sh|sw|sb);
 
@@ -1083,10 +1016,6 @@ end
 assign cache_finish=(cache_state==CACHE_FINISH);
 //chache_finish阶段 rdata成立
 //;//对齐
-/*always @(posedge clk)begin*/
-	/*if(cache_state==CACHE_GET)*/
-		/*rdata<=dataarray[araddr_index][araddr_offset[5:3]];*/
-/*end*/
 assign rdata_align=rdata>>((araddr&{29'b0,3'b111})*8);//读数据对齐 如果是ld 右移8位 lh16 lw32
 //总线读写地址
 wire [31:0]araddr_block;
@@ -1130,7 +1059,6 @@ always @(posedge clk)begin
 		read_state<=READ_IDLE;
 end
 //read_finish信号
-//assign mem_read_finish=(read_state==READ_FINISH); 
 assign mem_write_finish=(write_state==WRITE_FINISH);
 //arvalid信号
 assign arvalid=(read_state==READ_IDLE)&mem_read_begin;
@@ -1138,7 +1066,6 @@ assign arvalid=(read_state==READ_IDLE)&mem_read_begin;
 //mem_read
 always @(posedge clk)begin
 		if(rvalid&rready)begin
-		//dataarray[araddr_index][d_r_len]<=rdata_axi;
 		d_r_len<=d_r_len+1;
 	end
 	if(rlast)begin
@@ -1149,10 +1076,7 @@ always @(posedge clk)begin
 	if(rst)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=22'b0;
-		/*for(integer i=0;i<NUM_LINES;i=i+1)*/
-			/*for(integer j=0;j<OFFSET_WIDTH;j=j+1)*/
-				/*dataarray[i][j]<=0;*/
-		d_r_len<=0;
+				d_r_len<=0;
 	end
 end
 assign arburst=2'b01;
@@ -1197,21 +1121,17 @@ reg  [63:0]r_wdata;
 wire [7:0]wstrb;
 reg  [7:0]c_awlen;
 assign awvalid=(write_state==WRITE_IDLE)&(mem_write_begin);
-//assign wvalid= ((write_state==WRITE_W_READY)|(write_state==WRITE_AW_READY))&(mem_write_begin);
 assign awaddr=wraddr_block;
 assign wdata_axi =r_wdata;
 assign wstrb =8'b11111111;
 //r_wdata信号
 always@(posedge clk)begin
 	if(wready)begin
-		//r_wdata<=dataarray[araddr_index][d_w_len];
 		d_w_len<=d_w_len+1;
 		c_awlen<=c_awlen+1;
 		wvalid<=1;
 	end
 	else begin 
-		//r_wdata<=dataarray[araddr_index][0];
-		//r_wdata<=64'hffffffff;
 	end
 	if(wlast)
 	begin
@@ -1245,7 +1165,6 @@ assign wmask_align=wmask_full<<((waddr&{29'b0,3'b111})*8);
 always @(posedge clk)
 	if(cache_state==CACHE_WRITE)begin
 	  tagarray[waddr_index][21]<=1'b1;
-		//dataarray[waddr_index][waddr_offset[5:3]]<=(dataarray[waddr_index][waddr_offset[5:3]]&(~wmask_align))|(wdata_align&wmask_align);
 	if(rst)
 	  tagarray[waddr_index][21]<=1'b0;
 		
@@ -1276,36 +1195,7 @@ assign bresp=bresp2;
 assign bvalid=bvalid2;
 assign bready2=bready;
 
-/*sram sram_1(*/
-/*.clk(clk),*/
-/*.io_sram0_addr(io_sram0_addr),*/
-/*.io_sram0_cen(~io_sram0_cen),*/
-/*.io_sram0_wen(~io_sram0_wen),*/
-/*.io_sram0_wmask(~io_sram0_wmask),*/
-/*.io_sram0_wdata(io_sram0_wdata),*/
-/*.io_sram0_rdata(io_sram0_rdata),*/
 
-/*.io_sram1_addr(io_sram1_addr),*/
-/*.io_sram1_cen(~io_sram1_cen),*/
-/*.io_sram1_wen(~io_sram1_wen),*/
-/*.io_sram1_wmask(~io_sram1_wmask),*/
-/*.io_sram1_wdata(io_sram1_wdata),*/
-/*.io_sram1_rdata(io_sram1_rdata),*/
-
-/*.io_sram2_addr(io_sram2_addr),*/
-/*.io_sram2_cen(~io_sram2_cen),*/
-/*.io_sram2_wen(~io_sram2_wen),*/
-/*.io_sram2_wmask(~io_sram2_wmask),*/
-/*.io_sram2_wdata(io_sram2_wdata),*/
-/*.io_sram2_rdata(io_sram2_rdata),*/
-
-/*.io_sram3_addr(io_sram3_addr),*/
-/*.io_sram3_cen(~io_sram3_cen),*/
-/*.io_sram3_wen(~io_sram3_wen),*/
-/*.io_sram3_wmask(~io_sram3_wmask),*/
-/*.io_sram3_wdata(io_sram3_wdata),*/
-/*.io_sram3_rdata(io_sram3_rdata)*/
- /*);*/
  assign io_sram0_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
  assign io_sram1_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
  assign io_sram2_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
@@ -1315,12 +1205,6 @@ assign bready2=bready;
  assign io_sram1_cen=1;
  assign io_sram2_cen=1;
  assign io_sram3_cen=1;
-
-
-/* assign io_sram0_cen=((wready)&((d_w_len=='d0)|(d_w_len=='d1)))|((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|((araddr_offset[5:3]==0)|(araddr_offset[5:3]==1));*/
- /*assign io_sram1_cen=((wready)&((d_w_len=='d2)|(d_w_len=='d3)))|((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|((araddr_offset[5:3]==2)|(araddr_offset[5:3]==3));*/
- /*assign io_sram2_cen=((wready)&((d_w_len=='d4)|(d_w_len=='d5)))|((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|((araddr_offset[5:3]==4)|(araddr_offset[5:3]==5));*/
- /*assign io_sram3_cen=((wready)&((d_w_len=='d6)|(d_w_len=='d7)))|((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|((araddr_offset[5:3]==6)|(araddr_offset[5:3]==7));*/
 
 
  assign io_sram0_wen=((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d0)|(waddr_offset[5:3]=='d1));
@@ -1691,7 +1575,6 @@ assign {cout, result} = src1 + src2 + {64'b0,cin};
 endmodule
 //`include "hong.v"
 `define alu_length 17
-//module exe(input clk,input rst,input [63:0]imm,input [4:0]rs1,input[4:0]rs2,input[4:0]rd,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,[>input rf_wen,input [63:0]wdata,<]output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,output [2:0]alu_equal,input [63:0]cpupc,input w_choose,input [63:0]src2,input c_wchoose,input c_wen,input [1:0]c_raddr,input [1:0]c_waddr,output [63:0]c_rdata,input [2:0]e_inst,input c_wen1_2);
 module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data,input wb_reg_finish,output alu_finish,input pipe2_valid);
 	//wire [63:0]src1;
 	//wire [63:0]src2;
@@ -1715,15 +1598,6 @@ module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2
 		3'b100,64'd4
 		});
 
- /* wire [63:0]wdata;*/
-	/*MuxKey #(2,1,64) mux3(wdata,sel_rf_res,{//alu_src2赋值*/
-		/*1'b0,alu_result,*/
-		/*1'b1,imm*/
-		/*});*/
-
- 	/*RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen),.wdata(wdata),.waddr(rd),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));*/
-
-	//Alu2 alu2(alu_src1,alu_src2,alu_control,alu_result,ram_addr,alu_equal,w_choose);
 	Alu3 alu3(clk,rst,alu_src1,alu_src2,alu_control,alu_result,ram_addr,alu_equal,w_choose,wb_reg_finish,alu_finish,pipe2_valid);
 	set_dnpc set_dnpc_0(.clk(clk),.rst(rst),.e_j_b_inst(e_j_b_inst),.src1(src1),.imm(imm),.cpupc(cpupc),.c_rdata(c_rdata),.alu_equal(alu_equal),.dnpc_jump_data(dnpc_jump_data));
 
@@ -1799,8 +1673,6 @@ module icache(
 
 //tag array
  reg [TAGARRAY_WIDTH-1:0]tagarray[NUM_LINES-1:0];//21位代表valid 因为icache是只读cache 所以没有dirty位
-//dataarray
- //reg  [63:0]dataarray[NUM_LINES-1:0][(LINE_SIZE)/8-1:0];//生成line列 长为64B大小的cache 由于每一行是以8字节为存储单位 所以设置为8个8字节
 //addr:index tag offset
 reg  rlast_delay;
 wire   [OFFSET_WIDTH-1:0]addr_offset;
@@ -1841,14 +1713,12 @@ always @(posedge clk)begin
 end
 assign pc_update=(cache_state==CACHE_FINISH);
 //总线信号
-//assign inst_update=(state==READ_FINISH);
 
 wire rvalid;
 wire rready;
 wire arready;
 wire rlast;
 wire ready_read;
-//assign ready_read=(((cache_state==CACHE_IDLE)&(addr_tag==tagarray[addr_index][19:0])&(tagarray[addr_index][20]))|((cache_state==CACHE_MEMREAD)&rlast_delay));
 assign ready_read=1;
 wire [31:0]araddr_block;
 reg  [2:0]d_len;
@@ -1886,7 +1756,6 @@ reg rvalid_rready;
 reg [63:0]rdata_test3;
 always @(posedge clk)begin
 	if(rvalid&rready)begin
-		//dataarray[addr_index][d_len]<=rdata_axi;
 		rdata_test3<=rdata_axi;
 		d_len<=d_len+1;
 		rvalid_rready<=1;
@@ -1901,18 +1770,10 @@ always @(posedge clk)begin
 	if(rst)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=0;
-		/*for(integer j=0;j<NUM_LINES;j=j+1)*/
-			/*for(integer k=0;k<8;k++)*/
-				/*dataarray[j][k]<=0;*/
-		d_len<=0;
+				d_len<=0;
 	end
 end
 //chache_get阶段
-//always@(posedge clk)
-	//if(ready_read)
-		//rdata<=dataarray[addr_index][addr_offset[5:3]];//对齐
-//wire   [63:0]rdata_test;
-//assign rdata_test=dataarray[0][0];//对齐
 assign inst_update=(cache_state==CACHE_GET);
 //rready信号
 assign rready=(state==READ_ARREADY)|(state==READ_TRANS);
@@ -1924,21 +1785,6 @@ assign arburst=2'b01;
 assign arlen=8;
 assign arsize='d3;
 
-/*axi_full_s axi_full_s0(*/
-/*.clk(clk),*/
-/*.rst(rst),*/
-/*.araddr(araddr_block),*/
-/*.arvalid(arvalid),*/
-/*.arburst(arburst),*/
-/*.arlen(arlen),*/
-/*.arsize(arsize),*/
-/*.arready(arready),*/
-/*.rdata(rdata_axi),*/
-/*.rresp(rresp),*/
-/*.rvalid(rvalid),*/
-/*.rlast(rlast),*/
-/*.rready(rready)*/
-/*);*/
 assign araddr1=araddr_block;
 assign arvalid1=arvalid;
 assign arburst1=arburst;
@@ -1951,64 +1797,6 @@ assign rvalid=rvalid1;
 assign rready1=rready;
 assign rlast=rlast1;
 
-/*wire [5:0]io_sram0_addr;*/
-/*wire io_sram0_cen;*/
-/*wire io_sram0_wen;*/
-/*wire [127:0]io_sram0_wmask;*/
-/*wire [127:0] io_sram0_wdata;*/
-/*wire [127:0] io_sram0_rdata;*/
-
-/*wire [5:0] io_sram1_addr;*/
-/*wire io_sram1_cen;*/
-/*wire io_sram1_wen;*/
-/*wire [127:0]io_sram1_wmask;*/
-/*wire [127:0] io_sram1_wdata;*/
-/*wire [127:0] io_sram1_rdata;*/
-
-/*wire [5:0] io_sram2_addr;*/
-/*wire io_sram2_cen;*/
-/*wire io_sram2_wen;*/
-/*wire [127:0]io_sram2_wmask;*/
-/*wire [127:0] io_sram2_wdata;*/
-/*wire [127:0] io_sram2_rdata;*/
-
-/*wire [5:0] io_sram3_addr;*/
-/*wire io_sram3_cen;*/
-/*wire io_sram3_wen;*/
-/*wire [127:0]io_sram3_wmask;*/
-/*wire [127:0] io_sram3_wdata;*/
-/*wire [127:0] io_sram3_rdata;*/
-
-/*sram sram_0(*/
-/*.clk(clk),*/
-/*.io_sram0_addr(io_sram0_addr),*/
-/*.io_sram0_cen(~io_sram0_cen),*/
-/*.io_sram0_wen(~io_sram0_wen),*/
-/*.io_sram0_wmask(~io_sram0_wmask),*/
-/*.io_sram0_wdata(io_sram0_wdata),*/
-/*.io_sram0_rdata(io_sram0_rdata),*/
-
-/*.io_sram1_addr(io_sram1_addr),*/
-/*.io_sram1_cen(~io_sram1_cen),*/
-/*.io_sram1_wen(~io_sram1_wen),*/
-/*.io_sram1_wmask(~io_sram1_wmask),*/
-/*.io_sram1_wdata(io_sram1_wdata),*/
-/*.io_sram1_rdata(io_sram1_rdata),*/
-
-/*.io_sram2_addr(io_sram2_addr),*/
-/*.io_sram2_cen(~io_sram2_cen),*/
-/*.io_sram2_wen(~io_sram2_wen),*/
-/*.io_sram2_wmask(~io_sram2_wmask),*/
-/*.io_sram2_wdata(io_sram2_wdata),*/
-/*.io_sram2_rdata(io_sram2_rdata),*/
-
-/*.io_sram3_addr(io_sram3_addr),*/
-/*.io_sram3_cen(~io_sram3_cen),*/
-/*.io_sram3_wen(~io_sram3_wen),*/
-/*.io_sram3_wmask(~io_sram3_wmask),*/
-/*.io_sram3_wdata(io_sram3_wdata),*/
-/*.io_sram3_rdata(io_sram3_rdata)*/
- /*);*/
  assign io_sram0_addr=addr_index;
  assign io_sram1_addr=addr_index;
  assign io_sram2_addr=addr_index;
@@ -2161,12 +1949,8 @@ module If(
 	input clk,
 	input rst,
 	output [63:0]cpupc,
-	//input [1:0]sel_nextpc,
-	//input [63:0]imm,
-	//input [63:0]src1,
 	output [31:0]inst,
 	output [63:0]dnpc,
-	//input[63:0]c_rdata,
 	output inst_update,
 	input mem_finish,
 	output [31:0]araddr1,
@@ -2215,22 +1999,11 @@ module If(
   input  [127:0] io_sram3_rdata
 );
 //位宽为32bit，复位值为0x80000000,写使能一直有效
-//wire [31:0]zhongjian;
-//assign zhongjian=cpupc+4;
-//Reg #(32,32'h80000000) i0 (clk,rst,zhongjian,cpupc,1'b1);
 import "DPI-C" function void vpmem_read(
 	input longint mraddr, output longint mrdata);
 
 wire [63:0]dnpc_0;
 wire pc_update;
-//reg  inst_finish;//完成一条指令的信号
-//Reg #(1,1'b0) finish(clk,rst,inst_update,inst_finish,1'b1);
-/*MuxKey #(4,2,64) mux4(dnpc_0,sel_nextpc,{//alu_src2赋值*/
-  /*2'b00,cpupc+4,*/
-	/*2'b01,cpupc+imm,*/
-	/*2'b10,(src1+imm)&~1,*/
-	/*2'b11,c_rdata*/
-	/*});*/
 MuxKey #(2,1,64) mux4(dnpc_0,not_jump,{//alu_src2赋值
   1'b1,cpupc+4,
 	1'b0,dnpc_jump_data
@@ -2299,51 +2072,6 @@ icache icache_9(
 
 //总线信号
 
-/*wire rvalid_rready;*/
-
-/*assign inst_update=(state==READ_FINISH);*/
-
-/*assign rvalid_rready=rvalid&rready;*/
-
-/*assign araddr=cpupc[31:0];*/
-/*//寄存器*/
-/*reg [63:0]r_rdata;*/
-/*//状态机*/
-/*parameter   READ_IDLE        = 3'd0 ,*/
-						/*READ_ARREADY		 =3'd1,*/
-						/*READ_FINISH 		 =3'd2;*/
-/*reg [2:0]state;*/
-/*always @(posedge clk)begin*/
-	/*if(rst)*/
-		/*state<=READ_IDLE;*/
-	/*else if((state==READ_IDLE)&arready)*/
-		/*state<=READ_ARREADY;*/
-	/*else if(state==READ_IDLE)*/
-		/*state<=READ_IDLE;*/
-	/*else if((state==READ_ARREADY)&rvalid)*/
-		/*state<=READ_FINISH;*/
-	/*else if(state==READ_ARREADY)*/
-		/*state<=READ_ARREADY;*/
-	/*else if(state==READ_FINISH&(mem_finish))*/
-		/*state<=READ_IDLE;*/
-/*end*/
-/*//arvalid信号*/
-/*assign arvalid=(state==READ_IDLE);*/
-/*//r_data信号*/
-/*always @(posedge clk)begin*/
-	/*if(rvalid&rready)*/
-		/*r_rdata<=rdata;*/
-	/*else*/
-		/*r_rdata<=r_rdata;*/
-/*end*/
-/*//rready信号*/
-/*MuxKey #(3,3,1) mux1(rready,state,{*/
-		/*READ_ARREADY,1'd1,*/
-		/*READ_FINISH,1'd0,*/
-		/*READ_IDLE,1'd0*/
-		/*});*/
-/*///////////////////////////////////////*/
-/*assign inst=r_rdata[31:0];*/
 pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
 endmodule
 module mem2 #(parameter ADDR_WIDTH=64,//地址位宽
@@ -2660,18 +2388,7 @@ dcache dcache_0(
 );
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache
-/*wire [63:0]device_wen;*/
-/*assign device_wen={63'b0,r_wen&pipe2_valid&(~use_cache)};*/
 wire device_finish;
-/*always @(*)begin*/
-	/*//if((use_cache==0)&pipe2_valid)begin*/
-		/*//if(r_ren)begin*/
-			/*vpmem_read({r_raddr}, r_rdata_ld_device);*/
-			/*vpmem_write({r_waddr}, r_wdata, r_mask,device_wen);*/
-		/*//end*/
-		/*//else if(r_wen)begin*/
-		/*//end*/
-	/*end*/
 mem_read_write mem_read_write_0(
 .clk(clk),
 .rst(rst),
@@ -2712,7 +2429,6 @@ mem_read_write mem_read_write_0(
 .wb_reg_finish(wb_reg_finish)
 );
 ///////////////////////////////////////////////////////////////////
-//assign device_finish=((use_cache==0)&pipe2_valid);
 assign mem_finish=(use_cache&cache_finish)|((use_device)&device_finish)|((~(r_wen))&(~(r_ren)));
 assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:
 									r_rdata_ld_device;
@@ -2899,34 +2615,7 @@ assign wlast=(c_awlen==awlen);
 assign bready=(write_state==WRITE_AW_READY)&(write_state==WRITE_TRANS);
 ///////////////////////////////////////
 /////////////////cache_write//////////
-/*axi_full_s2 axi_full_s2_1(*/
-	/*.clk(clk),*/
-	/*.rst(rst),*/
-	/*.araddr(r_raddr[31:0]),*/
-	/*.arvalid(arvalid),*/
-	/*.arburst(arburst),*/
-	/*.arlen(arlen),*/
-	/*.arsize(arsize),*/
-	/*.arready(arready),*/
-	/*.rdata(rdata_axi),*/
-	/*.rresp(rresp),*/
-	/*.rvalid(rvalid),*/
-	/*.rlast(rlast),*/
-	/*.rready(rready),*/
-	/*.awaddr(awaddr),*/
-	/*.awvalid(awvalid),*/
-	/*.awburst(awburst),*/
-	/*.awlen(awlen),*/
-	/*.awready(awready),*/
-	/*.wdata(wdata_axi),*/
-	/*.wlast(wlast),*/
-	/*.wstrb(wstrb),*/
-	/*.wvalid(wvalid),*/
-	/*.wready(wready),*/
-	/*.bresp(bresp),*/
-	/*.bvalid(bvalid),*/
-	/*.bready(bready)*/
-/*);*/
+
 assign araddr2=r_raddr[31:0];
 assign arvalid2=arvalid;
 assign arburst2=arburst;
@@ -2954,7 +2643,6 @@ assign bvalid=bvalid2;
 assign bready2=bready;
 
 
-//assign use_device_finish=pipe2_valid&use_device_en&(((ren&mem_read_finish)|(wen&mem_write_finish))|((~ren)&(~wen)));
 assign use_device_finish=pipe2_valid&use_device_en&((ren&mem_read_finish)|(wen&mem_write_finish));
 endmodule
 `define WIDTH 66
@@ -3167,11 +2855,6 @@ module pre_decode(input clk,input rst,input [31:0]inst,output [11:0]e_j_b_inst,o
 
   wire blt;
   assign blt= (fu_3==3'b100) &((op==7'b1100011));
-
-
-
-//	assign op_d[2]= (op==7'b1101111);//type_j
-//		assign op_d[3]= (op==7'b1100111);//type_i
 
 	assign e_j_b_inst=(inst==32'b0000000_00001_00000_000_00000_11100_11)?12'b000000000001://ebreak0
 	                      	(inst==32'b00000000000000000000000001110011)?12'b000000000010://edall1
@@ -3508,24 +3191,17 @@ module stallable_pipeline(
 	output reg data_ram_ren_reg_is,
 	output reg data_ram_wen_reg_is,
 	output reg [7:0]wmask_reg_is,
-	//output reg [2:0]sel_rf_res_reg_is,
 	output reg [6:0]l_choose_reg_is,
 	output reg w_choose_reg_is,
-	//output reg rf_wen_reg_is,
 	output reg [63:0]src1_reg_is,
 	output reg [63:0]src2_reg_is,
-	//output reg [4:0]rd_reg_is,//rf waddr
 	output reg [63:0]imm_reg_is,
 	output reg [63:0]c_rdata_reg_is,
 	output reg [11:0]e_j_b_inst_reg_is,
 	//wb
-	//input [2:0]sel_rf_res,
-	//input rf_wen,
 	input [63:0]alu_result,
 	input [63:0]ram_data,
 	input [63:0]set_dnpc_data,
-	//input [63:0]rd,
-	//input  [63:0]c_rdata,
 	output reg [31:0]inst_reg_wb,
 	output reg [11:0]e_j_b_inst_reg_wb,
 	output reg [63:0]dnpc_reg_wb,
@@ -3802,15 +3478,12 @@ wire control_hazard;
 
 	wire [11:0]e_j_b_inst;
 //id
-	//wire [4:0]rs1;
-	//wire [4:0]rs2;
 	wire rf_ren_src1;
 	wire rf_ren_src2;
 	wire [4:0]rd;
 	wire [11:0]op_d;
 	wire [4:0]fu_7_d;
 	wire [7:0]fu_3_d;
-	//wire [1:0]c_waddr;
 //control
 	wire [3:0]sel_alu_src1;
 	wire [2:0]sel_alu_src2;
@@ -3819,7 +3492,6 @@ wire control_hazard;
 	wire [2:0]sel_rf_res;
 	wire data_ram_en;
 	wire data_ram_wen;
-	//wire [2:0]alu_equal;
 	wire [6:0]l_choose;
 	wire w_choose;
 	wire c_wchoose;
@@ -3836,8 +3508,6 @@ wire control_hazard;
 	wire [63:0]cpupc_reg_id;
 	wire [31:0]inst_reg_id;
 	wire [11:0]e_j_b_inst_reg_id;
-	//wire [3:0]alu_src1;
-	//wire [2:0]alu_src2;
 	wire data_ram_ren;
 	assign data_ram_ren=data_ram_en;
 	wire [63:0]cpupc_reg_is;
@@ -3847,13 +3517,10 @@ wire control_hazard;
 	wire data_ram_ren_reg_is;
 	wire data_ram_wen_reg_is;
 	wire [7:0]wmask_reg_is;
-	//wire [2:0]sel_rf_res_reg_is;
 	wire [6:0]l_choose_reg_is;
 	wire w_choose_reg_is;
-	//wire rf_wen_reg_is;
 	wire [63:0]src1_reg_is;
 	wire [63:0]src2_reg_is;
-	//wire [4:0]rd_reg_is;//rf wadd;
 	wire [63:0]imm_reg_is;
 	wire [63:0]c_rdata_reg_is;
 	wire [11:0]e_j_b_inst_reg_is;
@@ -3984,13 +3651,10 @@ sram sram_0(
 	.data_ram_ren_reg_is(data_ram_ren_reg_is),
 	.data_ram_wen_reg_is(data_ram_wen_reg_is),
 	.wmask_reg_is(wmask_reg_is),
-	//.sel_rf_res_reg_is(sel_rf_res_reg_is),
 	.l_choose_reg_is(l_choose_reg_is),
 	.w_choose_reg_is(w_choose_reg_is),
-	//.rf_wen_reg_is(rf_wen_reg_is),
 	.src1_reg_is(src1_reg_is),
 	.src2_reg_is(src2_reg_is),
-	//.rd_reg_is(rd_reg_is),//rf waddr
 	.imm_reg_is(imm_reg_is),
 	.c_rdata_reg_is(c_rdata_reg_is),
 	.e_j_b_inst_reg_is(e_j_b_inst_reg_is),
@@ -4030,12 +3694,8 @@ sram sram_0(
 		.clk(clk), 
 		.rst(rst),
 		.cpupc(cpupc),
-		//.sel_nextpc(sel_nextpc),
-		//.imm(imm),
-		//.src1(src1),
 		.inst(inst),
 		.dnpc(dnpc),
-		//.c_rdata(c_rdata),
 		.inst_update(inst_update),
 		.mem_finish(mem_finish),
 		.araddr1(araddr1),
@@ -4212,14 +3872,14 @@ assign isu_finish=alu_finish&mem_finish;
 ///////////////////////////////////////////
 
  	/////////////////////////////开启波形图/////////////////////
-	initial begin
-		if ($test$plusargs("trace") != 0) begin
-			$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);
-			$dumpfile("logs/vlt_dump.vcd");
-			$dumpvars();
-		end
-		$display("[%0t] Model running...\n", $time);
-	end
+ /* initial begin*/
+		/*if ($test$plusargs("trace") != 0) begin*/
+			/*$display("[%0t] Tracing to logs/vlt_dump.vcd...\n", $time);*/
+			/*$dumpfile("logs/vlt_dump.vcd");*/
+			/*$dumpvars();*/
+		/*end*/
+		/*$display("[%0t] Model running...\n", $time);*/
+	/*end*/
 	/*/*//////////////////////////////////////////////////////////
 	endmodule
 module wb(input [63:0] r_data,input [63:0]alu_result,input [2:0]sel_rf_res,output [63:0]wdata,input [63:0]c_rdata);
