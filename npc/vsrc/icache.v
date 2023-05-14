@@ -25,20 +25,36 @@ module icache(
 	input not_jump,
 	input [63:0]cpupc,
 	input [63:0]cpupc_reg_is,
-	output pc_update
-	//写地址通道
-	/*output [31:0]awaddr1,*/
-	/*output awvalid1,*/
-	/*input awready1,*/
-	/*//写数据通道*/
-	/*output [63:0]wdata1,*/
-	/*output [7:0]wstrb1,*/
-	/*output wvalid1,*/
-	/*input wready1,*/
-	/*//写回复通道*/
-	/*input [1:0]bresp1,*/
-	/*input bvalid1,*/
-	/*output bready1*/
+	output pc_update,
+
+  output [5:0]io_sram0_addr,
+  output io_sram0_cen,
+  output io_sram0_wen,
+  output [127:0]io_sram0_wmask,
+  output [127:0] io_sram0_wdata,
+  input  [127:0] io_sram0_rdata,
+
+  output [5:0] io_sram1_addr,
+  output io_sram1_cen,
+  output io_sram1_wen,
+  output [127:0]io_sram1_wmask,
+  output [127:0] io_sram1_wdata,
+  input  [127:0] io_sram1_rdata,
+
+  output [5:0] io_sram2_addr,
+  output io_sram2_cen,
+  output io_sram2_wen,
+  output [127:0]io_sram2_wmask,
+  output [127:0] io_sram2_wdata,
+  input  [127:0] io_sram2_rdata,
+
+  output [5:0] io_sram3_addr,
+  output io_sram3_cen,
+  output io_sram3_wen,
+  output [127:0]io_sram3_wmask,
+  output [127:0] io_sram3_wdata,
+  input  [127:0] io_sram3_rdata
+
  );
 
  parameter CACHE_SIZE=4096;//cache大小为4kB 4096B
@@ -204,64 +220,64 @@ assign rvalid=rvalid1;
 assign rready1=rready;
 assign rlast=rlast1;
 
-wire [5:0]io_sram0_addr;
-wire io_sram0_cen;
-wire io_sram0_wen;
-wire [127:0]io_sram0_wmask;
-wire [127:0] io_sram0_wdata;
-wire [127:0] io_sram0_rdata;
+/*wire [5:0]io_sram0_addr;*/
+/*wire io_sram0_cen;*/
+/*wire io_sram0_wen;*/
+/*wire [127:0]io_sram0_wmask;*/
+/*wire [127:0] io_sram0_wdata;*/
+/*wire [127:0] io_sram0_rdata;*/
 
-wire [5:0] io_sram1_addr;
-wire io_sram1_cen;
-wire io_sram1_wen;
-wire [127:0]io_sram1_wmask;
-wire [127:0] io_sram1_wdata;
-wire [127:0] io_sram1_rdata;
+/*wire [5:0] io_sram1_addr;*/
+/*wire io_sram1_cen;*/
+/*wire io_sram1_wen;*/
+/*wire [127:0]io_sram1_wmask;*/
+/*wire [127:0] io_sram1_wdata;*/
+/*wire [127:0] io_sram1_rdata;*/
 
-wire [5:0] io_sram2_addr;
-wire io_sram2_cen;
-wire io_sram2_wen;
-wire [127:0]io_sram2_wmask;
-wire [127:0] io_sram2_wdata;
-wire [127:0] io_sram2_rdata;
+/*wire [5:0] io_sram2_addr;*/
+/*wire io_sram2_cen;*/
+/*wire io_sram2_wen;*/
+/*wire [127:0]io_sram2_wmask;*/
+/*wire [127:0] io_sram2_wdata;*/
+/*wire [127:0] io_sram2_rdata;*/
 
-wire [5:0] io_sram3_addr;
-wire io_sram3_cen;
-wire io_sram3_wen;
-wire [127:0]io_sram3_wmask;
-wire [127:0] io_sram3_wdata;
-wire [127:0] io_sram3_rdata;
+/*wire [5:0] io_sram3_addr;*/
+/*wire io_sram3_cen;*/
+/*wire io_sram3_wen;*/
+/*wire [127:0]io_sram3_wmask;*/
+/*wire [127:0] io_sram3_wdata;*/
+/*wire [127:0] io_sram3_rdata;*/
 
-sram sram_0(
-.clk(clk),
-.io_sram0_addr(io_sram0_addr),
-.io_sram0_cen(~io_sram0_cen),
-.io_sram0_wen(~io_sram0_wen),
-.io_sram0_wmask(~io_sram0_wmask),
-.io_sram0_wdata(io_sram0_wdata),
-.io_sram0_rdata(io_sram0_rdata),
+/*sram sram_0(*/
+/*.clk(clk),*/
+/*.io_sram0_addr(io_sram0_addr),*/
+/*.io_sram0_cen(~io_sram0_cen),*/
+/*.io_sram0_wen(~io_sram0_wen),*/
+/*.io_sram0_wmask(~io_sram0_wmask),*/
+/*.io_sram0_wdata(io_sram0_wdata),*/
+/*.io_sram0_rdata(io_sram0_rdata),*/
 
-.io_sram1_addr(io_sram1_addr),
-.io_sram1_cen(~io_sram1_cen),
-.io_sram1_wen(~io_sram1_wen),
-.io_sram1_wmask(~io_sram1_wmask),
-.io_sram1_wdata(io_sram1_wdata),
-.io_sram1_rdata(io_sram1_rdata),
+/*.io_sram1_addr(io_sram1_addr),*/
+/*.io_sram1_cen(~io_sram1_cen),*/
+/*.io_sram1_wen(~io_sram1_wen),*/
+/*.io_sram1_wmask(~io_sram1_wmask),*/
+/*.io_sram1_wdata(io_sram1_wdata),*/
+/*.io_sram1_rdata(io_sram1_rdata),*/
 
-.io_sram2_addr(io_sram2_addr),
-.io_sram2_cen(~io_sram2_cen),
-.io_sram2_wen(~io_sram2_wen),
-.io_sram2_wmask(~io_sram2_wmask),
-.io_sram2_wdata(io_sram2_wdata),
-.io_sram2_rdata(io_sram2_rdata),
+/*.io_sram2_addr(io_sram2_addr),*/
+/*.io_sram2_cen(~io_sram2_cen),*/
+/*.io_sram2_wen(~io_sram2_wen),*/
+/*.io_sram2_wmask(~io_sram2_wmask),*/
+/*.io_sram2_wdata(io_sram2_wdata),*/
+/*.io_sram2_rdata(io_sram2_rdata),*/
 
-.io_sram3_addr(io_sram3_addr),
-.io_sram3_cen(~io_sram3_cen),
-.io_sram3_wen(~io_sram3_wen),
-.io_sram3_wmask(~io_sram3_wmask),
-.io_sram3_wdata(io_sram3_wdata),
-.io_sram3_rdata(io_sram3_rdata)
- );
+/*.io_sram3_addr(io_sram3_addr),*/
+/*.io_sram3_cen(~io_sram3_cen),*/
+/*.io_sram3_wen(~io_sram3_wen),*/
+/*.io_sram3_wmask(~io_sram3_wmask),*/
+/*.io_sram3_wdata(io_sram3_wdata),*/
+/*.io_sram3_rdata(io_sram3_rdata)*/
+ /*);*/
  assign io_sram0_addr=addr_index;
  assign io_sram1_addr=addr_index;
  assign io_sram2_addr=addr_index;

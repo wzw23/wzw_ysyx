@@ -19,6 +19,63 @@ module top(
 	output [31:0]inst_reg_wb
 );
 ///////////wire信号////////
+wire [5:0]io_sram0_addr;
+wire io_sram0_cen;
+wire io_sram0_wen;
+wire [127:0]io_sram0_wmask;
+wire [127:0] io_sram0_wdata;
+wire [127:0] io_sram0_rdata;
+
+wire [5:0] io_sram1_addr;
+wire io_sram1_cen;
+wire io_sram1_wen;
+wire [127:0]io_sram1_wmask;
+wire [127:0] io_sram1_wdata;
+wire [127:0] io_sram1_rdata;
+
+wire [5:0] io_sram2_addr;
+wire io_sram2_cen;
+wire io_sram2_wen;
+wire [127:0]io_sram2_wmask;
+wire [127:0] io_sram2_wdata;
+wire [127:0] io_sram2_rdata;
+
+wire [5:0] io_sram3_addr;
+wire io_sram3_cen;
+wire io_sram3_wen;
+wire [127:0]io_sram3_wmask;
+wire [127:0] io_sram3_wdata;
+wire [127:0] io_sram3_rdata;
+
+wire[5:0] io_sram4_addr;
+wire io_sram4_cen;
+wire io_sram4_wen;
+wire [127:0]io_sram4_wmask;
+wire[127:0] io_sram4_wdata;
+wire[127:0] io_sram4_rdata;
+
+wire[5:0] io_sram5_addr;
+wire io_sram5_cen;
+wire io_sram5_wen;
+wire [127:0]io_sram5_wmask;
+wire[127:0] io_sram5_wdata;
+wire[127:0] io_sram5_rdata;
+
+wire[5:0] io_sram6_addr;
+wire io_sram6_cen;
+wire io_sram6_wen;
+wire [127:0]io_sram6_wmask;
+wire[127:0] io_sram6_wdata;
+wire[127:0] io_sram6_rdata;
+
+wire[5:0] io_sram7_addr;
+wire io_sram7_cen;
+wire io_sram7_wen;
+wire [127:0]io_sram7_wmask;
+wire[127:0] io_sram7_wdata;
+wire[127:0] io_sram7_rdata;
+
+
 wire isu_finish;
 wire alu_finish;
 wire ebreak_finish;
@@ -156,6 +213,65 @@ wire control_hazard;
 
 	
 	assign validin=inst_update;
+sram sram_0(
+.clk(clk),
+.io_sram0_addr(io_sram0_addr),
+.io_sram0_cen(~io_sram0_cen),
+.io_sram0_wen(~io_sram0_wen),
+.io_sram0_wmask(~io_sram0_wmask),
+.io_sram0_wdata(io_sram0_wdata),
+.io_sram0_rdata(io_sram0_rdata),
+
+.io_sram1_addr(io_sram1_addr),
+.io_sram1_cen(~io_sram1_cen),
+.io_sram1_wen(~io_sram1_wen),
+.io_sram1_wmask(~io_sram1_wmask),
+.io_sram1_wdata(io_sram1_wdata),
+.io_sram1_rdata(io_sram1_rdata),
+
+.io_sram2_addr(io_sram2_addr),
+.io_sram2_cen(~io_sram2_cen),
+.io_sram2_wen(~io_sram2_wen),
+.io_sram2_wmask(~io_sram2_wmask),
+.io_sram2_wdata(io_sram2_wdata),
+.io_sram2_rdata(io_sram2_rdata),
+
+.io_sram3_addr(io_sram3_addr),
+.io_sram3_cen(~io_sram3_cen),
+.io_sram3_wen(~io_sram3_wen),
+.io_sram3_wmask(~io_sram3_wmask),
+.io_sram3_wdata(io_sram3_wdata),
+.io_sram3_rdata(io_sram3_rdata),
+
+.io_sram4_addr(io_sram4_addr),
+.io_sram4_cen(~io_sram4_cen),
+.io_sram4_wen(~io_sram4_wen),
+.io_sram4_wmask(~io_sram4_wmask),
+.io_sram4_wdata(io_sram4_wdata),
+.io_sram4_rdata(io_sram4_rdata),
+
+.io_sram5_addr(io_sram5_addr),
+.io_sram5_cen(~io_sram5_cen),
+.io_sram5_wen(~io_sram5_wen),
+.io_sram5_wmask(~io_sram5_wmask),
+.io_sram5_wdata(io_sram5_wdata),
+.io_sram5_rdata(io_sram5_rdata),
+
+.io_sram6_addr(io_sram6_addr),
+.io_sram6_cen(~io_sram6_cen),
+.io_sram6_wen(~io_sram6_wen),
+.io_sram6_wmask(~io_sram6_wmask),
+.io_sram6_wdata(io_sram6_wdata),
+.io_sram6_rdata(io_sram6_rdata),
+
+.io_sram7_addr(io_sram7_addr),
+.io_sram7_cen(~io_sram7_cen),
+.io_sram7_wen(~io_sram7_wen),
+.io_sram7_wmask(~io_sram7_wmask),
+.io_sram7_wdata(io_sram7_wdata),
+.io_sram7_rdata(io_sram7_rdata)
+);
+
 	stallable_pipeline stallable_pipeline_0(
 	.clk(clk),
 	.rst(rst),
@@ -264,7 +380,36 @@ wire control_hazard;
 		.dnpc_jump_data(dnpc_jump_data),
 		.id_reg_finish(id_reg_finish),
 		.cpupc_reg_is(cpupc_reg_is),
-		.not_jump(not_jump)
+		.not_jump(not_jump),
+
+		.io_sram0_addr(io_sram0_addr),
+  	.io_sram0_cen(io_sram0_cen),
+  	.io_sram0_wen(io_sram0_wen),
+  	.io_sram0_wmask(io_sram0_wmask),
+  	.io_sram0_wdata(io_sram0_wdata),
+  	.io_sram0_rdata(io_sram0_rdata),
+  
+  	.io_sram1_addr(io_sram1_addr),
+  	.io_sram1_cen(io_sram1_cen),
+  	.io_sram1_wen(io_sram1_wen),
+  	.io_sram1_wmask(io_sram1_wmask),
+  	.io_sram1_wdata(io_sram1_wdata),
+  	.io_sram1_rdata(io_sram1_rdata),
+  
+  	.io_sram2_addr(io_sram2_addr),
+  	.io_sram2_cen(io_sram2_cen),
+  	.io_sram2_wen(io_sram2_wen),
+  	.io_sram2_wmask(io_sram2_wmask),
+  	.io_sram2_wdata(io_sram2_wdata),
+  	.io_sram2_rdata(io_sram2_rdata),
+  
+  	.io_sram3_addr(io_sram3_addr),
+  	.io_sram3_cen(io_sram3_cen),
+  	.io_sram3_wen(io_sram3_wen),
+  	.io_sram3_wmask(io_sram3_wmask),
+  	.io_sram3_wdata(io_sram3_wdata),
+  	.io_sram3_rdata(io_sram3_rdata)
+
 	);//if
 /////////////////////id//////////////////////
 	id id_1(.clk(clk),.rst(rst),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb),.pipe1_valid(pipe1_valid),.pipe3_valid(pipe3_valid),.rf_wen_reg_wb(rf_wen_reg_wb),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2),.control_hazard(control_hazard),.validout(validout),.id_reg_finish(id_reg_finish),.is_reg_finish(is_reg_finish));
@@ -313,7 +458,35 @@ wire control_hazard;
 		.bresp2(bresp2),
 		.bvalid2(bvalid2),
 		.bready2(bready2),
-		.wb_reg_finish(wb_reg_finish)
+		.wb_reg_finish(wb_reg_finish),
+		
+		.io_sram0_addr(io_sram4_addr),
+		.io_sram0_cen(io_sram4_cen),
+		.io_sram0_wen(io_sram4_wen),
+		.io_sram0_wmask(io_sram4_wmask),
+		.io_sram0_wdata(io_sram4_wdata),
+		.io_sram0_rdata(io_sram4_rdata),
+
+		.io_sram1_addr(io_sram5_addr),
+		.io_sram1_cen(io_sram5_cen),
+		.io_sram1_wen(io_sram5_wen),
+		.io_sram1_wmask(io_sram5_wmask),
+		.io_sram1_wdata(io_sram5_wdata),
+		.io_sram1_rdata(io_sram5_rdata),
+
+		.io_sram2_addr(io_sram6_addr),
+		.io_sram2_cen(io_sram6_cen),
+		.io_sram2_wen(io_sram6_wen),
+		.io_sram2_wmask(io_sram6_wmask),
+		.io_sram2_wdata(io_sram6_wdata),
+		.io_sram2_rdata(io_sram6_rdata),
+
+		.io_sram3_addr(io_sram7_addr),
+		.io_sram3_cen(io_sram7_cen),
+		.io_sram3_wen(io_sram7_wen),
+		.io_sram3_wmask(io_sram7_wmask),
+		.io_sram3_wdata(io_sram7_wdata),
+		.io_sram3_rdata(io_sram7_rdata)
 	);
 assign isu_finish=alu_finish&mem_finish;
 /////////////////////////////////////////

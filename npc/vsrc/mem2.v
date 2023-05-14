@@ -42,7 +42,36 @@ module mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	input [1:0]bresp2,
 	input bvalid2,
 	output bready2,
-	input wb_reg_finish
+	input wb_reg_finish,
+  output [5:0]io_sram0_addr,
+  output io_sram0_cen,
+  output io_sram0_wen,
+  output [127:0]io_sram0_wmask,
+  output [127:0] io_sram0_wdata,
+  input  [127:0] io_sram0_rdata,
+
+  output [5:0] io_sram1_addr,
+  output io_sram1_cen,
+  output io_sram1_wen,
+  output [127:0]io_sram1_wmask,
+  output [127:0] io_sram1_wdata,
+  input  [127:0] io_sram1_rdata,
+
+  output [5:0] io_sram2_addr,
+  output io_sram2_cen,
+  output io_sram2_wen,
+  output [127:0]io_sram2_wmask,
+  output [127:0] io_sram2_wdata,
+  input  [127:0] io_sram2_rdata,
+
+  output [5:0] io_sram3_addr,
+  output io_sram3_cen,
+  output io_sram3_wen,
+  output [127:0]io_sram3_wmask,
+  output [127:0] io_sram3_wdata,
+  input  [127:0] io_sram3_rdata
+
+
 );
 
 //////////////////////////////////////////////crossbar/////////////
@@ -252,8 +281,34 @@ dcache dcache_0(
 .bresp2(bresp2_0),
 .bvalid2(bvalid2_0),
 .bready2(bready2_0),
-.wb_reg_finish(wb_reg_finish)
+.wb_reg_finish(wb_reg_finish),
+.io_sram0_addr(io_sram0_addr),
+.io_sram0_cen(io_sram0_cen),
+.io_sram0_wen(io_sram0_wen),
+.io_sram0_wmask(io_sram0_wmask),
+.io_sram0_wdata(io_sram0_wdata),
+.io_sram0_rdata(io_sram0_rdata),
 
+.io_sram1_addr(io_sram1_addr),
+.io_sram1_cen(io_sram1_cen),
+.io_sram1_wen(io_sram1_wen),
+.io_sram1_wmask(io_sram1_wmask),
+.io_sram1_wdata(io_sram1_wdata),
+.io_sram1_rdata(io_sram1_rdata),
+
+.io_sram2_addr(io_sram2_addr),
+.io_sram2_cen(io_sram2_cen),
+.io_sram2_wen(io_sram2_wen),
+.io_sram2_wmask(io_sram2_wmask),
+.io_sram2_wdata(io_sram2_wdata),
+.io_sram2_rdata(io_sram2_rdata),
+
+.io_sram3_addr(io_sram3_addr),
+.io_sram3_cen(io_sram3_cen),
+.io_sram3_wen(io_sram3_wen),
+.io_sram3_wmask(io_sram3_wmask),
+.io_sram3_wdata(io_sram3_wdata),
+.io_sram3_rdata(io_sram3_rdata)
 );
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache
@@ -306,7 +361,7 @@ mem_read_write mem_read_write_0(
 .bresp2(bresp2_1),
 .bvalid2(bvalid2_1),
 .bready2(bready2_1),
-.wb_reg_finish
+.wb_reg_finish(wb_reg_finish)
 );
 ///////////////////////////////////////////////////////////////////
 //assign device_finish=((use_cache==0)&pipe2_valid);

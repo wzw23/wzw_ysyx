@@ -26,7 +26,34 @@ module If(
 	//总线接口
 	input id_reg_finish,
 	input [63:0]cpupc_reg_is,
-	output not_jump
+	output not_jump,
+	output [5:0]io_sram0_addr,
+  output io_sram0_cen,
+  output io_sram0_wen,
+  output [127:0]io_sram0_wmask,
+  output [127:0] io_sram0_wdata,
+  input  [127:0] io_sram0_rdata,
+
+  output [5:0] io_sram1_addr,
+  output io_sram1_cen,
+  output io_sram1_wen,
+  output [127:0]io_sram1_wmask,
+  output [127:0] io_sram1_wdata,
+  input  [127:0] io_sram1_rdata,
+
+  output [5:0] io_sram2_addr,
+  output io_sram2_cen,
+  output io_sram2_wen,
+  output [127:0]io_sram2_wmask,
+  output [127:0] io_sram2_wdata,
+  input  [127:0] io_sram2_rdata,
+
+  output [5:0] io_sram3_addr,
+  output io_sram3_cen,
+  output io_sram3_wen,
+  output [127:0]io_sram3_wmask,
+  output [127:0] io_sram3_wdata,
+  input  [127:0] io_sram3_rdata
 );
 //位宽为32bit，复位值为0x80000000,写使能一直有效
 //wire [31:0]zhongjian;
@@ -80,7 +107,35 @@ icache icache_9(
 	.not_jump(not_jump),
 	.cpupc(cpupc),
 	.cpupc_reg_is(cpupc_reg_is),
-	.pc_update(pc_update)
+	.pc_update(pc_update),
+	.io_sram0_addr(io_sram0_addr),
+	.io_sram0_cen(io_sram0_cen),
+	.io_sram0_wen(io_sram0_wen),
+	.io_sram0_wmask(io_sram0_wmask),
+	.io_sram0_wdata(io_sram0_wdata),
+	.io_sram0_rdata(io_sram0_rdata),
+
+	.io_sram1_addr(io_sram1_addr),
+	.io_sram1_cen(io_sram1_cen),
+	.io_sram1_wen(io_sram1_wen),
+	.io_sram1_wmask(io_sram1_wmask),
+	.io_sram1_wdata(io_sram1_wdata),
+	.io_sram1_rdata(io_sram1_rdata),
+
+	.io_sram2_addr(io_sram2_addr),
+	.io_sram2_cen(io_sram2_cen),
+	.io_sram2_wen(io_sram2_wen),
+	.io_sram2_wmask(io_sram2_wmask),
+	.io_sram2_wdata(io_sram2_wdata),
+	.io_sram2_rdata(io_sram2_rdata),
+
+	.io_sram3_addr(io_sram3_addr),
+	.io_sram3_cen(io_sram3_cen),
+	.io_sram3_wen(io_sram3_wen),
+	.io_sram3_wmask(io_sram3_wmask),
+	.io_sram3_wdata(io_sram3_wdata),
+	.io_sram3_rdata(io_sram3_rdata)
+
  );
 
 //总线信号

@@ -44,9 +44,35 @@ module dcache(
 	input bvalid2,
 	output bready2,
 	
-	input wb_reg_finish
+	input wb_reg_finish,
 
-
+  output [5:0]io_sram0_addr,
+  output io_sram0_cen,
+  output io_sram0_wen,
+  output [127:0]io_sram0_wmask,
+  output [127:0] io_sram0_wdata,
+  input  [127:0] io_sram0_rdata,
+  
+  output [5:0] io_sram1_addr,
+  output io_sram1_cen,
+  output io_sram1_wen,
+  output [127:0]io_sram1_wmask,
+  output [127:0] io_sram1_wdata,
+  input  [127:0] io_sram1_rdata,
+  
+  output [5:0] io_sram2_addr,
+  output io_sram2_cen,
+  output io_sram2_wen,
+  output [127:0]io_sram2_wmask,
+  output [127:0] io_sram2_wdata,
+  input  [127:0] io_sram2_rdata,
+  
+  output [5:0] io_sram3_addr,
+  output io_sram3_cen,
+  output io_sram3_wen,
+  output [127:0]io_sram3_wmask,
+  output [127:0] io_sram3_wdata,
+  input  [127:0] io_sram3_rdata
 );
  parameter CACHE_SIZE=4096;//cache大小为4kB 4096B
  parameter LINE_SIZE=64;//line size 64B
@@ -330,73 +356,40 @@ assign bresp=bresp2;
 assign bvalid=bvalid2;
 assign bready2=bready;
 
-wire [5:0]io_sram0_addr;
-wire io_sram0_cen;
-wire io_sram0_wen;
-wire [127:0]io_sram0_wmask;
-wire [127:0] io_sram0_wdata;
-wire [127:0] io_sram0_rdata;
+/*sram sram_1(*/
+/*.clk(clk),*/
+/*.io_sram0_addr(io_sram0_addr),*/
+/*.io_sram0_cen(~io_sram0_cen),*/
+/*.io_sram0_wen(~io_sram0_wen),*/
+/*.io_sram0_wmask(~io_sram0_wmask),*/
+/*.io_sram0_wdata(io_sram0_wdata),*/
+/*.io_sram0_rdata(io_sram0_rdata),*/
 
-wire [5:0] io_sram1_addr;
-wire io_sram1_cen;
-wire io_sram1_wen;
-wire [127:0]io_sram1_wmask;
-wire [127:0] io_sram1_wdata;
-wire [127:0] io_sram1_rdata;
+/*.io_sram1_addr(io_sram1_addr),*/
+/*.io_sram1_cen(~io_sram1_cen),*/
+/*.io_sram1_wen(~io_sram1_wen),*/
+/*.io_sram1_wmask(~io_sram1_wmask),*/
+/*.io_sram1_wdata(io_sram1_wdata),*/
+/*.io_sram1_rdata(io_sram1_rdata),*/
 
-wire [5:0] io_sram2_addr;
-wire io_sram2_cen;
-wire io_sram2_wen;
-wire [127:0]io_sram2_wmask;
-wire [127:0] io_sram2_wdata;
-wire [127:0] io_sram2_rdata;
+/*.io_sram2_addr(io_sram2_addr),*/
+/*.io_sram2_cen(~io_sram2_cen),*/
+/*.io_sram2_wen(~io_sram2_wen),*/
+/*.io_sram2_wmask(~io_sram2_wmask),*/
+/*.io_sram2_wdata(io_sram2_wdata),*/
+/*.io_sram2_rdata(io_sram2_rdata),*/
 
-wire [5:0] io_sram3_addr;
-wire io_sram3_cen;
-wire io_sram3_wen;
-wire [127:0]io_sram3_wmask;
-wire [127:0] io_sram3_wdata;
-wire [127:0] io_sram3_rdata;
-
-sram sram_1(
-.clk(clk),
-.io_sram0_addr(io_sram0_addr),
-.io_sram0_cen(~io_sram0_cen),
-.io_sram0_wen(~io_sram0_wen),
-.io_sram0_wmask(~io_sram0_wmask),
-.io_sram0_wdata(io_sram0_wdata),
-.io_sram0_rdata(io_sram0_rdata),
-
-.io_sram1_addr(io_sram1_addr),
-.io_sram1_cen(~io_sram1_cen),
-.io_sram1_wen(~io_sram1_wen),
-.io_sram1_wmask(~io_sram1_wmask),
-.io_sram1_wdata(io_sram1_wdata),
-.io_sram1_rdata(io_sram1_rdata),
-
-.io_sram2_addr(io_sram2_addr),
-.io_sram2_cen(~io_sram2_cen),
-.io_sram2_wen(~io_sram2_wen),
-.io_sram2_wmask(~io_sram2_wmask),
-.io_sram2_wdata(io_sram2_wdata),
-.io_sram2_rdata(io_sram2_rdata),
-
-.io_sram3_addr(io_sram3_addr),
-.io_sram3_cen(~io_sram3_cen),
-.io_sram3_wen(~io_sram3_wen),
-.io_sram3_wmask(~io_sram3_wmask),
-.io_sram3_wdata(io_sram3_wdata),
-.io_sram3_rdata(io_sram3_rdata)
- );
+/*.io_sram3_addr(io_sram3_addr),*/
+/*.io_sram3_cen(~io_sram3_cen),*/
+/*.io_sram3_wen(~io_sram3_wen),*/
+/*.io_sram3_wmask(~io_sram3_wmask),*/
+/*.io_sram3_wdata(io_sram3_wdata),*/
+/*.io_sram3_rdata(io_sram3_rdata)*/
+ /*);*/
  assign io_sram0_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
  assign io_sram1_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
  assign io_sram2_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
  assign io_sram3_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
-
-/* assign io_sram0_cen=((wready)&((d_w_len=='d0)|(d_w_len=='d1)))|((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|((araddr_offset[5:3]==0)|(araddr_offset[5:3]==1));*/
- /*assign io_sram1_cen=((wready)&((d_w_len=='d2)|(d_w_len=='d3)))|((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|((araddr_offset[5:3]==2)|(araddr_offset[5:3]==3));*/
- /*assign io_sram2_cen=((wready)&((d_w_len=='d4)|(d_w_len=='d5)))|((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|((araddr_offset[5:3]==4)|(araddr_offset[5:3]==5));*/
- /*assign io_sram3_cen=((wready)&((d_w_len=='d6)|(d_w_len=='d7)))|((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|((araddr_offset[5:3]==6)|(araddr_offset[5:3]==7));*/
 
  assign io_sram0_cen=1;
  assign io_sram1_cen=1;
@@ -404,10 +397,10 @@ sram sram_1(
  assign io_sram3_cen=1;
 
 
- assign io_sram0_cen=((wready)&((d_w_len=='d0)|(d_w_len=='d1)))|((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|((araddr_offset[5:3]==0)|(araddr_offset[5:3]==1));
- assign io_sram1_cen=((wready)&((d_w_len=='d2)|(d_w_len=='d3)))|((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|((araddr_offset[5:3]==2)|(araddr_offset[5:3]==3));
- assign io_sram2_cen=((wready)&((d_w_len=='d4)|(d_w_len=='d5)))|((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|((araddr_offset[5:3]==4)|(araddr_offset[5:3]==5));
- assign io_sram3_cen=((wready)&((d_w_len=='d6)|(d_w_len=='d7)))|((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|((araddr_offset[5:3]==6)|(araddr_offset[5:3]==7));
+/* assign io_sram0_cen=((wready)&((d_w_len=='d0)|(d_w_len=='d1)))|((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|((araddr_offset[5:3]==0)|(araddr_offset[5:3]==1));*/
+ /*assign io_sram1_cen=((wready)&((d_w_len=='d2)|(d_w_len=='d3)))|((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|((araddr_offset[5:3]==2)|(araddr_offset[5:3]==3));*/
+ /*assign io_sram2_cen=((wready)&((d_w_len=='d4)|(d_w_len=='d5)))|((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|((araddr_offset[5:3]==4)|(araddr_offset[5:3]==5));*/
+ /*assign io_sram3_cen=((wready)&((d_w_len=='d6)|(d_w_len=='d7)))|((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|((araddr_offset[5:3]==6)|(araddr_offset[5:3]==7));*/
 
 
  assign io_sram0_wen=((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d0)|(waddr_offset[5:3]=='d1));
@@ -468,15 +461,6 @@ assign io_sram0_wmask=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
 							 	(araddr_offset[5:3]==5)?io_sram2_rdata[127:64]:
 							 	(araddr_offset[5:3]==6)?io_sram3_rdata[63:0]:
 							 	io_sram3_rdata[127:64];
-/* assign r_wdata=(d_w_len==0)?io_sram0_rdata[63:0]:*/
-								/*(d_w_len==1)?io_sram0_rdata[127:64]:*/
-								/*(d_w_len==2)?io_sram1_rdata[63:0]:*/
-								/*(d_w_len==3)?io_sram1_rdata[127:64]:*/
-								/*(d_w_len==4)?io_sram2_rdata[63:0]:*/
-								/*(d_w_len==5)?io_sram2_rdata[127:64]:*/
-								/*(d_w_len==6)?io_sram3_rdata[63:0]:*/
-								/*(d_w_len==7)?io_sram3_rdata[127:64]:*/
-								/*64'hffffffff;	*/
  always@(posedge clk)begin
 	 if(wready)begin
 		 if(d_w_len==0)

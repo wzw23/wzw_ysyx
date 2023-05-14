@@ -26,31 +26,35 @@ module sram(
 	input io_sram3_wen,
 	input [127:0]io_sram3_wmask,
 	input[127:0] io_sram3_wdata,
-	output[127:0] io_sram3_rdata
+	output[127:0] io_sram3_rdata,
 
- /* input[5:0] io_sram4_addr,*/
-	/*input io_sram4_cen,*/
-	/*input io_sram4_wen,*/
-	/*input[127:0] io_sram4_wdata,*/
-	/*output[127:0] io_sram4_rdata,*/
+	input[5:0] io_sram4_addr,
+	input io_sram4_cen,
+	input io_sram4_wen,
+	input [127:0]io_sram4_wmask,
+	input[127:0] io_sram4_wdata,
+	output[127:0] io_sram4_rdata,
 
-	/*input[5:0] io_sram5_addr,*/
-	/*input io_sram5_cen,*/
-	/*input io_sram5_wen,*/
-	/*input[127:0] io_sram5_wdata,*/
-	/*output[127:0] io_sram5_rdata,*/
+	input[5:0] io_sram5_addr,
+	input io_sram5_cen,
+	input io_sram5_wen,
+	input [127:0]io_sram5_wmask,
+	input[127:0] io_sram5_wdata,
+	output[127:0] io_sram5_rdata,
 
-	/*input[5:0] io_sram6_addr,*/
-	/*input io_sram6_cen,*/
-	/*input io_sram6_wen,*/
-	/*input[127:0] io_sram6_wdata,*/
-	/*output[127:0] io_sram6_rdata,*/
+	input[5:0] io_sram6_addr,
+	input io_sram6_cen,
+	input io_sram6_wen,
+	input [127:0]io_sram6_wmask,
+	input[127:0] io_sram6_wdata,
+	output[127:0] io_sram6_rdata,
 
-	/*input[5:0] io_sram7_addr,*/
-	/*input io_sram7_cen,*/
-	/*input io_sram7_wen,*/
-	/*input[127:0] io_sram7_wdata,*/
-	/*output[127:0] io_sram7_rdata*/
+	input[5:0] io_sram7_addr,
+	input io_sram7_cen,
+	input io_sram7_wen,
+	input [127:0]io_sram7_wmask,
+	input[127:0] io_sram7_wdata,
+	output[127:0] io_sram7_rdata
 );
 S011HD1P_X32Y2D128_BW sram_0(
 .Q(io_sram0_rdata), 
@@ -89,4 +93,40 @@ S011HD1P_X32Y2D128_BW sram_3(
 .D(io_sram3_wdata)
 );
 
+S011HD1P_X32Y2D128_BW sram_4(
+.Q(io_sram4_rdata),
+.CLK(clk),
+.CEN(io_sram4_cen),
+.WEN(io_sram4_wen),
+.BWEN(io_sram4_wmask),
+.A(io_sram4_addr),
+.D(io_sram4_wdata)
+);
+S011HD1P_X32Y2D128_BW sram_5(
+.Q(io_sram5_rdata),
+.CLK(clk),
+.CEN(io_sram5_cen),
+.WEN(io_sram5_wen),
+.BWEN(io_sram5_wmask),
+.A(io_sram5_addr),
+.D(io_sram5_wdata)
+);
+S011HD1P_X32Y2D128_BW sram_6(
+.Q(io_sram6_rdata),
+.CLK(clk),
+.CEN(io_sram6_cen),
+.WEN(io_sram6_wen),
+.BWEN(io_sram6_wmask),
+.A(io_sram6_addr),
+.D(io_sram6_wdata)
+);
+S011HD1P_X32Y2D128_BW sram_7(
+.Q(io_sram7_rdata),
+.CLK(clk),
+.CEN(io_sram7_cen),
+.WEN(io_sram7_wen),
+.BWEN(io_sram7_wmask),
+.A(io_sram7_addr),
+.D(io_sram7_wdata)
+);
 endmodule
