@@ -1,6 +1,38 @@
 //`include "hong.v"
 `define alu_length 17
-module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output[63:0]ram_addr,output [2:0]alu_equal,input w_choose,input wb_reg_finish,output alu_finish,input pipe2_valid);
+module ysyx_050533_S011HD1P_X32Y2D128_BW(
+    Q, CLK, CEN, WEN, BWEN, A, D
+);
+parameter Bits = 128;
+parameter Word_Depth = 64;
+parameter Add_Width = 6;
+parameter Wen_Width = 128;
+
+output reg [Bits-1:0] Q;
+input                 CLK;
+input                 CEN;
+input                 WEN;
+input [Wen_Width-1:0] BWEN;
+input [Add_Width-1:0] A;
+input [Bits-1:0]      D;
+
+wire cen  = ~CEN;
+wire wen  = ~WEN;
+wire [Wen_Width-1:0] bwen = ~BWEN;
+
+reg [Bits-1:0] ram [0:Word_Depth-1];
+always @(posedge CLK) begin
+    if(cen && wen) begin
+        ram[A] <= (D & bwen) | (ram[A] & ~bwen);
+    end
+    Q <= cen && !wen ? ram[A] : {4{$random}};
+end
+
+wire [Wen_Width-1:0]ram_0 ;
+assign ram_0=ram[0];
+endmodule
+
+module ysyx_050533_Alu3(input clock,input reset,input [63:0]alu_src1, input [63:0]alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output[63:0]ram_addr,output [2:0]alu_equal,input w_choose,input wb_reg_finish,output alu_finish,input pipe2_valid);
 		wire op_add;
 		wire op_sub;
 		wire op_slt;//有符号比较
@@ -61,8 +93,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
     /*在除法期间，div_out_valid 不为高表示计算结果还为得出，ALU正忙，需要阻塞流水*/
     assign alu_finish= ((op_div|op_divu)&&div_finish)|((op_mul)&&mul_finish)|(~(op_div|op_divu|op_mul));
 
-		always @(posedge clk) begin
-			if (rst) begin
+		always @(posedge clock) begin
+			if (reset) begin
 				div_doing <= 1'b0;
 			end
 			/*除法结果输出后需要将div_doing置零*/
@@ -75,8 +107,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
 			end
 		end
 
-		always@(posedge clk)begin
-			if(rst|wb_reg_finish)begin
+		always@(posedge clock)begin
+			if(reset|wb_reg_finish)begin
 				div_finish<='b0;
 				div_result_r<='d0;
 			end
@@ -87,8 +119,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
 		end
 		//除法信号赋值
     assign mul_valid =(op_mul)&&!mul_doing&&!mul_out_valid&&!mul_finish&&pipe2_valid;
-		always @(posedge clk) begin
-			if (rst) begin
+		always @(posedge clock) begin
+			if (reset) begin
 				mul_doing <= 1'b0;
 			end
 			/*除法结果输出后需要将div_doing置零*/
@@ -101,8 +133,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
 			end
 		end
 
-		always@(posedge clk)begin
-			if(rst|wb_reg_finish)begin
+		always@(posedge clock)begin
+			if(reset|wb_reg_finish)begin
 				mul_finish<='b0;
 				mul_result_r<='d0;
 			end
@@ -193,8 +225,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
 		assign ram_addr=add_sub_result;
 		assign alu_equal[0]=(alu_src1==alu_src2);
 		ysyx_050533_div ysyx_050533_div_0(
-			.clk(clk),
-			.reset(rst),
+			.clock(clock),
+			.reset(reset),
 			.x(alu_src1),
 			.y(alu_src2),
 			.div_valid(div_valid),
@@ -206,8 +238,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
 		);
 
 		ysyx_050533_mulu ysyx_050533_mulu_0(
-				.clk(clk),
-				.rst(rst), 
+				.clock(clock),
+				.reset(reset), 
 				.multiplicand({op_mul & alu_src1[63],alu_src1}),
 				.multiplier({op_mul & alu_src2[63],alu_src2}),
 				.mul_valid(mul_valid),
@@ -216,8 +248,8 @@ module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]al
 				.result(product));
 endmodule
 module ysyx_050533_arbiter(
-	input  clk,
-	input  rst,
+	input  clock,
+	input  reset,
 	//读地址通道 
 	input  [31:0]araddr_1,
 	input  [31:0]araddr_2,
@@ -267,8 +299,8 @@ reg [1:0]master_state;
 parameter IDLE=0,
 					S_MASTER_1=1,
 					S_MASTER_2=2;
-always@(posedge clk)begin
-	if(rst)
+always@(posedge clock)begin
+	if(reset)
 		master_state<=IDLE;
 	else if((arvalid_1)&(master_state==IDLE))
 		master_state<=S_MASTER_1;
@@ -381,8 +413,8 @@ assign bvalid_2=master_2?bvalid:
 								0;
 
 ysyx_050533_axi_full_s2 ysyx_050533_axi_full_s2_0(
-	.clk(clk),
-	.rst(rst),
+	.clock(clock),
+	.reset(reset),
 	.araddr(araddr),
 	.arvalid(arvalid),
 	.arburst(arburst),
@@ -410,8 +442,8 @@ ysyx_050533_axi_full_s2 ysyx_050533_axi_full_s2_0(
 );
 endmodule
 module ysyx_050533_axi_full_s2(
-	input  clk,
-	input  rst,
+	input  clock,
+	input  reset,
 	//读地址通道 
 	input  [31:0]araddr,
 	input  arvalid,
@@ -462,8 +494,8 @@ parameter   READ_IDLE        = 3'd0 ,
 						READ_FINISH=3'd3;
 
 reg [2:0]state;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		state<=READ_IDLE;
 	else if((state==READ_IDLE)&arvalid)
 		state<=READ_ARVALID;
@@ -477,12 +509,12 @@ end
 //arready信号
 assign arready=(state==READ_IDLE);
 //araddr信号寄存器
-always @(posedge clk)begin
+always @(posedge clock)begin
 	if(arvalid&&arready)
 		r_araddr<=araddr;
 end
 //rdata信号
-always @(posedge clk)begin
+always @(posedge clock)begin
 	//if(rvalid&rready)begin
 	if(state==READ_TRANS&(arburst==2'b01))begin
 		vpmem_read({{32'b0},r_araddr}, rdata);
@@ -496,8 +528,8 @@ always @(posedge clk)begin
 		rvalid<='d0;
 	end
 end
-always @(posedge clk)begin
-	if(rst)begin
+always @(posedge clock)begin
+	if(reset)begin
 		c_arlen<=0;
 	end
 	if(state==READ_TRANS&(arburst==2'b01))begin
@@ -519,8 +551,8 @@ parameter     WRITE_IDLE       = 3'd0 ,
 							WRITE_AW_VALID	 =3'd1,
 							WRITE_W_VALID	 =3'd2,
 							WRITE_FINISH 		 =3'd3;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		write_state<=WRITE_IDLE;
 	else if((write_state==WRITE_IDLE)&awvalid)
 		write_state<=WRITE_AW_VALID;
@@ -537,7 +569,7 @@ end
 assign awready=(write_state==WRITE_IDLE);
 assign wready =(write_state==WRITE_AW_VALID)|(write_state==WRITE_W_VALID);
 
-always @(posedge clk)begin
+always @(posedge clock)begin
 	//if(write_state==WRITE_AW_VALID)begin
 	if(wvalid&wready&(awburst==2'b01))begin
 		vpmem_write({{32'b0},r_awaddr}, wdata, wstrb,64'd1);
@@ -552,7 +584,7 @@ else begin
 	end
 end
 assign bvalid=(write_state==WRITE_W_VALID);
-always @(posedge clk)begin
+always @(posedge clock)begin
 	if(awvalid&awready)
 		r_awaddr<=awaddr;
 end
@@ -856,8 +888,8 @@ endmodule
 //为直接映射cache 每行大小为64B 共有2^6行
 //采取写分配和写回策略
 module ysyx_050533_dcache(
-	input  clk,
-	input  rst,
+	input  clock,
+	input  reset,
 	input  use_cache,
 	input  r_ren,
 	input  [31:0]raddr,
@@ -985,8 +1017,8 @@ assign araddr=(rcache_en)?raddr:
 							0;
 assign rcache_en=r_ren&pipe2_valid;
 assign wcache_en=r_wen&pipe2_valid;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		cache_state<=CACHE_IDLE;
 	else if((cache_state==CACHE_IDLE)&(araddr_tag==tagarray[araddr_index][19:0])&(tagarray[araddr_index][20])&(rcache_en)&pipe2_valid&(use_cache))
 		cache_state<=CACHE_GET;
@@ -1046,8 +1078,8 @@ parameter   READ_IDLE        = 3'd0 ,
 						READ_TRANS       =3'd2,
 						READ_FINISH 		 =3'd3;
 reg [2:0]read_state;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		read_state<=READ_IDLE;
 	else if((read_state==READ_IDLE)&arready&arvalid)
 		read_state<=READ_ARREADY;
@@ -1064,7 +1096,7 @@ assign mem_write_finish=(write_state==WRITE_FINISH);
 assign arvalid=(read_state==READ_IDLE)&mem_read_begin;
 //r_data信号
 //mem_read
-always @(posedge clk)begin
+always @(posedge clock)begin
 		if(rvalid&rready)begin
 		d_r_len<=d_r_len+1;
 	end
@@ -1073,7 +1105,7 @@ always @(posedge clk)begin
 		tagarray[araddr_index][19:0]<=araddr_tag;
 		d_r_len<=0;
 	end
-	if(rst)begin
+	if(reset)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=22'b0;
 				d_r_len<=0;
@@ -1100,8 +1132,8 @@ wire bready;
 wire bvalid;
 assign awburst=2'b01;
 assign awlen=8;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		write_state<=WRITE_IDLE;
 	else if((write_state==WRITE_IDLE)&awready&awvalid)
 		write_state<=WRITE_AW_READY;
@@ -1125,7 +1157,7 @@ assign awaddr=wraddr_block;
 assign wdata_axi =r_wdata;
 assign wstrb =8'b11111111;
 //r_wdata信号
-always@(posedge clk)begin
+always@(posedge clock)begin
 	if(wready)begin
 		d_w_len<=d_w_len+1;
 		c_awlen<=c_awlen+1;
@@ -1139,7 +1171,7 @@ always@(posedge clk)begin
 		c_awlen<=0;
 		wvalid<=0;
 	end
-	if(rst)begin
+	if(reset)begin
 			d_r_len<=0;
 			d_w_len<=0;
 			c_awlen<=0;
@@ -1162,10 +1194,10 @@ wire [63:0]wdata_align;
 wire [63:0]wmask_align;
 assign wdata_align=wdata<<((waddr&{29'b0,3'b111})*8);
 assign wmask_align=wmask_full<<((waddr&{29'b0,3'b111})*8);
-always @(posedge clk)
+always @(posedge clock)
 	if(cache_state==CACHE_WRITE)begin
 	  tagarray[waddr_index][21]<=1'b1;
-	if(rst)
+	if(reset)
 	  tagarray[waddr_index][21]<=1'b0;
 		
 		end
@@ -1265,7 +1297,7 @@ assign io_sram0_wmask=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
 							 	(araddr_offset[5:3]==5)?io_sram2_rdata[127:64]:
 							 	(araddr_offset[5:3]==6)?io_sram3_rdata[63:0]:
 							 	io_sram3_rdata[127:64];
- always@(posedge clk)begin
+ always@(posedge clock)begin
 	 if(wready)begin
 		 if(d_w_len==0)
 			 r_wdata<=io_sram0_rdata[63:0];
@@ -1295,7 +1327,7 @@ module ysyx_050533_de_len_olen #(LEN=7,OLEN=128)(
 endmodule
 
  module ysyx_050533_div(
-  input                          clk           ,
+  input                          clock           ,
   input                          reset         ,
   input  [63:0] x,
   input  [63:0] y,
@@ -1316,7 +1348,7 @@ wire done,div_prepare;
 //state transition
 assign div_prepare = div_ready && div_valid;
 assign done = running_r &&  count == 7'h40;
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (reset  || out_valid) begin
         div_ready <= 1'b1;
     end
@@ -1325,7 +1357,7 @@ always @(posedge clk) begin
     end 
 end
 
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (reset || done ) begin
         running_r <= 1'b0;
     end
@@ -1334,7 +1366,7 @@ always @(posedge clk) begin
     end 
 end
 
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (reset || out_valid ) begin
         out_valid <= 1'b0;
     end
@@ -1343,7 +1375,7 @@ always @(posedge clk) begin
     end 
 end
 //signed bit
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (reset) begin
         divisor_s <= 1'b0;
         dividend_s <= 1'b0;        
@@ -1393,7 +1425,7 @@ assign x_abs = div_signed & x[63] ? x_adder_result : x ;
 assign y_abs = div_signed & y[63] ? y_adder_result : y ;
 
 //Update dividend ,divisor and qutient
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (div_prepare) begin
         dividend <= {64'b0,x_abs};
         divisor <= y_abs;
@@ -1406,7 +1438,7 @@ always @(posedge clk) begin
     
 end
 // counter
-always @(posedge clk) begin
+always @(posedge clock) begin
     if (reset || out_valid ) begin
         count <= 7'b0;
     end
@@ -1424,7 +1456,7 @@ assign qutient_correct = y_adder_result;
 assign qutient_need_correct = ~dividend_s & divisor_s | dividend_s & ~divisor_s;
 assign remain_need_correct  = dividend_s;
 
-always @(posedge clk ) begin
+always @(posedge clock ) begin
     if (done) begin
         remain  <= remain_need_correct  ? remain_correct  : dividend[127:64];
     end
@@ -1468,7 +1500,7 @@ assign {cout, result} = src1 + src2 + {64'b0,cin};
 endmodule
 //`include "hong.v"
 `define alu_length 17
-module ysyx_050533_exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data,input wb_reg_finish,output alu_finish,input pipe2_valid);
+module ysyx_050533_exe(input clock,input reset,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data,input wb_reg_finish,output alu_finish,input pipe2_valid);
 	//wire [63:0]src1;
 	//wire [63:0]src2;
 	wire [2:0]alu_equal;
@@ -1491,8 +1523,8 @@ module ysyx_050533_exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_s
 		3'b100,64'd4
 		});
 
-	ysyx_050533_Alu3 ysyx_050533_Alu3_0(clk,rst,alu_src1,alu_src2,alu_control,alu_result,ram_addr,alu_equal,w_choose,wb_reg_finish,alu_finish,pipe2_valid);
-	ysyx_050533_set_dnpc set_dnpc_0(.clk(clk),.rst(rst),.e_j_b_inst(e_j_b_inst),.src1(src1),.imm(imm),.cpupc(cpupc),.c_rdata(c_rdata),.alu_equal(alu_equal),.dnpc_jump_data(dnpc_jump_data));
+	ysyx_050533_Alu3 ysyx_050533_Alu3_0(clock,reset,alu_src1,alu_src2,alu_control,alu_result,ram_addr,alu_equal,w_choose,wb_reg_finish,alu_finish,pipe2_valid);
+	ysyx_050533_set_dnpc set_dnpc_0(.clock(clock),.reset(reset),.e_j_b_inst(e_j_b_inst),.src1(src1),.imm(imm),.cpupc(cpupc),.c_rdata(c_rdata),.alu_equal(alu_equal),.dnpc_jump_data(dnpc_jump_data));
 
 endmodule
 
@@ -1501,8 +1533,8 @@ endmodule
 //为直接映射cache 每行大小为64B 共有2^6行
 //采取写分配和写回策略
 module ysyx_050533_icache(
-	input  clk,
-	input  rst,
+	input  clock,
+	input  reset,
 	input  [31:0]araddr,
 	output [63:0]rdata,
 	output inst_update,
@@ -1584,8 +1616,8 @@ parameter CACHE_IDLE=0,
 					CACHE_WAIT_EXE=5
 					;
 reg [2:0]cache_state;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		cache_state<=CACHE_IDLE;
 	else if((cache_state==CACHE_IDLE)&(addr_tag==tagarray[addr_index][19:0])&(tagarray[addr_index][20]))
 		cache_state<=CACHE_GET;
@@ -1623,14 +1655,14 @@ parameter   READ_IDLE        = 3'd0 ,
 						READ_TRANS       =3'd2,
 						READ_FINISH 		 =3'd3;
 reg [2:0]state;
-always @(posedge clk)begin
+always @(posedge clock)begin
 	if(rlast)
 		rlast_delay<='b1;
 	else 
 		rlast_delay<='b0;
 end
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		state<=READ_IDLE;
 	else if((state==READ_IDLE)&arready&arvalid)
 		state<=READ_ARREADY;
@@ -1647,7 +1679,7 @@ assign arvalid=(state==READ_IDLE)&(cache_state==CACHE_MEMREAD);
 //mem_read
 reg rvalid_rready;
 reg [63:0]rdata_test3;
-always @(posedge clk)begin
+always @(posedge clock)begin
 	if(rvalid&rready)begin
 		rdata_test3<=rdata_axi;
 		d_len<=d_len+1;
@@ -1660,7 +1692,7 @@ always @(posedge clk)begin
 		tagarray[addr_index][19:0]<=addr_tag;
 		d_len<=0;
 	end
-	if(rst)begin
+	if(reset)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=0;
 				d_len<=0;
@@ -1725,7 +1757,7 @@ assign rlast=rlast1;
 							 io_sram3_rdata[127:64];
  ///////////
 endmodule
-module ysyx_050533_id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
+module ysyx_050533_id(input clock,input reset,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
   wire [1:0]c_waddr;
   wire [4:0]rs1;
 	wire [4:0]rs2;
@@ -1743,8 +1775,8 @@ module ysyx_050533_id(input clk,input rst,input [31:0]inst,output [4:0]rd,output
 	assign fu_7=inst[31:25];
 	assign fu_3=inst[14:12];
 	reg  [31:0]buzy;
-	always@(posedge clk)begin
-		if(rst)begin
+	always@(posedge clock)begin
+		if(reset)begin
 			for(integer i=0;i<32;i=i+1)
 				buzy[i]<=0;
 		end
@@ -1835,12 +1867,12 @@ module ysyx_050533_id(input clk,input rst,input [31:0]inst,output [4:0]rd,output
 			1'b1,src1|c_rdata
 			});
 
- ysyx_050533_RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen_reg_wb&validout),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
+ ysyx_050533_RegisterFile2 #(5,64) r0 (.clock(clock),.reset(reset),.wen(rf_wen_reg_wb&validout),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
 
 endmodule
 module ysyx_050533_If(
-	input clk,
-	input rst,
+	input clock,
+	input reset,
 	output [63:0]cpupc,
 	output [31:0]inst,
 	output [63:0]dnpc,
@@ -1909,10 +1941,10 @@ wire [63:0]rdata_u;
 wire [31:0]araddr;
 assign araddr=cpupc[31:0];
 assign inst=(araddr[2]==1)?rdata_u[63:32]:rdata_u[31:0];
-ysyx_050533_Reg #(64,64'h80000000) i0 (clk,rst,dnpc,cpupc,1'b1);
+ysyx_050533_Reg #(64,64'h80000000) i0 (clock,reset,dnpc,cpupc,1'b1);
 ysyx_050533_icache icache_9(
-	.clk(clk),
-	.rst(rst),
+	.clock(clock),
+	.reset(reset),
 	.araddr(araddr),
 	.rdata(rdata_u),
 	.inst_update(inst_update),
@@ -1965,13 +1997,13 @@ ysyx_050533_icache icache_9(
 
 //总线信号
 
- ysyx_050533_pre_decode ysyx_050533_pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
+ ysyx_050533_pre_decode ysyx_050533_pre_decode_0(.clock(clock),.reset(reset),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
 endmodule
 module ysyx_050533_mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	                parameter DATA_WIDTH=64)//数据位宽
 (
-	input clk,
-	input rst,
+	input clock,
+	input reset,
 	input r_ren,
 	input [ADDR_WIDTH-1:0] r_raddr,
 	output [DATA_WIDTH-1:0]r_rdata,
@@ -2213,8 +2245,8 @@ import "DPI-C" function void vpmem_write(
 		7'b1000000,r_rdata_lbu
 		});
 ysyx_050533_dcache ysyx_050533_dcache_0(
-.clk(clk),
-.rst(rst),
+.clock(clock),
+.reset(reset),
 .use_cache(use_cache),
 .r_ren(r_ren),
 .raddr(r_raddr[31:0]),
@@ -2283,8 +2315,8 @@ ysyx_050533_dcache ysyx_050533_dcache_0(
 //////////////////////////////直接访问mem_read和mem_write访问cache
 wire device_finish;
 ysyx_050533_mem_read_write ysyx_050533_mem_read_write_0(
-.clk(clk),
-.rst(rst),
+.clock(clock),
+.reset(reset),
 .ren(r_ren&(~use_cache)),
 .r_raddr(r_raddr),
 .r_rdata(r_rdata_ld_device),
@@ -2327,8 +2359,8 @@ assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:
 									r_rdata_ld_device;
 endmodule
 module ysyx_050533_mem_read_write(
-	input clk,
-	input rst,
+	input clock,
+	input reset,
 	input  ren,
 	input  [63:0]r_raddr,
 	output reg [63:0]r_rdata,
@@ -2391,8 +2423,8 @@ parameter   READ_IDLE        = 3'd0 ,
 						READ_TRANS       =3'd2,
 						READ_FINISH 		 =3'd3;
 reg [2:0]read_state;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		read_state<=READ_IDLE;
 	else if((read_state==READ_IDLE)&arready&arvalid)
 		read_state<=READ_ARREADY;
@@ -2414,7 +2446,7 @@ assign mem_write_finish=(write_state==WRITE_FINISH);
 assign arvalid=(read_state==READ_IDLE)&ren&pipe2_valid;
 //r_data信号
 //mem_read
-always @(posedge clk)begin
+always @(posedge clock)begin
 		if(rvalid&rready)begin
 		r_rdata<=rdata_axi;
 		d_r_len<=d_r_len+1;
@@ -2422,7 +2454,7 @@ always @(posedge clk)begin
 	if(rlast)begin
 		d_r_len<=0;
 	end
-	if(rst)begin
+	if(reset)begin
 		d_r_len<=0;
 	end
 end
@@ -2452,8 +2484,8 @@ parameter    WRITE_IDLE       = 3'd0 ,
 	WRITE_AW_READY	 =3'd1,
 	WRITE_TRANS	 =3'd2,
 	WRITE_FINISH 		 =3'd3;
-always @(posedge clk)begin
-	if(rst)
+always @(posedge clock)begin
+	if(reset)
 		write_state<=WRITE_IDLE;
 	else if((write_state==WRITE_IDLE)&awready&awvalid)
 		write_state<=WRITE_AW_READY;
@@ -2479,7 +2511,7 @@ assign awaddr=r_waddr[31:0];
 assign wdata_axi =wdata;
 assign wstrb =r_mask;
 //r_wdata信号
-always@(posedge clk)begin
+always@(posedge clock)begin
 	if(wready)begin
 		wdata<=r_wdata;
 		d_w_len<=d_w_len+1;
@@ -2495,7 +2527,7 @@ always@(posedge clk)begin
 		c_awlen<=0;
 		wvalid<=0;
 	end
-	if(rst)begin
+	if(reset)begin
 			d_r_len<=0;
 			d_w_len<=0;
 			c_awlen<=0;
@@ -2563,7 +2595,6 @@ module ysyx_050533_res_sel(input [3:0]sel,input [1:0]src,output p);
 	assign p = ~(~(sel_negative & ~x) & ~(sel_double_negative & ~x_sub) 
            & ~(sel_positive & x ) & ~(sel_double_positive &  x_sub));
 endmodule
-
 module ysyx_050533_mul_partial(//部分积生成模块
 	input  [2*`WIDTH-1:0]x_src,
 	input  [2:0]y_src,
@@ -2586,7 +2617,7 @@ module ysyx_050533_mul_partial(//部分积生成模块
 	endgenerate
 endmodule
 
-module ysyx_050533_mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand,input [`COMPUTE_WIDTH:0]multiplier,input mul_valid,output reg mul_ready,output reg out_valid,/*output reg [`WIDTH*2-1:0]result,*/output [63:0]result);
+module ysyx_050533_mulu(input clock,input reset, input[`COMPUTE_WIDTH:0]multiplicand,input [`COMPUTE_WIDTH:0]multiplier,input mul_valid,output reg mul_ready,output reg out_valid,/*output reg [`WIDTH*2-1:0]result,*/output [63:0]result);
 	reg [`WIDTH*2-1:0]tmp_result,multiplicand_r;
 	reg [`WIDTH:0]multiplier_r;
 	reg running_r;
@@ -2594,16 +2625,16 @@ module ysyx_050533_mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand
 	wire [`WIDTH*2-1:0]p_result;
 	reg [6:0]cnt;
 //cnt
-	always@(posedge clk)begin
-		if(rst|out_valid)
+	always@(posedge clock)begin
+		if(reset|out_valid)
 			cnt<='d0;
 		else if(running_r)
 			cnt<=cnt+1'b1;
 	end
 	assign mul_prepare=mul_valid&mul_ready;
  //wheather running
- always@(posedge clk)begin
-	 if(rst)begin
+ always@(posedge clock)begin
+	 if(reset)begin
 		 running_r<='b0;
 	 end
 	 else if(mul_prepare)
@@ -2612,24 +2643,24 @@ module ysyx_050533_mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand
 		 running_r<='b0;
  end
  //valid and ready
- always@(posedge clk)begin
-	 if(rst)
+ always@(posedge clock)begin
+	 if(reset)
 		 mul_ready<='b1;
 	 else if(mul_prepare)
 		 mul_ready<='b0;
 	 else if(out_valid)
 		 mul_ready<='b1;
  end
- always@(posedge clk)begin
-	 if(rst)
+ always@(posedge clock)begin
+	 if(reset)
 		 out_valid<=1'b0;
 	 else if(out_valid)
 		 out_valid<='b0;
 	 else if(done)
 		 out_valid<='b1;
  end
- always@(posedge clk)begin
-	 if(rst)begin
+ always@(posedge clock)begin
+	 if(reset)begin
 		 multiplicand_r<=0;
 		 multiplier_r<=0;
 	 end
@@ -2650,7 +2681,7 @@ module ysyx_050533_mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand
 	wire adder_cout;
 	assign {adder_cout,adder_result}=p_result+tmp_result+{{`WIDTH*2-1{1'b0}},partial_cout};
 
-	always@(posedge clk)begin
+	always@(posedge clock)begin
 		if(mul_prepare)begin
 			tmp_result<={`WIDTH*2{1'b0}};
 		end
@@ -2718,7 +2749,7 @@ module ysyx_050533_MuxKeyWithDefault #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
 );
   ysyx_050533_MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 1) i0 (out, key, default_out, lut);
 endmodule
-module ysyx_050533_pre_decode(input clk,input rst,input [31:0]inst,output [11:0]e_j_b_inst,output not_jump);
+module ysyx_050533_pre_decode(input clock,input reset,input [31:0]inst,output [11:0]e_j_b_inst,output not_jump);
 	wire [6:0]op;
 	wire	 [2:0]fu_3;
 	//wire [6:0]fu_7;
@@ -2764,8 +2795,8 @@ module ysyx_050533_pre_decode(input clk,input rst,input [31:0]inst,output [11:0]
  assign not_jump=e_j_b_inst[11]|e_j_b_inst[0];
 endmodule
 module ysyx_050533_RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
-  input clk,
-	input rst,
+  input clock,
+	input reset,
   input wen,
   input [DATA_WIDTH-1:0] wdata,
   input [ADDR_WIDTH-1:0] waddr,
@@ -2801,8 +2832,8 @@ module ysyx_050533_RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
   assign rdata2=rf[raddr2];
 	assign c_rdata=csr[c_raddr];
 
-	always @(posedge clk) begin
-		if(rst)begin
+	always @(posedge clock) begin
+		if(reset)begin
 
 			for (i=0;i<32;i=i+1) begin
 				rf[i]<=0;
@@ -2830,7 +2861,7 @@ module ysyx_050533_RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
 		end
 endmodule
     
-module ysyx_050533_set_dnpc(input clk,input rst,input [11:0]e_j_b_inst,input [63:0]src1,input [63:0]imm,input [63:0]cpupc,input[63:0]c_rdata,input [2:0]alu_equal,output [63:0]dnpc_jump_data);
+module ysyx_050533_set_dnpc(input clock,input reset,input [11:0]e_j_b_inst,input [63:0]src1,input [63:0]imm,input [63:0]cpupc,input[63:0]c_rdata,input [2:0]alu_equal,output [63:0]dnpc_jump_data);
 	wire jal;
 	assign jal=e_j_b_inst[3];
 
@@ -2870,7 +2901,7 @@ module ysyx_050533_set_dnpc(input clk,input rst,input [11:0]e_j_b_inst,input [63
 	});
 endmodule
 module ysyx_050533_sram(
-	input clk,
+	input clock,
 	input [5:0]io_sram0_addr,
   input io_sram0_cen,
 	input io_sram0_wen,
@@ -2927,36 +2958,36 @@ module ysyx_050533_sram(
 	input[127:0] io_sram7_wdata,
 	output[127:0] io_sram7_rdata
 );
-S011HD1P_X32Y2D128_BW sram_0(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_0(
 .Q(io_sram0_rdata), 
-.CLK(clk), 
+.CLK(clock), 
 .CEN(io_sram0_cen), 
 .WEN(io_sram0_wen), 
 .BWEN(io_sram0_wmask), 
 .A(io_sram0_addr), 
 .D(io_sram0_wdata)
 );
-S011HD1P_X32Y2D128_BW sram_1(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_1(
 .Q(io_sram1_rdata), 
-.CLK(clk), 
+.CLK(clock), 
 .CEN(io_sram1_cen), 
 .WEN(io_sram1_wen), 
 .BWEN(io_sram1_wmask), 
 .A(io_sram1_addr), 
 .D(io_sram1_wdata)
 );
-S011HD1P_X32Y2D128_BW sram_2(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_2(
 .Q(io_sram2_rdata), 
-.CLK(clk), 
+.CLK(clock), 
 .CEN(io_sram2_cen), 
 .WEN(io_sram2_wen), 
 .BWEN(io_sram2_wmask), 
 .A(io_sram2_addr), 
 .D(io_sram2_wdata)
 );
-S011HD1P_X32Y2D128_BW sram_3(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_3(
 .Q(io_sram3_rdata), 
-.CLK(clk), 
+.CLK(clock), 
 .CEN(io_sram3_cen), 
 .WEN(io_sram3_wen), 
 .BWEN(io_sram3_wmask), 
@@ -2964,36 +2995,36 @@ S011HD1P_X32Y2D128_BW sram_3(
 .D(io_sram3_wdata)
 );
 
-S011HD1P_X32Y2D128_BW sram_4(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_4(
 .Q(io_sram4_rdata),
-.CLK(clk),
+.CLK(clock),
 .CEN(io_sram4_cen),
 .WEN(io_sram4_wen),
 .BWEN(io_sram4_wmask),
 .A(io_sram4_addr),
 .D(io_sram4_wdata)
 );
-S011HD1P_X32Y2D128_BW sram_5(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_5(
 .Q(io_sram5_rdata),
-.CLK(clk),
+.CLK(clock),
 .CEN(io_sram5_cen),
 .WEN(io_sram5_wen),
 .BWEN(io_sram5_wmask),
 .A(io_sram5_addr),
 .D(io_sram5_wdata)
 );
-S011HD1P_X32Y2D128_BW sram_6(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_6(
 .Q(io_sram6_rdata),
-.CLK(clk),
+.CLK(clock),
 .CEN(io_sram6_cen),
 .WEN(io_sram6_wen),
 .BWEN(io_sram6_wmask),
 .A(io_sram6_addr),
 .D(io_sram6_wdata)
 );
-S011HD1P_X32Y2D128_BW sram_7(
+ysyx_050533_S011HD1P_X32Y2D128_BW sram_7(
 .Q(io_sram7_rdata),
-.CLK(clk),
+.CLK(clock),
 .CEN(io_sram7_cen),
 .WEN(io_sram7_wen),
 .BWEN(io_sram7_wmask),
@@ -3002,8 +3033,8 @@ S011HD1P_X32Y2D128_BW sram_7(
 );
 endmodule
 module ysyx_050533_stallable_pipeline(
-	input clk,
-	input rst,
+	input clock,
+	input reset,
 	input isu_finish,
 	input validin,
 	input [31:0]inst,
@@ -3109,8 +3140,8 @@ module ysyx_050533_stallable_pipeline(
 	assign pipe1_allow_in=!pipe1_valid||pipe1_ready_go&&pipe2_allow_in;//若!pipe1_valid&&pipe2_allowin表示pipe1向pipe2传输的是无效数据 并且已经传输 若pipe1_valid&&pipe1_ready_go&&pipe2_allowin表示传输的是有效数据 并且将在下个周期传输
 	assign pipe1_to_pipe2_valid=pipe1_valid&&pipe1_ready_go;//认为教科书上解释错误 此处信号表示的原因是pipe1传输给pipe2的信号是否有效 即总线上的valid信号
 	assign id_reg_finish=validin&&pipe1_allow_in;
-	always@(posedge clk)begin
-		if(rst)
+	always@(posedge clock)begin
+		if(reset)
 			pipe1_valid<='d0;
 		else if(pipe1_allow_in)
 			pipe1_valid<=validin;
@@ -3127,8 +3158,8 @@ module ysyx_050533_stallable_pipeline(
  	assign pipe2_allow_in=!pipe2_valid||pipe2_ready_go&&pipe3_allow_in;
 	assign pipe2_to_pipe3_valid=pipe2_valid&&pipe2_ready_go;
 	assign is_reg_finish=pipe1_to_pipe2_valid&&pipe2_allow_in;
-	always@(posedge clk)begin
-		if(rst)
+	always@(posedge clock)begin
+		if(reset)
 			pipe2_valid<='d0;
 		else if(pipe2_allow_in)
 			pipe2_valid<=pipe1_to_pipe2_valid;
@@ -3160,8 +3191,8 @@ module ysyx_050533_stallable_pipeline(
  //写回信号恒为1
  	assign pipe3_allow_in=!pipe3_valid||pipe3_ready_go&&out_allow;//out_allow表示是否能一直输出 此处设置为1
 	assign wb_reg_finish=pipe2_to_pipe3_valid&&pipe3_allow_in;
-	always@(posedge clk)begin
-		if(rst)
+	always@(posedge clock)begin
+		if(reset)
 			pipe3_valid<='d0;
 		else if(pipe3_allow_in)
 			pipe3_valid<=pipe2_to_pipe3_valid;
@@ -3181,8 +3212,8 @@ module ysyx_050533_stallable_pipeline(
 		end
 	end
 	assign validout=pipe3_valid&&pipe3_ready_go;//新的结束信号
-	always@(posedge clk)begin
-		if(rst)begin
+	always@(posedge clock)begin
+		if(reset)begin
 			cpupc_reg_finish<=64'h80000000;
 			ebreak_finish<=0;
 		end
@@ -3200,8 +3231,8 @@ endmodule
 `define alu_length 17
 //单周期cpu总模块
 module ysyx_050533(
-  input clk,
-  input rst,
+  input clock,
+  input reset,
 	output [31:0]inst,
   //input [31:0] in,
   output [63:0] cpupc,
@@ -3391,8 +3422,8 @@ wire control_hazard;
 	wire pipe1_valid;
 	wire pipe3_valid;
 	assign out_allow=1;
-	always@(posedge clk)begin
-		if(rst)
+	always@(posedge clock)begin
+		if(reset)
 			inst_finish<='d0;
 		else if(validout)
 			inst_finish<='d1;
@@ -3403,7 +3434,7 @@ wire control_hazard;
 	
 	assign validin=inst_update;
  ysyx_050533_sram sram_0(
-.clk(clk),
+.clock(clock),
 .io_sram0_addr(io_sram0_addr),
 .io_sram0_cen(~io_sram0_cen),
 .io_sram0_wen(~io_sram0_wen),
@@ -3462,8 +3493,8 @@ wire control_hazard;
 );
 
 	ysyx_050533_stallable_pipeline stallable_pipeline_0(
-	.clk(clk),
-	.rst(rst),
+	.clock(clock),
+	.reset(reset),
 	.isu_finish(isu_finish),
 	.validin(validin),
 	.inst(inst),
@@ -3540,8 +3571,8 @@ wire control_hazard;
 );
 //////////////////if///////////////////////
 	ysyx_050533_If if_change(
-		.clk(clk), 
-		.rst(rst),
+		.clock(clock), 
+		.reset(reset),
 		.cpupc(cpupc),
 		.inst(inst),
 		.dnpc(dnpc),
@@ -3594,18 +3625,18 @@ wire control_hazard;
 
 	);//if
 /////////////////////id//////////////////////
-	ysyx_050533_id id_0(.clk(clk),.rst(rst),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb),.pipe1_valid(pipe1_valid),.pipe3_valid(pipe3_valid),.rf_wen_reg_wb(rf_wen_reg_wb),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2),.control_hazard(control_hazard),.validout(validout),.id_reg_finish(id_reg_finish),.is_reg_finish(is_reg_finish));
+	ysyx_050533_id id_0(.clock(clock),.reset(reset),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb),.pipe1_valid(pipe1_valid),.pipe3_valid(pipe3_valid),.rf_wen_reg_wb(rf_wen_reg_wb),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2),.control_hazard(control_hazard),.validout(validout),.id_reg_finish(id_reg_finish),.is_reg_finish(is_reg_finish));
 	//assign ebreak=e_j_b_inst[0];
 	//assign ebreak=e_j_b_inst_reg_wb[0];
 	assign ebreak=ebreak_finish;
 	ysyx_050533_control ysyx_050533_control_0(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst_reg_id),.c_wen1_2(c_wen1_2),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2)) ;//控制模块
 /////////////////////////////////////////
 ///////////////////is//////////////////////
-	ysyx_050533_exe exe_0(.clk(clk),.rst(rst),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data),.wb_reg_finish(wb_reg_finish),.alu_finish(alu_finish),.pipe2_valid(pipe2_valid));
+	ysyx_050533_exe exe_0(.clock(clock),.reset(reset),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data),.wb_reg_finish(wb_reg_finish),.alu_finish(alu_finish),.pipe2_valid(pipe2_valid));
 	//访存模块
 	ysyx_050533_mem2 #(64,64)mem_2(
-		.clk(clk),
-		.rst(rst),
+		.clock(clock),
+		.reset(reset),
 		.r_ren(data_ram_ren_reg_is),
 		.r_raddr(ram_addr),
 		.r_rdata(ram_data),
@@ -3678,8 +3709,8 @@ assign isu_finish=alu_finish&mem_finish;
 ////////////////////////////////////////
 	//总线仲裁器
 	ysyx_050533_arbiter ysyx_050533_arbiter_1(
-		.clk(clk),
-		.rst(rst),
+		.clock(clock),
+		.reset(reset),
 		.araddr_1(araddr1),
 		.araddr_2(araddr2),
 		.arvalid_1(arvalid1),
@@ -3738,155 +3769,17 @@ module ysyx_050533_wb(input [63:0] r_data,input [63:0]alu_result,input [2:0]sel_
 		3'b100,c_rdata
 		});
 endmodule
-module device(
-	input  clk,
-	input  rst,
-	input  r_ren,
-	input  [31:0]raddr,
-	output [63:0]rdata,
-	input  r_wen,
-	input  [31:0]waddr,
-	input  [63:0]wdata,
-	input  [7:0]wmask,
-	input  inst_update,
-	output  device_finish
-);
-//总线信号
-     
-		wire [31:0]araddr;
-		wire arvalid;
-		wire arready;
-		wire [1:0]rresp;
-		wire rvalid;
-		wire rready;
-		//写地址通;
-		wire [31:0]awaddr;
-		wire awvalid;
-		wire awready;
-		//写数据通;
-		wire [7:0]wstrb;
-		wire wvalid;
-		wire wready;
-		//写回复通;
-		wire [1:0]bresp;
-		wire bvalid;
-		wire bread;
-		assign araddr=raddr;
-	 	//寄存器
-		reg [63:0]reg_rdata;
-		      //状态机
-		parameter   READ_IDLE        = 3'd0 ,
-		           	READ_ARREADY		 =3'd1,
-								READ_FINISH 		 =3'd2;
-		reg [2:0]read_state;
-		always @(posedge clk)begin
-			if(rst)
-				read_state<=READ_IDLE;
-			else if((read_state==READ_IDLE)&arready&arvalid)
-				read_state<=READ_ARREADY;
-			else if((read_state==READ_ARREADY)&rvalid)
-				read_state<=READ_FINISH;
-			else if(read_state==READ_ARREADY)
-				read_state<=READ_ARREADY;
-			else if((read_state==READ_FINISH)&(mem_state==MEM_FINISH))
-				read_state<=READ_IDLE;
-		end
-		//arvalid信号
-		assign arvalid=(read_state==READ_IDLE)&inst_update&r_ren;
-		//r_data信号
-		always @(posedge clk)begin
-			if(rvalid&rready)
-				reg_rdata<=rdata;
-			else
-				reg_rdata<=reg_rdata;
-		end
-		//rready信号
-		ysyx_050533_MuxKey #(3,3,1) mux1(rready,read_state,{
-			READ_ARREADY,1'd1,
-			READ_FINISH,1'd0,
-			READ_IDLE,1'd0
-			});
-	 //写信号
-	 reg [2:0]write_state;
-	 //状态机
-	 parameter    WRITE_IDLE       = 3'd0 ,
-		            WRITE_AW_WREADY	 =3'd1,
-								WRITE_FINISH 		 =3'd2;
-	 always @(posedge clk)begin
-		 if(rst)
-			 write_state<=WRITE_IDLE;
-		 else if((write_state==WRITE_IDLE)&awready&wready&awvalid&wvalid)
-			 write_state<=WRITE_AW_WREADY;
-		 else if(write_state==WRITE_IDLE)
-			 write_state<=WRITE_IDLE;
-		 else if((write_state==WRITE_AW_WREADY)&bvalid)
-			 write_state<=WRITE_FINISH;
-		 else if(write_state==WRITE_AW_WREADY)
-			 write_state<=WRITE_AW_WREADY;
-		 else if(write_state==WRITE_FINISH&(mem_finish))
-			 write_state<=WRITE_IDLE;
-	 end
-	 //awvalid wvalid wdata wstrb信号
-		assign awvalid=(write_state==WRITE_IDLE)&inst_update&r_wen;
-		assign wvalid= (write_state==WRITE_IDLE)&inst_update;
-		assign awaddr=waddr;
-		assign wstrb =wmask;
-	//bready信号
-	  assign bready= (write_state==WRITE_AW_WREADY);
-		//MEM_状态信息
-		reg [2:0]mem_state;
-		parameter MEM_BEGIN            =3'd0,
-			MEM_WAIT_WRITE_FINISH=3'd1,
-			MEM_WAIT_READ_FINISH =3'd2,
-			MEM_WAIT_ALL         =3'd3,
-			MEM_FINISH           =3'd4;
-		///////////////////
-		assign r_rdata_ld=reg_rdata;
-		assign mem_finish=(mem_state==MEM_FINISH);
-		ysyx_050533_Reg #(1,1'b0) finish(clk,rst,mem_finish,inst_finish,1'b1);
-endmodule
 // 触发器模板
 module ysyx_050533_Reg #(WIDTH = 1, RESET_VAL = 0) (
-  input clk,
-  input rst,
+  input clock,
+  input reset,
   input [WIDTH-1:0] din,
   output reg [WIDTH-1:0] dout,
   input wen
 );
-  always @(posedge clk) begin
-    if (rst) dout <= RESET_VAL;
+  always @(posedge clock) begin
+    if (reset) dout <= RESET_VAL;
     else if (wen) dout <= din;
   end
-endmodule
-module S011HD1P_X32Y2D128_BW(
-    Q, CLK, CEN, WEN, BWEN, A, D
-);
-parameter Bits = 128;
-parameter Word_Depth = 64;
-parameter Add_Width = 6;
-parameter Wen_Width = 128;
-
-output reg [Bits-1:0] Q;
-input                 CLK;
-input                 CEN;
-input                 WEN;
-input [Wen_Width-1:0] BWEN;
-input [Add_Width-1:0] A;
-input [Bits-1:0]      D;
-
-wire cen  = ~CEN;
-wire wen  = ~WEN;
-wire [Wen_Width-1:0] bwen = ~BWEN;
-
-reg [Bits-1:0] ram [0:Word_Depth-1];
-always @(posedge CLK) begin
-    if(cen && wen) begin
-        ram[A] <= (D & bwen) | (ram[A] & ~bwen);
-    end
-    Q <= cen && !wen ? ram[A] : {4{$random}};
-end
-
-wire [Wen_Width-1:0]ram_0 ;
-assign ram_0=ram[0];
 endmodule
 

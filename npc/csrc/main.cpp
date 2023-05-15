@@ -325,8 +325,8 @@ int main(int argc, char** argv, char** env) {
 /////////////////////////////////////////////////////////////////////
 
     // Set Vtop's input signals
-    top->rst = !0;
-    top->clk = 0;
+    top->reset = !0;
+    top->clock = 0;
     top->cpupc=0x80000000;
 		top->dnpc_reg_wb=0x80000000;
     //top->in=0;
@@ -352,7 +352,7 @@ int main(int argc, char** argv, char** env) {
         // is called (with non-zero), the Verilated libraries assume the
         // new API, and sc_time_stamp() will no longer work.
         // Toggle a fast (time/2 period) clock
-        top->clk = !top->clk;
+        top->clock = !top->clock;
         //add read memory
 				//upc=top->cpupc;
 				upc=top->cpupc_reg_finish;
@@ -372,17 +372,17 @@ int main(int argc, char** argv, char** env) {
         // to where the controls are sampled; in this example we do
         // this only on a negedge of clk, because we know
         // reset is not sampled there.
-        if (!top->clk) {
+        if (!top->clock) {
             if (contextp->time() > 1 && contextp->time() < 3) {
-                top->rst = !0;  // Assert reset
+                top->reset = !0;  // Assert reset
             } else {
-                top->rst = !1;  // Deassert reset
+                top->reset = !1;  // Deassert reset
             }
             // Assign some other inputs
             //top->in_quad += 0x12;
             //top->in=rand()%10;
         }
-				if(!top->clk){
+				if(!top->clock){
         if(top->ebreak)
         {   
 						if(cpu_gpr[10]==0)
@@ -393,7 +393,7 @@ int main(int argc, char** argv, char** env) {
         }
 				///////////////////////difftest//////////////////////
 				static int diff_first=0;
-				if(!top->clk&&contextp->time()>4&&(diff_first==1)&&top->inst_finish){
+				if(!top->clock&&contextp->time()>4&&(diff_first==1)&&top->inst_finish){
 					if(DIFFTEST){
 				  int check=difftest_step();		
 					if(check==0){
@@ -411,7 +411,7 @@ int main(int argc, char** argv, char** env) {
 
 				///////////////////////////////////////sdb//////////////////////////////////////////
 			 if(((strcmp(str,"c")!=0)&&(exec_step==0))|contextp->time()==4|watchpoint==top->cpupc|(npc_state==0)){	
-				if(!top->clk){
+				if(!top->clock){
 XunHuan:
 					printf("\nnpc:");
 					cin.getline(str,20);
@@ -455,7 +455,7 @@ XunHuan:
 				////////////////////////////////////////////////////////////////////////////////////
 				//////////////////////////////////////itrace//////////////////////
 			if(DIFFTEST){
-				if(!top->clk&&!top->rst&&top->inst_finish){
+				if(!top->clock&&!top->reset&&top->inst_finish){
 					itrace_use(logbuf,upc,instval);
 					if(!top->not_have)	{
 					printf(YELLOW"%s is not have, please add\n"NONE,logbuf);
@@ -465,14 +465,14 @@ XunHuan:
 			}
 				}
 				/////////////////////////////////////////////////////////////////
-				if(!top->clk&&contextp->time()>=4)
+				if(!top->clock&&contextp->time()>=4)
 				  exec_step--;
         // Evaluate model
         // (If you have multiple models being simulated in the same
         // timestep then instead of eval(), call eval_step() on each, then
         // eval_end_step() on each. See the manual.)
         top->eval();
-				if(TEST&&!top->clk)
+				if(TEST&&!top->clock)
         VL_PRINTF("[%" VL_PRI64 "d]  finish cpupc=%lx inst=%lx\n",
                   contextp->time()/2,  
                   top->cpupc,top->inst);
