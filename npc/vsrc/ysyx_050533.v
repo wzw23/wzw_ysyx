@@ -264,9 +264,99 @@ module ysyx_050533_arbiter(
 	input  bready_2,
 
 	input inst_update,
-	input mem_finish
+	input mem_finish,
+
+  //总线接口 
+	input         io_master_awready,
+	output        io_master_awvalid,
+	output[3:0]   io_master_awid ,
+	output[31:0]  io_master_awaddr,
+	output[7:0]   io_master_awlen,
+	output[2:0]   io_master_awsize,
+	output[1:0]   io_master_awburst,
+	input         io_master_wready,
+	output        io_master_wvalid,
+	output[63:0]  io_master_wdata,
+	output[7:0]   io_master_wstrb,
+	output        io_master_wlast,
+	output        io_master_bready,
+	input         io_master_bvalid,
+	input[3:0]    io_master_bid,
+	input[1:0]    io_master_bresp,
+	input         io_master_arready,
+	output        io_master_arvalid,
+	output[3:0]   io_master_arid,
+	output[31:0]  io_master_araddr,
+	output[7:0]   io_master_arlen,
+	output[2:0]   io_master_arsize,
+	output[1:0]   io_master_arburst,
+	output        io_master_rready,
+	input         io_master_rvalid,
+	input[3:0]    io_master_rid,
+	input[1:0]    io_master_rresp,
+	input[63:0]   io_master_rdata,
+	input         io_master_rlast
 );
 //choose_index:0:代表IFU 1:代表LSU
+wire awready;
+wire [31:0]awaddr;
+wire [7:0]awlen;
+wire wready;
+wire wvalid;
+wire bvalid;
+wire [3:0]bid;
+wire [3:0]rid;
+wire arready;
+wire [1:0]bresp;
+wire arvalid;
+wire [63:0]rdata;
+wire [1:0]rresp;
+wire rready;
+wire rvalid;
+wire rlast;
+wire awvalid;
+wire [1:0]awburst;
+wire [63:0]wdata;
+wire [7:0]wstrb;
+wire wlast;
+wire bready;
+wire [31:0]araddr;
+wire [1:0]arburst;
+wire [7:0]arlen;
+wire [2:0]arsize;
+
+
+
+assign awready=io_master_awready;
+assign io_master_awvalid=awvalid;
+assign io_master_awid=0;
+assign io_master_awaddr=awaddr;
+assign io_master_awlen=awlen;
+assign io_master_awsize=3'b011;
+assign io_master_awburst=awburst;
+assign wready=io_master_wready;
+assign io_master_wvalid=wvalid;
+assign io_master_wdata=wdata;
+assign io_master_wstrb=wstrb;
+assign io_master_wlast=wlast;
+assign io_master_bready=bready;
+assign bvalid=io_master_bvalid;
+assign bid=io_master_bid;
+assign bresp=io_master_bresp;
+assign arready=io_master_arready;
+assign io_master_arvalid=arvalid;
+assign io_master_arid=0;
+assign io_master_araddr=araddr;
+assign io_master_arlen=arlen;
+assign io_master_arsize=arsize;
+assign io_master_arburst=arburst;
+assign io_master_rready=rready;
+assign rvalid=io_master_rvalid;
+assign rid=io_master_rid;
+assign rresp=io_master_rresp;
+assign rdata=io_master_rdata;
+assign rlast=io_master_rlast;
+
 reg [1:0]master_state;
 parameter IDLE=0,
 					S_MASTER_1=1,
@@ -288,12 +378,6 @@ wire master_1=(master_state==S_MASTER_1);
 wire master_2=(master_state==S_MASTER_2);
 
 /////////////////////////////
-wire [31:0]araddr;
-wire arvalid;
-wire arready;
-wire [1:0]arburst;
-wire [7:0]arlen;
-wire [2:0]arsize;
 assign araddr=master_1?araddr_1:
 							master_2?araddr_2:
 							0;
@@ -314,11 +398,6 @@ assign arready_1=master_1?arready:
 assign arready_2=master_2?arready:
 								0;
 /////////////////////////////
-wire [63:0]rdata;
-wire [1:0]rresp;
-wire rready;
-wire rvalid;
-wire rlast;
 assign rready= master_1?rready_1:
 							 master_2?rready_2:
 							 0;
@@ -340,12 +419,6 @@ assign rlast_2=master_2?rlast:
 								0;
 
 /////////////////////////////
-wire [31:0]awaddr;
-wire awready;
-wire awvalid;
-wire [1:0]awburst;
-wire [7:0]awlen;
-wire wlast;
 
 assign awaddr =master_2?awaddr_2:
 							0;
@@ -361,10 +434,6 @@ assign wlast =master_2?wlast_2:
 							0;
 
 /////////////////////////////
-wire wready;
-wire wvalid;
-wire [63:0]wdata;
-wire [7:0]wstrb;
 assign wdata  =master_2?wdata_2:
 							0;
 assign wstrb  =master_2?wstrb_2:
@@ -374,9 +443,6 @@ assign wvalid =master_2?wvalid_2:
 assign wready_2=master_2?wready:
 								0;
 ///////////////////////////
-wire [1:0]bresp;
-wire bvalid;
-wire bready;
 assign bready=master_2?bready_2:
 							0;
 assign bresp_2=master_2?bresp:
@@ -384,182 +450,6 @@ assign bresp_2=master_2?bresp:
 assign bvalid_2=master_2?bvalid:
 								0;
 
-ysyx_050533_axi_full_s2 ysyx_050533_axi_full_s2_0(
-	.clock(clock),
-	.reset(reset),
-	.araddr(araddr),
-	.arvalid(arvalid),
-	.arburst(arburst),
-	.arlen(arlen),
-	.arsize(arsize),
-	.arready(arready),
-	.rdata(rdata),
-	.rresp(rresp),
-	.rvalid(rvalid),
-	.rlast(rlast),
-	.rready(rready),
-	.awaddr(awaddr),
-	.awvalid(awvalid),
-	.awburst(awburst),
-	.awlen(awlen),
-	.awready(awready),
-	.wdata(wdata),
-	.wlast(wlast),
-	.wstrb(wstrb),
-	.wvalid(wvalid),
-	.wready(wready),
-	.bresp(bresp),
-	.bvalid(bvalid),
-	.bready(bready)
-);
-endmodule
-module ysyx_050533_axi_full_s2(
-	input  clock,
-	input  reset,
-	//读地址通道 
-	input  [31:0]araddr,
-	input  arvalid,
-	input  [1:0]arburst,//常为01 因为是通过cache传输
-	input  [7:0]arlen,
-	input  [2:0]arsize,//因为传输rdata为64bit 所以arsize恒为3 因为主机从机rdata宽度一样 所以用不到
-	output  arready,
-	//读数据通道
-	output [63:0]rdata,
-	output reg [1:0]rresp,
-	output reg rvalid,
-	output rlast,
-	input reg rready,
-	//写地址通道
-	input  [31:0]awaddr,
-	input  awvalid,
-	input  [1:0]awburst,//常为01 因为是通过cache传输
-	input  [7:0]awlen,
-	output awready,
-	//写数据通道
-	input  [63:0]wdata,
-	input  wlast,
-	input  [7:0]wstrb,
-	input  wvalid,
-	output wready,
-	//写回复通道
-	output [1:0]bresp,
-	output bvalid,
-	input  bready
-);
-import "DPI-C" function void vpmem_read(
-	input longint mraddr, output longint mrdata);
-
-import "DPI-C" function void vpmem_write(
-			input longint waddr, input longint wdata, input byte wmask,input longint use_wen);
-
-///////////////////////////////mem_write/////////////////
-//寄存器 写回馈信号也需要寄存器
-reg [31:0]r_araddr;
-reg [7:0] c_arlen;
-//reg [7:0] c_awlen;
-reg [31:0]r_awaddr;
-//reg testwrite;
-//状态机
-parameter   READ_IDLE        = 3'd0 ,
-						READ_ARVALID=3'd1,
-						READ_TRANS=3'd2,
-						READ_FINISH=3'd3;
-
-reg [2:0]state;
-always @(posedge clock)begin
-	if(reset)
-		state<=READ_IDLE;
-	else if((state==READ_IDLE)&arvalid)
-		state<=READ_ARVALID;
-	else if((state==READ_ARVALID)&rready)
-		state<=READ_TRANS;
-	else if((state==READ_TRANS)&rlast)
-		state<=READ_FINISH;
-	else if(state==READ_FINISH)
-		state<=READ_IDLE;
-end
-//arready信号
-assign arready=(state==READ_IDLE);
-//araddr信号寄存器
-always @(posedge clock)begin
-	if(arvalid&&arready)
-		r_araddr<=araddr;
-end
-//rdata信号
-always @(posedge clock)begin
-	//if(rvalid&rready)begin
-	if(state==READ_TRANS&(arburst==2'b01))begin
-		vpmem_read({{32'b0},r_araddr}, rdata);
-		rresp<='d0;
-		rvalid<='d1;//只有读出数据之后才能让其有效
-		r_araddr<=r_araddr+32'd8;//因为一次限制读8B 所以每读上一个数据地址移动8位
-	end
-	else 
-		rvalid<='d0;
-	if(rlast)begin
-		rvalid<='d0;
-	end
-end
-always @(posedge clock)begin
-	if(reset)begin
-		c_arlen<=0;
-	end
-	if(state==READ_TRANS&(arburst==2'b01))begin
-		c_arlen<=c_arlen+1;
-	end
-	if(rlast|(c_arlen==arlen))begin
-		c_arlen<=0;
-	end
-end
-wire un_use;
-assign un_use=0;
-//
-//rlast信号
-assign rlast=(c_arlen==arlen);
-//写信号状态机
-//////////////////////////mem_write//////////////////////////////
-reg [2:0]write_state;
-parameter     WRITE_IDLE       = 3'd0 ,
-							WRITE_AW_VALID	 =3'd1,
-							WRITE_W_VALID	 =3'd2,
-							WRITE_FINISH 		 =3'd3;
-always @(posedge clock)begin
-	if(reset)
-		write_state<=WRITE_IDLE;
-	else if((write_state==WRITE_IDLE)&awvalid)
-		write_state<=WRITE_AW_VALID;
-	else if((write_state==WRITE_AW_VALID)&(wvalid&wlast))
-		write_state<=WRITE_FINISH;
-	else if((write_state==WRITE_AW_VALID)&(wvalid&(~wlast)))
-		write_state<=WRITE_W_VALID;
-	else if((write_state==WRITE_W_VALID)&wlast)
-		write_state<=WRITE_FINISH;
-	else if(write_state==WRITE_FINISH)
-		write_state<=WRITE_IDLE;
-end
-//awready wready信号
-assign awready=(write_state==WRITE_IDLE);
-assign wready =(write_state==WRITE_AW_VALID)|(write_state==WRITE_W_VALID);
-
-always @(posedge clock)begin
-	//if(write_state==WRITE_AW_VALID)begin
-	if(wvalid&wready&(awburst==2'b01))begin
-		vpmem_write({{32'b0},r_awaddr}, wdata, wstrb,64'd1);
-		r_awaddr<=r_awaddr+32'd8;
-		//testwrite<=1;
-end
-	//else testwrite<=0;
-if(wlast)
-		bresp<='d1;
-else begin
-		bresp<=2'b10;
-	end
-end
-assign bvalid=(write_state==WRITE_W_VALID);
-always @(posedge clock)begin
-	if(awvalid&awready)
-		r_awaddr<=awaddr;
-end
 endmodule
 
 module ysyx_050533_control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2,output rf_ren_src1,output rf_ren_src2);
@@ -3068,8 +2958,9 @@ endmodule
 module ysyx_050533(
   input clock,
   input reset,
+	input io_interrupt,
+	//////测试信号//////
 	output [31:0]inst,
-  //input [31:0] in,
   output [63:0] cpupc,
   output ebreak,
 	output not_have,
@@ -3081,6 +2972,7 @@ module ysyx_050533(
 	output [63:0]cpupc_reg_wb,
 	output [63:0]cpupc_reg_finish,
 	output [31:0]inst_reg_wb,
+	////////////////////
 
 	output [5:0]io_sram0_addr,
   output io_sram0_cen,
@@ -3136,8 +3028,67 @@ module ysyx_050533(
   output io_sram7_wen,
   output [127:0]io_sram7_wmask,
   output[127:0] io_sram7_wdata,
-  input[127:0] io_sram7_rdata
+  input[127:0] io_sram7_rdata,
 
+  input         io_master_awready,
+	output        io_master_awvalid,
+	output[3:0]   io_master_awid ,
+	output[31:0]  io_master_awaddr,
+	output[7:0]   io_master_awlen,
+	output[2:0]   io_master_awsize,
+	output[1:0]   io_master_awburst,
+	input         io_master_wready,
+	output        io_master_wvalid,
+	output[63:0]  io_master_wdata,
+	output[7:0]   io_master_wstrb,
+	output        io_master_wlast,
+	output        io_master_bready,
+	input         io_master_bvalid,
+	input[3:0]    io_master_bid,
+	input[1:0]    io_master_bresp,
+	input         io_master_arready,
+	output        io_master_arvalid,
+	output[3:0]   io_master_arid,
+	output[31:0]  io_master_araddr,
+	output[7:0]   io_master_arlen,
+	output[2:0]   io_master_arsize,
+	output[1:0]   io_master_arburst,
+	output        io_master_rready,
+	input         io_master_rvalid,
+	input[3:0]    io_master_rid,
+	input[1:0]    io_master_rresp,
+	input[63:0]   io_master_rdata,
+	input         io_master_rlast,
+
+	output      	io_slave_awready,
+	input 	      io_slave_awvalid,
+	input[3:0]  	io_slave_awid,
+	input[31:0] 	io_slave_awaddr,
+	input[7:0]  	io_slave_awlen,
+	input[2:0]  	io_slave_awsize,
+	input[1:0]  	io_slave_awburst,
+	output 	      io_slave_wready,
+	input 	      io_slave_wvalid,
+	input[63:0] 	io_slave_wdata,
+	input[7:0]  	io_slave_wstrb,
+	input 	      io_slave_wlast,
+	input 	      io_slave_bready,
+	output 	      io_slave_bvalid,
+	output[3:0] 	io_slave_bid,
+	output[1:0] 	io_slave_bresp,
+	output 	      io_slave_arready,
+	input 	      io_slave_arvalid,
+	input[3:0]  	io_slave_arid,
+	input[31:0] 	io_slave_araddr,
+	input[7:0]   	io_slave_arlen,
+	input[2:0]   	io_slave_arsize,
+	input[1:0]   	io_slave_arburst,
+	input 	      io_slave_rready,
+	output 	      io_slave_rvalid,
+	output[3:0] 	io_slave_rid,
+	output[1:0] 	io_slave_rresp,
+	output[63:0] 	io_slave_rdata,
+	output 	      io_slave_rlast
 );
 wire isu_finish;
 wire alu_finish;
@@ -3522,7 +3473,37 @@ assign isu_finish=alu_finish&mem_finish;
 		.bvalid_2(bvalid2),
 		.bready_2(bready2),
 		.inst_update(inst_update),
-		.mem_finish(mem_finish)
+		.mem_finish(mem_finish),
+    //总线接口 
+    .io_master_awready(io_master_awready),
+    .io_master_awvalid(io_master_awvalid),
+    .io_master_awid (io_master_awid ),
+    .io_master_awaddr(io_master_awaddr),
+    .io_master_awlen(io_master_awlen),
+    .io_master_awsize(io_master_awsize),
+    .io_master_awburst(io_master_awburst),
+    .io_master_wready(io_master_wready),
+    .io_master_wvalid(io_master_wvalid),
+    .io_master_wdata(io_master_wdata),
+    .io_master_wstrb(io_master_wstrb),
+    .io_master_wlast(io_master_wlast),
+    .io_master_bready(io_master_bready),
+    .io_master_bvalid(io_master_bvalid),
+    .io_master_bid(io_master_bid),
+    .io_master_bresp(io_master_bresp),
+    .io_master_arready(io_master_arready),
+    .io_master_arvalid(io_master_arvalid),
+    .io_master_arid(io_master_arid),
+    .io_master_araddr(io_master_araddr),
+    .io_master_arlen(io_master_arlen),
+    .io_master_arsize(io_master_arsize),
+    .io_master_arburst(io_master_arburst),
+    .io_master_rready(io_master_rready),
+    .io_master_rvalid(io_master_rvalid),
+    .io_master_rid(io_master_rid),
+    .io_master_rresp(io_master_rresp),
+    .io_master_rdata(io_master_rdata),
+    .io_master_rlast(io_master_rlast)
 	);
 ///////////////////////////////////////////
 
