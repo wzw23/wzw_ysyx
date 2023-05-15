@@ -1,6 +1,6 @@
 #export ASAN_OPTIONS=verify_asan_link_order=0
 #export LD_PRELOAD=/lib/x86_64-linux-gnu/libasan.so.6
-TOPNAME = top
+TOPNAME = ysyx_050533
 VERILATOR = verilator
 VERILATOR_CFLAGS += -MMD --build -cc  \
 				-O3 --x-assign fast --x-initial fast --noassert --trace

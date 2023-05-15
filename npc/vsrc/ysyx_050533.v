@@ -1,6 +1,6 @@
 //`include "hong.v"
 `define alu_length 17
-module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output[63:0]ram_addr,output [2:0]alu_equal,input w_choose,input wb_reg_finish,output alu_finish,input pipe2_valid);
+module ysyx_050533_Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output[63:0]ram_addr,output [2:0]alu_equal,input w_choose,input wb_reg_finish,output alu_finish,input pipe2_valid);
 		wire op_add;
 		wire op_sub;
 		wire op_slt;//有符号比较
@@ -186,13 +186,13 @@ module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input
 								|     ({64{op_rem       }}&rem_result)
 								;
 		assign alu_result_w={{32{alu_result_uw[31]}},alu_result_uw[31:0]};
-		MuxKey #(2,1,64) mux1(alu_result,w_choose,{//alu_src1赋值
+		ysyx_050533_MuxKey #(2,1,64) mux1(alu_result,w_choose,{//alu_src1赋值
 			1'b0,alu_result_uw,
 			1'b1,alu_result_w
 		});
 		assign ram_addr=add_sub_result;
 		assign alu_equal[0]=(alu_src1==alu_src2);
-		div div_0(
+		ysyx_050533_div ysyx_050533_div_0(
 			.clk(clk),
 			.reset(rst),
 			.x(alu_src1),
@@ -205,7 +205,7 @@ module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input
 			.r()
 		);
 
-		mulu mulu_0(
+		ysyx_050533_mulu ysyx_050533_mulu_0(
 				.clk(clk),
 				.rst(rst), 
 				.multiplicand({op_mul & alu_src1[63],alu_src1}),
@@ -215,7 +215,7 @@ module Alu3(input clk,input rst,input [63:0]alu_src1, input [63:0]alu_src2,input
 				.out_valid(mul_out_valid),
 				.result(product));
 endmodule
-module arbiter(
+module ysyx_050533_arbiter(
 	input  clk,
 	input  rst,
 	//读地址通道 
@@ -380,7 +380,7 @@ assign bresp_2=master_2?bresp:
 assign bvalid_2=master_2?bvalid:
 								0;
 
-axi_full_s2 axi_full_s2_test(
+ysyx_050533_axi_full_s2 ysyx_050533_axi_full_s2_0(
 	.clk(clk),
 	.rst(rst),
 	.araddr(araddr),
@@ -409,7 +409,7 @@ axi_full_s2 axi_full_s2_test(
 	.bready(bready)
 );
 endmodule
-module axi_full_s2(
+module ysyx_050533_axi_full_s2(
 	input  clk,
 	input  rst,
 	//读地址通道 
@@ -559,7 +559,7 @@ end
 endmodule
 `define alu_length 17
 
-module control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2,output rf_ren_src1,output rf_ren_src2);
+module ysyx_050533_control(input [11:0]op_d,input[4:0]fu_7_d,input [7:0]fu_3_d,output [3:0]sel_alu_src1,output [2:0]sel_alu_src2,output [`alu_length-1:0]alu_control,output rf_wen,output [2:0]sel_rf_res,output data_ram_en,output data_ram_wen,output [7:0]wmask/*,input [2:0]alu_equal,output [1:0]sel_nextpc*/,output [6:0]l_choose,output not_have,output w_choose,output c_wchoose,output c_wen,input [11:0]e_j_b_inst,output c_wen1_2,output rf_ren_src1,output rf_ren_src2);
 
 //下标标识
 //op_d
@@ -855,7 +855,7 @@ endmodule
 //大小：4kB
 //为直接映射cache 每行大小为64B 共有2^6行
 //采取写分配和写回策略
-module dcache(
+module ysyx_050533_dcache(
 	input  clk,
 	input  rst,
 	input  use_cache,
@@ -1287,121 +1287,14 @@ assign io_sram0_wmask=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
 							end
 endmodule
 
-module de_len_olen #(LEN=7,OLEN=128)(
+module ysyx_050533_de_len_olen #(LEN=7,OLEN=128)(
 	input [(LEN-1):0]sig,
 	output[(OLEN-1):0]o_h
 );
 	assign o_h=1<<sig;
 endmodule
 
- module device(
-	input  clk,
-	input  rst,
-	input  r_ren,
-	input  [31:0]raddr,
-	output [63:0]rdata,
-	input  r_wen,
-	input  [31:0]waddr,
-	input  [63:0]wdata,
-	input  [7:0]wmask,
-	input  inst_update,
-	output  device_finish
-);
-//总线信号
-     
-		wire [31:0]araddr;
-		wire arvalid;
-		wire arready;
-		wire [1:0]rresp;
-		wire rvalid;
-		wire rready;
-		//写地址通;
-		wire [31:0]awaddr;
-		wire awvalid;
-		wire awready;
-		//写数据通;
-		wire [7:0]wstrb;
-		wire wvalid;
-		wire wready;
-		//写回复通;
-		wire [1:0]bresp;
-		wire bvalid;
-		wire bread;
-		assign araddr=raddr;
-	 	//寄存器
-		reg [63:0]reg_rdata;
-		      //状态机
-		parameter   READ_IDLE        = 3'd0 ,
-		           	READ_ARREADY		 =3'd1,
-								READ_FINISH 		 =3'd2;
-		reg [2:0]read_state;
-		always @(posedge clk)begin
-			if(rst)
-				read_state<=READ_IDLE;
-			else if((read_state==READ_IDLE)&arready&arvalid)
-				read_state<=READ_ARREADY;
-			else if((read_state==READ_ARREADY)&rvalid)
-				read_state<=READ_FINISH;
-			else if(read_state==READ_ARREADY)
-				read_state<=READ_ARREADY;
-			else if((read_state==READ_FINISH)&(mem_state==MEM_FINISH))
-				read_state<=READ_IDLE;
-		end
-		//arvalid信号
-		assign arvalid=(read_state==READ_IDLE)&inst_update&r_ren;
-		//r_data信号
-		always @(posedge clk)begin
-			if(rvalid&rready)
-				reg_rdata<=rdata;
-			else
-				reg_rdata<=reg_rdata;
-		end
-		//rready信号
-		MuxKey #(3,3,1) mux1(rready,read_state,{
-			READ_ARREADY,1'd1,
-			READ_FINISH,1'd0,
-			READ_IDLE,1'd0
-			});
-	 //写信号
-	 reg [2:0]write_state;
-	 //状态机
-	 parameter    WRITE_IDLE       = 3'd0 ,
-		            WRITE_AW_WREADY	 =3'd1,
-								WRITE_FINISH 		 =3'd2;
-	 always @(posedge clk)begin
-		 if(rst)
-			 write_state<=WRITE_IDLE;
-		 else if((write_state==WRITE_IDLE)&awready&wready&awvalid&wvalid)
-			 write_state<=WRITE_AW_WREADY;
-		 else if(write_state==WRITE_IDLE)
-			 write_state<=WRITE_IDLE;
-		 else if((write_state==WRITE_AW_WREADY)&bvalid)
-			 write_state<=WRITE_FINISH;
-		 else if(write_state==WRITE_AW_WREADY)
-			 write_state<=WRITE_AW_WREADY;
-		 else if(write_state==WRITE_FINISH&(mem_finish))
-			 write_state<=WRITE_IDLE;
-	 end
-	 //awvalid wvalid wdata wstrb信号
-		assign awvalid=(write_state==WRITE_IDLE)&inst_update&r_wen;
-		assign wvalid= (write_state==WRITE_IDLE)&inst_update;
-		assign awaddr=waddr;
-		assign wstrb =wmask;
-	//bready信号
-	  assign bready= (write_state==WRITE_AW_WREADY);
-		//MEM_状态信息
-		reg [2:0]mem_state;
-		parameter MEM_BEGIN            =3'd0,
-			MEM_WAIT_WRITE_FINISH=3'd1,
-			MEM_WAIT_READ_FINISH =3'd2,
-			MEM_WAIT_ALL         =3'd3,
-			MEM_FINISH           =3'd4;
-		///////////////////
-		assign r_rdata_ld=reg_rdata;
-		assign mem_finish=(mem_state==MEM_FINISH);
-		Reg #(1,1'b0) finish(clk,rst,mem_finish,inst_finish,1'b1);
-endmodule
-module div(
+ module ysyx_050533_div(
   input                          clk           ,
   input                          reset         ,
   input  [63:0] x,
@@ -1472,14 +1365,14 @@ assign y_adder_src1 = done ? qutient : y;
 
 
 //signed <==> abs
-adder_32 x_adder(
+ysyx_050533_adder_32 x_adder(
     .src1  (~x_adder_src1),
     .src2  ({64'b1}),
     .cin    (1'b0),
     .cout   (),
     .result (x_adder_result)
 );
-adder_32 y_adder(
+ysyx_050533_adder_32 y_adder(
     .src1  (~y_adder_src1),
     .src2  ({64'b1}),
     .cin    (1'b0),
@@ -1488,7 +1381,7 @@ adder_32 y_adder(
 );
 
 // sub of iteration
-adder_33 suber(
+ysyx_050533_adder_33 suber(
     .src1  (dividend[127:63]),
     .src2  ({1'b1,~divisor}),
     .cin    (1'b1),
@@ -1552,7 +1445,7 @@ endmodule
 
 
 
-module adder_32 (
+module ysyx_050533_adder_32 (
     // 32-bit adder
     input [63:0] src1,
     input [63:0] src2,
@@ -1563,7 +1456,7 @@ module adder_32 (
 assign {cout, result} = src1 + src2 + {63'b0,cin};
 
 endmodule
-module adder_33 (
+module ysyx_050533_adder_33 (
     // 33-bit adder
     input [64:0] src1,
     input [64:0] src2,
@@ -1575,7 +1468,7 @@ assign {cout, result} = src1 + src2 + {64'b0,cin};
 endmodule
 //`include "hong.v"
 `define alu_length 17
-module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data,input wb_reg_finish,output alu_finish,input pipe2_valid);
+module ysyx_050533_exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2:0] sel_alu_src2,input [`alu_length-1:0]alu_control,output [63:0]alu_result,output [63:0]ram_addr,input [63:0]src1,input [63:0]cpupc,input w_choose,input [63:0]src2,input [11:0]e_j_b_inst,input [63:0]c_rdata,output [63:0]dnpc_jump_data,input wb_reg_finish,output alu_finish,input pipe2_valid);
 	//wire [63:0]src1;
 	//wire [63:0]src2;
 	wire [2:0]alu_equal;
@@ -1584,7 +1477,7 @@ module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2
 
 
 
-	MuxKey #(4,4,64) mux1(alu_src1,sel_alu_src1,{//alu_src1赋值
+	ysyx_050533_MuxKey #(4,4,64) mux1(alu_src1,sel_alu_src1,{//alu_src1赋值
 		4'b0001,src1,
 		4'b0010,cpupc,
 		4'b0100,{{32'b0},src1[31:0]},
@@ -1592,14 +1485,14 @@ module exe(input clk,input rst,input [63:0]imm,input [3:0] sel_alu_src1,input [2
 		});
 
 
-	MuxKey #(3,3,64) mux2(alu_src2,sel_alu_src2,{//alu_src2赋值
+	ysyx_050533_MuxKey #(3,3,64) mux2(alu_src2,sel_alu_src2,{//alu_src2赋值
 		3'b001,src2,
 		3'b010,imm,
 		3'b100,64'd4
 		});
 
-	Alu3 alu3(clk,rst,alu_src1,alu_src2,alu_control,alu_result,ram_addr,alu_equal,w_choose,wb_reg_finish,alu_finish,pipe2_valid);
-	set_dnpc set_dnpc_0(.clk(clk),.rst(rst),.e_j_b_inst(e_j_b_inst),.src1(src1),.imm(imm),.cpupc(cpupc),.c_rdata(c_rdata),.alu_equal(alu_equal),.dnpc_jump_data(dnpc_jump_data));
+	ysyx_050533_Alu3 ysyx_050533_Alu3_0(clk,rst,alu_src1,alu_src2,alu_control,alu_result,ram_addr,alu_equal,w_choose,wb_reg_finish,alu_finish,pipe2_valid);
+	ysyx_050533_set_dnpc set_dnpc_0(.clk(clk),.rst(rst),.e_j_b_inst(e_j_b_inst),.src1(src1),.imm(imm),.cpupc(cpupc),.c_rdata(c_rdata),.alu_equal(alu_equal),.dnpc_jump_data(dnpc_jump_data));
 
 endmodule
 
@@ -1607,7 +1500,7 @@ endmodule
 //大小：4kB
 //为直接映射cache 每行大小为64B 共有2^6行
 //采取写分配和写回策略
-module icache(
+module ysyx_050533_icache(
 	input  clk,
 	input  rst,
 	input  [31:0]araddr,
@@ -1832,7 +1725,7 @@ assign rlast=rlast1;
 							 io_sram3_rdata[127:64];
  ///////////
 endmodule
-module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
+module ysyx_050533_id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
   wire [1:0]c_waddr;
   wire [4:0]rs1;
 	wire [4:0]rs2;
@@ -1868,7 +1761,7 @@ module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]i
 			
 
 	//将fu_3转化成独热码的方式
-	de_len_olen  #(3,8)   de_3_8     (fu_3,fu_3_d);
+	ysyx_050533_de_len_olen  #(3,8)   de_3_8     (fu_3,fu_3_d);
 
 	//将op转化成独热码的一种方式
 	//wire [8:0]op_d;
@@ -1907,7 +1800,7 @@ module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]i
 	assign immu={{32{inst[31]}},inst[31:12],{12'b0}};
 	assign immj={{43{inst[31]}},inst[31:31],inst[19:12],inst[20:20],inst[30:21],{1'b0}};
 
-	MuxKey #(10,12,64) mux0(imm,op_d,{
+	ysyx_050533_MuxKey #(10,12,64) mux0(imm,op_d,{
 		12'b000000000001,immu,
 		12'b000000000010,immu,
 		12'b000000000100,immj,
@@ -1937,15 +1830,15 @@ module id(input clk,input rst,input [31:0]inst,output [4:0]rd,output reg [63:0]i
 									/*(inst==32'b00110000001000000000000001110011)?3'b100//mret*/
 		//:3'b000;
 		wire [63:0]c_wdata;
-		MuxKey #(2,1,64) mux3(c_wdata,c_wchoose,{//alu_src2赋值
+		ysyx_050533_MuxKey #(2,1,64) mux3(c_wdata,c_wchoose,{//alu_src2赋值
 		1'b0,src1,
 			1'b1,src1|c_rdata
 			});
 
-RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen_reg_wb&validout),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
+ ysyx_050533_RegisterFile2 #(5,64) r0 (.clk(clk),.rst(rst),.wen(rf_wen_reg_wb&validout),.wdata(wdata),.waddr(rf_waddr),.raddr1(rs1),.raddr2(rs2),.rdata1(src1),.rdata2(src2),.c_raddr(c_raddr),.c_rdata(c_rdata),.c_wdata(c_wdata),.c_waddr(c_waddr),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.c_wdata1(cpupc),.c_waddr1(2'd2),.c_wdata2(64'd11),.c_waddr2(2'd3));
 
 endmodule
-module If(
+module ysyx_050533_If(
 	input clk,
 	input rst,
 	output [63:0]cpupc,
@@ -2004,11 +1897,11 @@ import "DPI-C" function void vpmem_read(
 
 wire [63:0]dnpc_0;
 wire pc_update;
-MuxKey #(2,1,64) mux4(dnpc_0,not_jump,{//alu_src2赋值
+ ysyx_050533_MuxKey #(2,1,64) mux4(dnpc_0,not_jump,{//alu_src2赋值
   1'b1,cpupc+4,
 	1'b0,dnpc_jump_data
 	});
-MuxKey #(2,1,64) mux5(dnpc,pc_update&(~e_j_b_inst[0]),{//alu_src2赋值
+ ysyx_050533_MuxKey #(2,1,64) mux5(dnpc,pc_update&(~e_j_b_inst[0]),{//alu_src2赋值
   1'b0,cpupc,
 	1'b1,dnpc_0
 	});
@@ -2016,8 +1909,8 @@ wire [63:0]rdata_u;
 wire [31:0]araddr;
 assign araddr=cpupc[31:0];
 assign inst=(araddr[2]==1)?rdata_u[63:32]:rdata_u[31:0];
-Reg #(64,64'h80000000) i0 (clk,rst,dnpc,cpupc,1'b1);
-icache icache_9(
+ysyx_050533_Reg #(64,64'h80000000) i0 (clk,rst,dnpc,cpupc,1'b1);
+ysyx_050533_icache icache_9(
 	.clk(clk),
 	.rst(rst),
 	.araddr(araddr),
@@ -2072,9 +1965,9 @@ icache icache_9(
 
 //总线信号
 
-pre_decode pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
+ ysyx_050533_pre_decode ysyx_050533_pre_decode_0(.clk(clk),.rst(rst),.inst(inst),.e_j_b_inst(e_j_b_inst),.not_jump(not_jump));
 endmodule
-module mem2 #(parameter ADDR_WIDTH=64,//地址位宽
+module ysyx_050533_mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	                parameter DATA_WIDTH=64)//数据位宽
 (
 	input clk,
@@ -2178,7 +2071,7 @@ wire wready2_0;
 wire [1:0]bresp2_0;
 wire bvalid2_0;
 wire bready2_0;
-//////////代表mem_read_write////////////
+//////////代表ysyx_050533_mem_read_write////////////
 wire [31:0]araddr2_1;
 wire arvalid2_1;
 wire [1:0]arburst2_1;
@@ -2310,7 +2203,7 @@ import "DPI-C" function void vpmem_write(
 
 	assign r_rdata_lb ={{56{r_rdata_ld[7]}},r_rdata_ld[7:0]};
 	assign r_rdata_lbu={{56'b0},r_rdata_ld[7:0]};
-	MuxKey #(7,7,64) mux3(r_rdata,l_choose,{//alu_src2赋值
+	ysyx_050533_MuxKey #(7,7,64) mux3(r_rdata,l_choose,{//alu_src2赋值
 		7'b0000001,r_rdata_ld,
 		7'b0000010,r_rdata_lw,
 		7'b0000100,r_rdata_lwu,
@@ -2319,7 +2212,7 @@ import "DPI-C" function void vpmem_write(
 		7'b0100000,r_rdata_lb,
 		7'b1000000,r_rdata_lbu
 		});
-dcache dcache_0(
+ysyx_050533_dcache ysyx_050533_dcache_0(
 .clk(clk),
 .rst(rst),
 .use_cache(use_cache),
@@ -2389,7 +2282,7 @@ dcache dcache_0(
 ///////////////////////////////crossbar绕过cache///////////////////
 //////////////////////////////直接访问mem_read和mem_write访问cache
 wire device_finish;
-mem_read_write mem_read_write_0(
+ysyx_050533_mem_read_write ysyx_050533_mem_read_write_0(
 .clk(clk),
 .rst(rst),
 .ren(r_ren&(~use_cache)),
@@ -2433,7 +2326,7 @@ assign mem_finish=(use_cache&cache_finish)|((use_device)&device_finish)|((~(r_we
 assign r_rdata_ld=(use_cache)?r_rdata_ld_cache:
 									r_rdata_ld_device;
 endmodule
-module mem_read_write(
+module ysyx_050533_mem_read_write(
 	input clk,
 	input rst,
 	input  ren,
@@ -2647,7 +2540,7 @@ assign use_device_finish=pipe2_valid&use_device_en&((ren&mem_read_finish)|(wen&m
 endmodule
 `define WIDTH 66
 `define COMPUTE_WIDTH 64
-module sel_gen(input [2:0]src,output [3:0]sel);
+module ysyx_050533_sel_gen(input [2:0]src,output [3:0]sel);
 	wire y_add,y,y_sub;
 	wire sel_negative,sel_double_negative,sel_positive,sel_double_positive;
 	
@@ -2661,7 +2554,7 @@ module sel_gen(input [2:0]src,output [3:0]sel);
 	assign sel={sel_negative,sel_positive,sel_double_negative,sel_double_positive};
 endmodule
 
-module res_sel(input [3:0]sel,input [1:0]src,output p);
+module ysyx_050533_res_sel(input [3:0]sel,input [1:0]src,output p);
 	wire x,x_sub;
 	wire sel_negative,sel_double_negative,sel_positive,sel_double_positive;
 	assign {sel_negative,sel_positive,sel_double_negative,sel_double_positive}=sel;
@@ -2671,7 +2564,7 @@ module res_sel(input [3:0]sel,input [1:0]src,output p);
            & ~(sel_positive & x ) & ~(sel_double_positive &  x_sub));
 endmodule
 
-module mul_partial(//部分积生成模块
+module ysyx_050533_mul_partial(//部分积生成模块
 	input  [2*`WIDTH-1:0]x_src,
 	input  [2:0]y_src,
 	output [2*`WIDTH-1:0]p_result,
@@ -2683,17 +2576,17 @@ module mul_partial(//部分积生成模块
 
 	assign cout=sel_negative||sel_double_negative;
 
-	sel_gen sel_gen_num0(.src(y_src),.sel(sel));
-	res_sel res_sel_num0(.sel(sel),.src({x_src[0],1'b0}),.p(p_result[0]));
+	ysyx_050533_sel_gen ysyx_050533_sel_gen_0(.src(y_src),.sel(sel));
+	ysyx_050533_res_sel ysyx_050533_res_sel_num0(.sel(sel),.src({x_src[0],1'b0}),.p(p_result[0]));
 	genvar i;
 	generate
 		for(i=1;i<`WIDTH*2;i=i+1)begin
-			res_sel res_sel_num(.sel(sel),.src(x_src[i:i-1]),.p(p_result[i]));
+			ysyx_050533_res_sel ysyx_050533_res_sel_num(.sel(sel),.src(x_src[i:i-1]),.p(p_result[i]));
 		end
 	endgenerate
 endmodule
 
-module mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand,input [`COMPUTE_WIDTH:0]multiplier,input mul_valid,output reg mul_ready,output reg out_valid,/*output reg [`WIDTH*2-1:0]result,*/output [63:0]result);
+module ysyx_050533_mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand,input [`COMPUTE_WIDTH:0]multiplier,input mul_valid,output reg mul_ready,output reg out_valid,/*output reg [`WIDTH*2-1:0]result,*/output [63:0]result);
 	reg [`WIDTH*2-1:0]tmp_result,multiplicand_r;
 	reg [`WIDTH:0]multiplier_r;
 	reg running_r;
@@ -2751,7 +2644,7 @@ module mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand,input [`COM
  end
 	assign done=running_r&&(cnt==7'h20||multiplier_r[`WIDTH:0]=={{`WIDTH{1'b0}},1'b0});
   wire partial_cout;
-	mul_partial partial(.x_src(multiplicand_r),.y_src(multiplier_r[2:0]),.p_result(p_result),.cout(partial_cout));
+	ysyx_050533_mul_partial partial(.x_src(multiplicand_r),.y_src(multiplier_r[2:0]),.p_result(p_result),.cout(partial_cout));
 
 	wire [`WIDTH*2-1:0]adder_result;
 	wire adder_cout;
@@ -2769,7 +2662,7 @@ module mulu(input clk,input rst, input[`COMPUTE_WIDTH:0]multiplicand,input [`COM
 endmodule
 
 // 选择器模板内部实现
-module MuxKeyInternal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0) (
+module ysyx_050533_MuxKeyInternal #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1, HAS_DEFAULT = 0) (
   output reg [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,
   input [DATA_LEN-1:0] default_out,
@@ -2809,23 +2702,23 @@ endmodule
 
 
 // 不带默认值的选择器模板
-module MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
+module ysyx_050533_MuxKey #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
   output [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,
   input [NR_KEY*(KEY_LEN + DATA_LEN)-1:0] lut
 );
-  MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 0) i0 (out, key, {DATA_LEN{1'b0}}, lut);
+  ysyx_050533_MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 0) i0 (out, key, {DATA_LEN{1'b0}}, lut);
 endmodule
 // 带默认值的选择器模板
-module MuxKeyWithDefault #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
+module ysyx_050533_MuxKeyWithDefault #(NR_KEY = 2, KEY_LEN = 1, DATA_LEN = 1) (
   output [DATA_LEN-1:0] out,
   input [KEY_LEN-1:0] key,
   input [DATA_LEN-1:0] default_out,
   input [NR_KEY*(KEY_LEN + DATA_LEN)-1:0] lut
 );
-  MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 1) i0 (out, key, default_out, lut);
+  ysyx_050533_MuxKeyInternal #(NR_KEY, KEY_LEN, DATA_LEN, 1) i0 (out, key, default_out, lut);
 endmodule
-module pre_decode(input clk,input rst,input [31:0]inst,output [11:0]e_j_b_inst,output not_jump);
+module ysyx_050533_pre_decode(input clk,input rst,input [31:0]inst,output [11:0]e_j_b_inst,output not_jump);
 	wire [6:0]op;
 	wire	 [2:0]fu_3;
 	//wire [6:0]fu_7;
@@ -2870,7 +2763,7 @@ module pre_decode(input clk,input rst,input [31:0]inst,output [11:0]e_j_b_inst,o
 	                      	                                             12'b100000000000;//11
  assign not_jump=e_j_b_inst[11]|e_j_b_inst[0];
 endmodule
-module RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
+module ysyx_050533_RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
   input clk,
 	input rst,
   input wen,
@@ -2937,51 +2830,7 @@ module RegisterFile2 #(ADDR_WIDTH = 5, DATA_WIDTH = 64 ) (
 		end
 endmodule
     
-// 触发器模板
-module Reg #(WIDTH = 1, RESET_VAL = 0) (
-  input clk,
-  input rst,
-  input [WIDTH-1:0] din,
-  output reg [WIDTH-1:0] dout,
-  input wen
-);
-  always @(posedge clk) begin
-    if (rst) dout <= RESET_VAL;
-    else if (wen) dout <= din;
-  end
-endmodule
-module S011HD1P_X32Y2D128_BW(
-    Q, CLK, CEN, WEN, BWEN, A, D
-);
-parameter Bits = 128;
-parameter Word_Depth = 64;
-parameter Add_Width = 6;
-parameter Wen_Width = 128;
-
-output reg [Bits-1:0] Q;
-input                 CLK;
-input                 CEN;
-input                 WEN;
-input [Wen_Width-1:0] BWEN;
-input [Add_Width-1:0] A;
-input [Bits-1:0]      D;
-
-wire cen  = ~CEN;
-wire wen  = ~WEN;
-wire [Wen_Width-1:0] bwen = ~BWEN;
-
-reg [Bits-1:0] ram [0:Word_Depth-1];
-always @(posedge CLK) begin
-    if(cen && wen) begin
-        ram[A] <= (D & bwen) | (ram[A] & ~bwen);
-    end
-    Q <= cen && !wen ? ram[A] : {4{$random}};
-end
-
-wire [Wen_Width-1:0]ram_0 ;
-assign ram_0=ram[0];
-endmodule
-module set_dnpc(input clk,input rst,input [11:0]e_j_b_inst,input [63:0]src1,input [63:0]imm,input [63:0]cpupc,input[63:0]c_rdata,input [2:0]alu_equal,output [63:0]dnpc_jump_data);
+module ysyx_050533_set_dnpc(input clk,input rst,input [11:0]e_j_b_inst,input [63:0]src1,input [63:0]imm,input [63:0]cpupc,input[63:0]c_rdata,input [2:0]alu_equal,output [63:0]dnpc_jump_data);
 	wire jal;
 	assign jal=e_j_b_inst[3];
 
@@ -3013,14 +2862,14 @@ module set_dnpc(input clk,input rst,input [11:0]e_j_b_inst,input [63:0]src1,inpu
 					|					({2{jalr}}&2'b10)
 					|					({2{e_j_b_inst[1]|e_j_b_inst[2]}}&2'b11)
 					;
-	MuxKey #(4,2,64) mux4(dnpc_jump_data,sel_nextpc,{//alu_src2赋值
+	ysyx_050533_MuxKey #(4,2,64) mux4(dnpc_jump_data,sel_nextpc,{//alu_src2赋值
   2'b00,cpupc+4,
 	2'b01,cpupc+imm,
 	2'b10,(src1+imm)&~1,
 	2'b11,c_rdata
 	});
 endmodule
-module sram(
+module ysyx_050533_sram(
 	input clk,
 	input [5:0]io_sram0_addr,
   input io_sram0_cen,
@@ -3152,7 +3001,7 @@ S011HD1P_X32Y2D128_BW sram_7(
 .D(io_sram7_wdata)
 );
 endmodule
-module stallable_pipeline(
+module ysyx_050533_stallable_pipeline(
 	input clk,
 	input rst,
 	input isu_finish,
@@ -3350,7 +3199,7 @@ endmodule
 //`include "hong.v"
 `define alu_length 17
 //单周期cpu总模块
-module top(
+module ysyx_050533(
   input clk,
   input rst,
 	output [31:0]inst,
@@ -3553,7 +3402,7 @@ wire control_hazard;
 
 	
 	assign validin=inst_update;
-sram sram_0(
+ ysyx_050533_sram sram_0(
 .clk(clk),
 .io_sram0_addr(io_sram0_addr),
 .io_sram0_cen(~io_sram0_cen),
@@ -3612,7 +3461,7 @@ sram sram_0(
 .io_sram7_rdata(io_sram7_rdata)
 );
 
-	stallable_pipeline stallable_pipeline_0(
+	ysyx_050533_stallable_pipeline stallable_pipeline_0(
 	.clk(clk),
 	.rst(rst),
 	.isu_finish(isu_finish),
@@ -3690,7 +3539,7 @@ sram sram_0(
 
 );
 //////////////////if///////////////////////
-	If if_change(
+	ysyx_050533_If if_change(
 		.clk(clk), 
 		.rst(rst),
 		.cpupc(cpupc),
@@ -3745,16 +3594,16 @@ sram sram_0(
 
 	);//if
 /////////////////////id//////////////////////
-	id id_1(.clk(clk),.rst(rst),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb),.pipe1_valid(pipe1_valid),.pipe3_valid(pipe3_valid),.rf_wen_reg_wb(rf_wen_reg_wb),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2),.control_hazard(control_hazard),.validout(validout),.id_reg_finish(id_reg_finish),.is_reg_finish(is_reg_finish));
+	ysyx_050533_id id_0(.clk(clk),.rst(rst),.inst(inst_reg_id),.rd(rd),.imm(imm),.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.e_j_b_inst(e_j_b_inst_reg_id),.rf_wen(rf_wen),.wdata(wdata),.src1(src1),.src2(src2),.c_rdata(c_rdata),.c_wchoose(c_wchoose),.c_wen(c_wen),.c_wen1_2(c_wen1_2),.cpupc(cpupc_reg_id),.rf_waddr(rd_reg_wb),.pipe1_valid(pipe1_valid),.pipe3_valid(pipe3_valid),.rf_wen_reg_wb(rf_wen_reg_wb),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2),.control_hazard(control_hazard),.validout(validout),.id_reg_finish(id_reg_finish),.is_reg_finish(is_reg_finish));
 	//assign ebreak=e_j_b_inst[0];
 	//assign ebreak=e_j_b_inst_reg_wb[0];
 	assign ebreak=ebreak_finish;
-	control control_1(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst_reg_id),.c_wen1_2(c_wen1_2),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2)) ;//控制模块
+	ysyx_050533_control ysyx_050533_control_0(.op_d(op_d),.fu_7_d(fu_7_d),.fu_3_d(fu_3_d),.sel_alu_src1(sel_alu_src1),.sel_alu_src2(sel_alu_src2),.alu_control(alu_control),.rf_wen(rf_wen),.sel_rf_res(sel_rf_res),.data_ram_en(data_ram_en),.data_ram_wen(data_ram_wen),.wmask(wmask),.l_choose(l_choose),.not_have(not_have),.w_choose(w_choose),.c_wchoose(c_wchoose),.c_wen(c_wen),.e_j_b_inst(e_j_b_inst_reg_id),.c_wen1_2(c_wen1_2),.rf_ren_src1(rf_ren_src1),.rf_ren_src2(rf_ren_src2)) ;//控制模块
 /////////////////////////////////////////
 ///////////////////is//////////////////////
-	exe exe_1(.clk(clk),.rst(rst),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data),.wb_reg_finish(wb_reg_finish),.alu_finish(alu_finish),.pipe2_valid(pipe2_valid));
+	ysyx_050533_exe exe_0(.clk(clk),.rst(rst),.imm(imm_reg_is),.sel_alu_src1(alu_src1_reg_is),.sel_alu_src2(alu_src2_reg_is),.alu_control(alu_control_reg_is),.alu_result(alu_result),.ram_addr(ram_addr),.src1(src1_reg_is),.cpupc(cpupc_reg_is),.w_choose(w_choose_reg_is),.src2(src2_reg_is),.e_j_b_inst(e_j_b_inst_reg_is),.c_rdata(c_rdata_reg_is),.dnpc_jump_data(dnpc_jump_data),.wb_reg_finish(wb_reg_finish),.alu_finish(alu_finish),.pipe2_valid(pipe2_valid));
 	//访存模块
-	mem2 #(64,64)mem_2(
+	ysyx_050533_mem2 #(64,64)mem_2(
 		.clk(clk),
 		.rst(rst),
 		.r_ren(data_ram_ren_reg_is),
@@ -3825,10 +3674,10 @@ assign isu_finish=alu_finish&mem_finish;
 /////////////////////////////////////////
 ///////////////////wb////////////////////
 	//写回模块
-	wb wb0(.r_data(ram_data_reg_wb),.alu_result(alu_result_reg_wb),.sel_rf_res(sel_rf_res_reg_wb),.wdata(wdata),.c_rdata(c_rdata_reg_wb));
+	ysyx_050533_wb wb0(.r_data(ram_data_reg_wb),.alu_result(alu_result_reg_wb),.sel_rf_res(sel_rf_res_reg_wb),.wdata(wdata),.c_rdata(c_rdata_reg_wb));
 ////////////////////////////////////////
 	//总线仲裁器
-	arbiter arbiter_1(
+	ysyx_050533_arbiter ysyx_050533_arbiter_1(
 		.clk(clk),
 		.rst(rst),
 		.araddr_1(araddr1),
@@ -3882,10 +3731,162 @@ assign isu_finish=alu_finish&mem_finish;
 	/*end*/
 	/*/*//////////////////////////////////////////////////////////
 	endmodule
-module wb(input [63:0] r_data,input [63:0]alu_result,input [2:0]sel_rf_res,output [63:0]wdata,input [63:0]c_rdata);
-	MuxKey #(3,3,64) mux3(wdata,sel_rf_res,{//alu_src2赋值
+module ysyx_050533_wb(input [63:0] r_data,input [63:0]alu_result,input [2:0]sel_rf_res,output [63:0]wdata,input [63:0]c_rdata);
+	ysyx_050533_MuxKey #(3,3,64) mux3(wdata,sel_rf_res,{//alu_src2赋值
 		3'b001,alu_result,
 		3'b010,r_data,
 		3'b100,c_rdata
 		});
 endmodule
+module device(
+	input  clk,
+	input  rst,
+	input  r_ren,
+	input  [31:0]raddr,
+	output [63:0]rdata,
+	input  r_wen,
+	input  [31:0]waddr,
+	input  [63:0]wdata,
+	input  [7:0]wmask,
+	input  inst_update,
+	output  device_finish
+);
+//总线信号
+     
+		wire [31:0]araddr;
+		wire arvalid;
+		wire arready;
+		wire [1:0]rresp;
+		wire rvalid;
+		wire rready;
+		//写地址通;
+		wire [31:0]awaddr;
+		wire awvalid;
+		wire awready;
+		//写数据通;
+		wire [7:0]wstrb;
+		wire wvalid;
+		wire wready;
+		//写回复通;
+		wire [1:0]bresp;
+		wire bvalid;
+		wire bread;
+		assign araddr=raddr;
+	 	//寄存器
+		reg [63:0]reg_rdata;
+		      //状态机
+		parameter   READ_IDLE        = 3'd0 ,
+		           	READ_ARREADY		 =3'd1,
+								READ_FINISH 		 =3'd2;
+		reg [2:0]read_state;
+		always @(posedge clk)begin
+			if(rst)
+				read_state<=READ_IDLE;
+			else if((read_state==READ_IDLE)&arready&arvalid)
+				read_state<=READ_ARREADY;
+			else if((read_state==READ_ARREADY)&rvalid)
+				read_state<=READ_FINISH;
+			else if(read_state==READ_ARREADY)
+				read_state<=READ_ARREADY;
+			else if((read_state==READ_FINISH)&(mem_state==MEM_FINISH))
+				read_state<=READ_IDLE;
+		end
+		//arvalid信号
+		assign arvalid=(read_state==READ_IDLE)&inst_update&r_ren;
+		//r_data信号
+		always @(posedge clk)begin
+			if(rvalid&rready)
+				reg_rdata<=rdata;
+			else
+				reg_rdata<=reg_rdata;
+		end
+		//rready信号
+		ysyx_050533_MuxKey #(3,3,1) mux1(rready,read_state,{
+			READ_ARREADY,1'd1,
+			READ_FINISH,1'd0,
+			READ_IDLE,1'd0
+			});
+	 //写信号
+	 reg [2:0]write_state;
+	 //状态机
+	 parameter    WRITE_IDLE       = 3'd0 ,
+		            WRITE_AW_WREADY	 =3'd1,
+								WRITE_FINISH 		 =3'd2;
+	 always @(posedge clk)begin
+		 if(rst)
+			 write_state<=WRITE_IDLE;
+		 else if((write_state==WRITE_IDLE)&awready&wready&awvalid&wvalid)
+			 write_state<=WRITE_AW_WREADY;
+		 else if(write_state==WRITE_IDLE)
+			 write_state<=WRITE_IDLE;
+		 else if((write_state==WRITE_AW_WREADY)&bvalid)
+			 write_state<=WRITE_FINISH;
+		 else if(write_state==WRITE_AW_WREADY)
+			 write_state<=WRITE_AW_WREADY;
+		 else if(write_state==WRITE_FINISH&(mem_finish))
+			 write_state<=WRITE_IDLE;
+	 end
+	 //awvalid wvalid wdata wstrb信号
+		assign awvalid=(write_state==WRITE_IDLE)&inst_update&r_wen;
+		assign wvalid= (write_state==WRITE_IDLE)&inst_update;
+		assign awaddr=waddr;
+		assign wstrb =wmask;
+	//bready信号
+	  assign bready= (write_state==WRITE_AW_WREADY);
+		//MEM_状态信息
+		reg [2:0]mem_state;
+		parameter MEM_BEGIN            =3'd0,
+			MEM_WAIT_WRITE_FINISH=3'd1,
+			MEM_WAIT_READ_FINISH =3'd2,
+			MEM_WAIT_ALL         =3'd3,
+			MEM_FINISH           =3'd4;
+		///////////////////
+		assign r_rdata_ld=reg_rdata;
+		assign mem_finish=(mem_state==MEM_FINISH);
+		ysyx_050533_Reg #(1,1'b0) finish(clk,rst,mem_finish,inst_finish,1'b1);
+endmodule
+// 触发器模板
+module ysyx_050533_Reg #(WIDTH = 1, RESET_VAL = 0) (
+  input clk,
+  input rst,
+  input [WIDTH-1:0] din,
+  output reg [WIDTH-1:0] dout,
+  input wen
+);
+  always @(posedge clk) begin
+    if (rst) dout <= RESET_VAL;
+    else if (wen) dout <= din;
+  end
+endmodule
+module S011HD1P_X32Y2D128_BW(
+    Q, CLK, CEN, WEN, BWEN, A, D
+);
+parameter Bits = 128;
+parameter Word_Depth = 64;
+parameter Add_Width = 6;
+parameter Wen_Width = 128;
+
+output reg [Bits-1:0] Q;
+input                 CLK;
+input                 CEN;
+input                 WEN;
+input [Wen_Width-1:0] BWEN;
+input [Add_Width-1:0] A;
+input [Bits-1:0]      D;
+
+wire cen  = ~CEN;
+wire wen  = ~WEN;
+wire [Wen_Width-1:0] bwen = ~BWEN;
+
+reg [Bits-1:0] ram [0:Word_Depth-1];
+always @(posedge CLK) begin
+    if(cen && wen) begin
+        ram[A] <= (D & bwen) | (ram[A] & ~bwen);
+    end
+    Q <= cen && !wen ? ram[A] : {4{$random}};
+end
+
+wire [Wen_Width-1:0]ram_0 ;
+assign ram_0=ram[0];
+endmodule
+

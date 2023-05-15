@@ -8,8 +8,8 @@ int DIFFTEST=0;
 // include memcpy 
 #include <string.h>
 // Include model header, generated from Verilating "top.v"
-#include "Vtop.h"
-#include "Vtop__Dpi.h"
+#include "Vysyx_050533.h"
+#include "Vysyx_050533__Dpi.h"
 #include "verilated_dpi.h"
 #include "iostream"
 const char *regs[] = {
@@ -318,7 +318,7 @@ int main(int argc, char** argv, char** env) {
     // Construct the Verilated model, from Vtop.h generated from Verilating "top.v".
     // Using unique_ptr is similar to "Vtop* top = new Vtop" then deleting at end.
     // "TOP" will be the hierarchical name of the module.
-    const std::unique_ptr<Vtop> top{new Vtop{contextp.get(), "TOP"}};
+    const std::unique_ptr<Vysyx_050533> top{new Vysyx_050533{contextp.get(), "TOP"}};
     const svScope scope = svGetScopeFromName("TOP.top.de");
 		//assert(scope); // Check for nullptr if scope not found wzw change
     svSetScope(scope);
