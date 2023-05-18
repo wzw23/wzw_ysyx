@@ -791,30 +791,30 @@ module ysyx_22050533_dcache(
 	input wb_reg_finish,
 
   output [5:0]io_sram0_addr,
-  output io_sram0_cen,
-  output io_sram0_wen,
-  output [127:0]io_sram0_wmask,
+  output io_sram0_cen_align,
+  output io_sram0_wen_align,
+  output [127:0]io_sram0_wmask_align,
   output [127:0] io_sram0_wdata,
   input  [127:0] io_sram0_rdata,
   
   output [5:0] io_sram1_addr,
-  output io_sram1_cen,
-  output io_sram1_wen,
-  output [127:0]io_sram1_wmask,
+  output io_sram1_cen_align,
+  output io_sram1_wen_align,
+  output [127:0]io_sram1_wmask_align,
   output [127:0] io_sram1_wdata,
   input  [127:0] io_sram1_rdata,
   
   output [5:0] io_sram2_addr,
-  output io_sram2_cen,
-  output io_sram2_wen,
-  output [127:0]io_sram2_wmask,
+  output io_sram2_cen_align,
+  output io_sram2_wen_align,
+  output [127:0]io_sram2_wmask_align,
   output [127:0] io_sram2_wdata,
   input  [127:0] io_sram2_rdata,
   
   output [5:0] io_sram3_addr,
-  output io_sram3_cen,
-  output io_sram3_wen,
-  output [127:0]io_sram3_wmask,
+  output io_sram3_cen_align,
+  output io_sram3_wen_align,
+  output [127:0]io_sram3_wmask_align,
   output [127:0] io_sram3_wdata,
   input  [127:0] io_sram3_rdata
 );
@@ -1092,16 +1092,16 @@ assign bready2=bready;
  assign io_sram2_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
  assign io_sram3_addr=(cache_state==CACHE_WRITE)?waddr_index:araddr_index;
 
- assign io_sram0_cen=1;
- assign io_sram1_cen=1;
- assign io_sram2_cen=1;
- assign io_sram3_cen=1;
+ assign io_sram0_cen_align=1;
+ assign io_sram1_cen_align=1;
+ assign io_sram2_cen_align=1;
+ assign io_sram3_cen_align=1;
 
 
- assign io_sram0_wen=((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d0)|(waddr_offset[5:3]=='d1));
- assign io_sram1_wen=((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d2)|(waddr_offset[5:3]=='d3));
- assign io_sram2_wen=((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d4)|(waddr_offset[5:3]=='d5));
- assign io_sram3_wen=((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d6)|(waddr_offset[5:3]=='d7));
+ assign io_sram0_wen_align=((rvalid&rready)&((d_r_len=='d0)|(d_r_len=='d1)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d0)|(waddr_offset[5:3]=='d1));
+ assign io_sram1_wen_align=((rvalid&rready)&((d_r_len=='d2)|(d_r_len=='d3)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d2)|(waddr_offset[5:3]=='d3));
+ assign io_sram2_wen_align=((rvalid&rready)&((d_r_len=='d4)|(d_r_len=='d5)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d4)|(waddr_offset[5:3]=='d5));
+ assign io_sram3_wen_align=((rvalid&rready)&((d_r_len=='d6)|(d_r_len=='d7)))|(cache_state==CACHE_WRITE)&((waddr_offset[5:3]=='d6)|(waddr_offset[5:3]=='d7));
 
 assign io_sram0_wdata=((rvalid&rready)&(d_r_len==0))?{64'b0,rdata_axi}:
                        ((rvalid&rready)&(d_r_len==1))?{rdata_axi,64'b0}:
@@ -1124,25 +1124,25 @@ assign io_sram3_wdata= ((rvalid&rready)&(d_r_len==6))?{64'b0,rdata_axi}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d7))?{wdata_align,64'b0}:'d0
 											 ;
 
-assign io_sram0_wmask=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
+assign io_sram0_wmask_align=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
 	                     ((rvalid&rready)&(d_r_len==1))?{{64{1'b1}},64'b0}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d0))?{64'b0,wmask_align}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d1))?{wmask_align,64'b0}
 											 :'d0
 											 ;
- assign io_sram1_wmask=((rvalid&rready)&(d_r_len==2))?{64'b0,{64{1'b1}}}:
+ assign io_sram1_wmask_align=((rvalid&rready)&(d_r_len==2))?{64'b0,{64{1'b1}}}:
 	                     ((rvalid&rready)&(d_r_len==3))?{{64{1'b1}},64'b0}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d2))?{64'b0,wmask_align}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d3))?{wmask_align,64'b0}
 											 :'d0
 											 ;
- assign io_sram2_wmask=((rvalid&rready)&(d_r_len==4))?{64'b0,{64{1'b1}}}:
+ assign io_sram2_wmask_align=((rvalid&rready)&(d_r_len==4))?{64'b0,{64{1'b1}}}:
 	                     ((rvalid&rready)&(d_r_len==5))?{{64{1'b1}},64'b0}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d4))?{64'b0,wmask_align}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d5))?{wmask_align,64'b0}
 											 :'d0
 											 ;
- assign io_sram3_wmask=((rvalid&rready)&(d_r_len==6))?{64'b0,{64{1'b1}}}:
+ assign io_sram3_wmask_align=((rvalid&rready)&(d_r_len==6))?{64'b0,{64{1'b1}}}:
 	                     ((rvalid&rready)&(d_r_len==7))?{{64{1'b1}},64'b0}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d6))?{64'b0,wmask_align}:
                        ((cache_state==CACHE_WRITE)&(waddr_offset[5:3]=='d7))?{wmask_align,64'b0}
@@ -1423,30 +1423,30 @@ module ysyx_22050533_icache(
 	output pc_update,
 
   output [5:0]io_sram0_addr,
-  output io_sram0_cen,
-  output io_sram0_wen,
-  output [127:0]io_sram0_wmask,
+  output io_sram0_cen_align,
+  output io_sram0_wen_align,
+  output [127:0]io_sram0_wmask_align,
   output [127:0] io_sram0_wdata,
   input  [127:0] io_sram0_rdata,
 
   output [5:0] io_sram1_addr,
-  output io_sram1_cen,
-  output io_sram1_wen,
-  output [127:0]io_sram1_wmask,
+  output io_sram1_cen_align,
+  output io_sram1_wen_align,
+  output [127:0]io_sram1_wmask_align,
   output [127:0] io_sram1_wdata,
   input  [127:0] io_sram1_rdata,
 
   output [5:0] io_sram2_addr,
-  output io_sram2_cen,
-  output io_sram2_wen,
-  output [127:0]io_sram2_wmask,
+  output io_sram2_cen_align,
+  output io_sram2_wen_align,
+  output [127:0]io_sram2_wmask_align,
   output [127:0] io_sram2_wdata,
   input  [127:0] io_sram2_rdata,
 
   output [5:0] io_sram3_addr,
-  output io_sram3_cen,
-  output io_sram3_wen,
-  output [127:0]io_sram3_wmask,
+  output io_sram3_cen_align,
+  output io_sram3_wen_align,
+  output [127:0]io_sram3_wmask_align,
   output [127:0] io_sram3_wdata,
   input  [127:0] io_sram3_rdata
 
@@ -1598,25 +1598,25 @@ assign rlast=rlast1;
  assign io_sram2_addr=addr_index;
  assign io_sram3_addr=addr_index;
  
- assign io_sram0_cen=((rvalid&rready)&((d_len=='d0)|(d_len=='d1)))|(ready_read&((addr_offset[5:3]==0)|(addr_offset[5:3]==1)));
- assign io_sram1_cen=((rvalid&rready)&((d_len=='d2)|(d_len=='d3)))|(ready_read&((addr_offset[5:3]==2)|(addr_offset[5:3]==3)));
- assign io_sram2_cen=((rvalid&rready)&((d_len=='d4)|(d_len=='d5)))|(ready_read&((addr_offset[5:3]==4)|(addr_offset[5:3]==5)));
- assign io_sram3_cen=((rvalid&rready)&((d_len=='d6)|(d_len=='d7)))|(ready_read&((addr_offset[5:3]==6)|(addr_offset[5:3]==7)));
+ assign io_sram0_cen_align=((rvalid&rready)&((d_len=='d0)|(d_len=='d1)))|(ready_read&((addr_offset[5:3]==0)|(addr_offset[5:3]==1)));
+ assign io_sram1_cen_align=((rvalid&rready)&((d_len=='d2)|(d_len=='d3)))|(ready_read&((addr_offset[5:3]==2)|(addr_offset[5:3]==3)));
+ assign io_sram2_cen_align=((rvalid&rready)&((d_len=='d4)|(d_len=='d5)))|(ready_read&((addr_offset[5:3]==4)|(addr_offset[5:3]==5)));
+ assign io_sram3_cen_align=((rvalid&rready)&((d_len=='d6)|(d_len=='d7)))|(ready_read&((addr_offset[5:3]==6)|(addr_offset[5:3]==7)));
 
- assign io_sram0_wen=((rvalid&rready)&((d_len=='d0)|(d_len=='d1)));
- assign io_sram1_wen=((rvalid&rready)&((d_len=='d2)|(d_len=='d3)));
- assign io_sram2_wen=((rvalid&rready)&((d_len=='d4)|(d_len=='d5)));
- assign io_sram3_wen=((rvalid&rready)&((d_len=='d6)|(d_len=='d7)));
+ assign io_sram0_wen_align=((rvalid&rready)&((d_len=='d0)|(d_len=='d1)));
+ assign io_sram1_wen_align=((rvalid&rready)&((d_len=='d2)|(d_len=='d3)));
+ assign io_sram2_wen_align=((rvalid&rready)&((d_len=='d4)|(d_len=='d5)));
+ assign io_sram3_wen_align=((rvalid&rready)&((d_len=='d6)|(d_len=='d7)));
 
  assign io_sram0_wdata=(d_len%2==0)?{64'b0,rdata_axi}:{rdata_axi,64'b0};
  assign io_sram1_wdata=(d_len%2==0)?{64'b0,rdata_axi}:{rdata_axi,64'b0};
  assign io_sram2_wdata=(d_len%2==0)?{64'b0,rdata_axi}:{rdata_axi,64'b0};
  assign io_sram3_wdata=(d_len%2==0)?{64'b0,rdata_axi}:{rdata_axi,64'b0};
 
- assign io_sram0_wmask=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
- assign io_sram1_wmask=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
- assign io_sram2_wmask=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
- assign io_sram3_wmask=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
+ assign io_sram0_wmask_align=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
+ assign io_sram1_wmask_align=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
+ assign io_sram2_wmask_align=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
+ assign io_sram3_wmask_align=(d_len%2==0)?{64'b0,{64{1'b1}}}:{{64{1'b1}},64'b0};
 
  assign rdata= (addr_offset[5:3]==0)?io_sram0_rdata[63:0]:
 							 (addr_offset[5:3]==1)?io_sram0_rdata[127:64]:
@@ -1767,30 +1767,30 @@ module ysyx_22050533_If(
 	input [63:0]cpupc_reg_is,
 	output not_jump,
 	output [5:0]io_sram0_addr,
-  output io_sram0_cen,
-  output io_sram0_wen,
-  output [127:0]io_sram0_wmask,
+  output io_sram0_cen_align,
+  output io_sram0_wen_align,
+  output [127:0]io_sram0_wmask_align,
   output [127:0] io_sram0_wdata,
   input  [127:0] io_sram0_rdata,
 
   output [5:0] io_sram1_addr,
-  output io_sram1_cen,
-  output io_sram1_wen,
-  output [127:0]io_sram1_wmask,
+  output io_sram1_cen_align,
+  output io_sram1_wen_align,
+  output [127:0]io_sram1_wmask_align,
   output [127:0] io_sram1_wdata,
   input  [127:0] io_sram1_rdata,
 
   output [5:0] io_sram2_addr,
-  output io_sram2_cen,
-  output io_sram2_wen,
-  output [127:0]io_sram2_wmask,
+  output io_sram2_cen_align,
+  output io_sram2_wen_align,
+  output [127:0]io_sram2_wmask_align,
   output [127:0] io_sram2_wdata,
   input  [127:0] io_sram2_rdata,
 
   output [5:0] io_sram3_addr,
-  output io_sram3_cen,
-  output io_sram3_wen,
-  output [127:0]io_sram3_wmask,
+  output io_sram3_cen_align,
+  output io_sram3_wen_align,
+  output [127:0]io_sram3_wmask_align,
   output [127:0] io_sram3_wdata,
   input  [127:0] io_sram3_rdata
 );
@@ -1837,30 +1837,30 @@ ysyx_22050533_icache icache_9(
 	.cpupc_reg_is(cpupc_reg_is),
 	.pc_update(pc_update),
 	.io_sram0_addr(io_sram0_addr),
-	.io_sram0_cen(io_sram0_cen),
-	.io_sram0_wen(io_sram0_wen),
-	.io_sram0_wmask(io_sram0_wmask),
+	.io_sram0_cen_align(io_sram0_cen_align),
+	.io_sram0_wen_align(io_sram0_wen_align),
+	.io_sram0_wmask_align(io_sram0_wmask_align),
 	.io_sram0_wdata(io_sram0_wdata),
 	.io_sram0_rdata(io_sram0_rdata),
 
 	.io_sram1_addr(io_sram1_addr),
-	.io_sram1_cen(io_sram1_cen),
-	.io_sram1_wen(io_sram1_wen),
-	.io_sram1_wmask(io_sram1_wmask),
+	.io_sram1_cen_align(io_sram1_cen_align),
+	.io_sram1_wen_align(io_sram1_wen_align),
+	.io_sram1_wmask_align(io_sram1_wmask_align),
 	.io_sram1_wdata(io_sram1_wdata),
 	.io_sram1_rdata(io_sram1_rdata),
 
 	.io_sram2_addr(io_sram2_addr),
-	.io_sram2_cen(io_sram2_cen),
-	.io_sram2_wen(io_sram2_wen),
-	.io_sram2_wmask(io_sram2_wmask),
+	.io_sram2_cen_align(io_sram2_cen_align),
+	.io_sram2_wen_align(io_sram2_wen_align),
+	.io_sram2_wmask_align(io_sram2_wmask_align),
 	.io_sram2_wdata(io_sram2_wdata),
 	.io_sram2_rdata(io_sram2_rdata),
 
 	.io_sram3_addr(io_sram3_addr),
-	.io_sram3_cen(io_sram3_cen),
-	.io_sram3_wen(io_sram3_wen),
-	.io_sram3_wmask(io_sram3_wmask),
+	.io_sram3_cen_align(io_sram3_cen_align),
+	.io_sram3_wen_align(io_sram3_wen_align),
+	.io_sram3_wmask_align(io_sram3_wmask_align),
 	.io_sram3_wdata(io_sram3_wdata),
 	.io_sram3_rdata(io_sram3_rdata)
 
@@ -1916,30 +1916,30 @@ module ysyx_22050533_mem2 #(parameter ADDR_WIDTH=64,//地址位宽
 	output bready2,
 	input wb_reg_finish,
   output [5:0]io_sram0_addr,
-  output io_sram0_cen,
-  output io_sram0_wen,
-  output [127:0]io_sram0_wmask,
+  output io_sram0_cen_align,
+  output io_sram0_wen_align,
+  output [127:0]io_sram0_wmask_align,
   output [127:0] io_sram0_wdata,
   input  [127:0] io_sram0_rdata,
 
   output [5:0] io_sram1_addr,
-  output io_sram1_cen,
-  output io_sram1_wen,
-  output [127:0]io_sram1_wmask,
+  output io_sram1_cen_align,
+  output io_sram1_wen_align,
+  output [127:0]io_sram1_wmask_align,
   output [127:0] io_sram1_wdata,
   input  [127:0] io_sram1_rdata,
 
   output [5:0] io_sram2_addr,
-  output io_sram2_cen,
-  output io_sram2_wen,
-  output [127:0]io_sram2_wmask,
+  output io_sram2_cen_align,
+  output io_sram2_wen_align,
+  output [127:0]io_sram2_wmask_align,
   output [127:0] io_sram2_wdata,
   input  [127:0] io_sram2_rdata,
 
   output [5:0] io_sram3_addr,
-  output io_sram3_cen,
-  output io_sram3_wen,
-  output [127:0]io_sram3_wmask,
+  output io_sram3_cen_align,
+  output io_sram3_wen_align,
+  output [127:0]io_sram3_wmask_align,
   output [127:0] io_sram3_wdata,
   input  [127:0] io_sram3_rdata
 
@@ -2155,30 +2155,30 @@ ysyx_22050533_dcache ysyx_22050533_dcache_0(
 .bready2(bready2_0),
 .wb_reg_finish(wb_reg_finish),
 .io_sram0_addr(io_sram0_addr),
-.io_sram0_cen(io_sram0_cen),
-.io_sram0_wen(io_sram0_wen),
-.io_sram0_wmask(io_sram0_wmask),
+.io_sram0_cen_align(io_sram0_cen_align),
+.io_sram0_wen_align(io_sram0_wen_align),
+.io_sram0_wmask_align(io_sram0_wmask_align),
 .io_sram0_wdata(io_sram0_wdata),
 .io_sram0_rdata(io_sram0_rdata),
 
 .io_sram1_addr(io_sram1_addr),
-.io_sram1_cen(io_sram1_cen),
-.io_sram1_wen(io_sram1_wen),
-.io_sram1_wmask(io_sram1_wmask),
+.io_sram1_cen_align(io_sram1_cen_align),
+.io_sram1_wen_align(io_sram1_wen_align),
+.io_sram1_wmask_align(io_sram1_wmask_align),
 .io_sram1_wdata(io_sram1_wdata),
 .io_sram1_rdata(io_sram1_rdata),
 
 .io_sram2_addr(io_sram2_addr),
-.io_sram2_cen(io_sram2_cen),
-.io_sram2_wen(io_sram2_wen),
-.io_sram2_wmask(io_sram2_wmask),
+.io_sram2_cen_align(io_sram2_cen_align),
+.io_sram2_wen_align(io_sram2_wen_align),
+.io_sram2_wmask_align(io_sram2_wmask_align),
 .io_sram2_wdata(io_sram2_wdata),
 .io_sram2_rdata(io_sram2_rdata),
 
 .io_sram3_addr(io_sram3_addr),
-.io_sram3_cen(io_sram3_cen),
-.io_sram3_wen(io_sram3_wen),
-.io_sram3_wmask(io_sram3_wmask),
+.io_sram3_cen_align(io_sram3_cen_align),
+.io_sram3_wen_align(io_sram3_wen_align),
+.io_sram3_wmask_align(io_sram3_wmask_align),
 .io_sram3_wdata(io_sram3_wdata),
 .io_sram3_rdata(io_sram3_rdata)
 );
@@ -3136,6 +3136,61 @@ module ysyx_22050533(
 	////////////////////
 
   );
+	wire io_sram0_cen_align;
+	wire io_sram0_wen_align;
+	wire [127:0] io_sram0_wmask_align;
+	wire io_sram1_cen_align;
+	wire io_sram1_wen_align;
+	wire [127:0] io_sram1_wmask_align;
+	wire io_sram2_cen_align;
+	wire io_sram2_wen_align;
+	wire [127:0] io_sram2_wmask_align;
+	wire io_sram3_cen_align;
+	wire io_sram3_wen_align;
+	wire [127:0] io_sram3_wmask_align;
+	wire io_sram4_cen_align;
+	wire io_sram4_wen_align;
+	wire [127:0] io_sram4_wmask_align;
+	wire io_sram5_cen_align;
+	wire io_sram5_wen_align;
+	wire [127:0] io_sram5_wmask_align;
+	wire io_sram6_cen_align;
+	wire io_sram6_wen_align;
+	wire [127:0] io_sram6_wmask_align;
+	wire io_sram7_cen_align;
+	wire io_sram7_wen_align;
+	wire [127:0] io_sram7_wmask_align;
+
+	assign io_sram0_cen=~io_sram0_cen_align;
+	assign io_sram1_cen=~io_sram1_cen_align;
+	assign io_sram2_cen=~io_sram2_cen_align;
+	assign io_sram3_cen=~io_sram3_cen_align;
+	assign io_sram4_cen=~io_sram4_cen_align;
+	assign io_sram5_cen=~io_sram5_cen_align;
+	assign io_sram6_cen=~io_sram6_cen_align;
+	assign io_sram7_cen=~io_sram7_cen_align;
+
+	assign io_sram0_wen=~io_sram0_wen_align;
+	assign io_sram1_wen=~io_sram1_wen_align;
+	assign io_sram2_wen=~io_sram2_wen_align;
+	assign io_sram3_wen=~io_sram3_wen_align;
+	assign io_sram4_wen=~io_sram4_wen_align;
+	assign io_sram5_wen=~io_sram5_wen_align;
+	assign io_sram6_wen=~io_sram6_wen_align;
+	assign io_sram7_wen=~io_sram7_wen_align;
+
+	assign io_sram0_wmask=~io_sram0_wmask_align;
+	assign io_sram1_wmask=~io_sram1_wmask_align;
+	assign io_sram2_wmask=~io_sram2_wmask_align;
+	assign io_sram3_wmask=~io_sram3_wmask_align;
+	assign io_sram4_wmask=~io_sram4_wmask_align;
+	assign io_sram5_wmask=~io_sram5_wmask_align;
+	assign io_sram6_wmask=~io_sram6_wmask_align;
+	assign io_sram7_wmask=~io_sram7_wmask_align;
+
+
+
+
 //////测试信号//////
 /*wire [31:0]inst;*/
 /*wire [63:0] cpupc;*/
@@ -3383,30 +3438,30 @@ wire control_hazard;
 		.not_jump(not_jump),
 
 		.io_sram0_addr(io_sram0_addr),
-  	.io_sram0_cen(io_sram0_cen),
-  	.io_sram0_wen(io_sram0_wen),
-  	.io_sram0_wmask(io_sram0_wmask),
+  	.io_sram0_cen_align(io_sram0_cen_align),
+  	.io_sram0_wen_align(io_sram0_wen_align),
+  	.io_sram0_wmask_align(io_sram0_wmask_align),
   	.io_sram0_wdata(io_sram0_wdata),
   	.io_sram0_rdata(io_sram0_rdata),
   
   	.io_sram1_addr(io_sram1_addr),
-  	.io_sram1_cen(io_sram1_cen),
-  	.io_sram1_wen(io_sram1_wen),
-  	.io_sram1_wmask(io_sram1_wmask),
+  	.io_sram1_cen_align(io_sram1_cen_align),
+  	.io_sram1_wen_align(io_sram1_wen_align),
+  	.io_sram1_wmask_align(io_sram1_wmask_align),
   	.io_sram1_wdata(io_sram1_wdata),
   	.io_sram1_rdata(io_sram1_rdata),
   
   	.io_sram2_addr(io_sram2_addr),
-  	.io_sram2_cen(io_sram2_cen),
-  	.io_sram2_wen(io_sram2_wen),
-  	.io_sram2_wmask(io_sram2_wmask),
+  	.io_sram2_cen_align(io_sram2_cen_align),
+  	.io_sram2_wen_align(io_sram2_wen_align),
+  	.io_sram2_wmask_align(io_sram2_wmask_align),
   	.io_sram2_wdata(io_sram2_wdata),
   	.io_sram2_rdata(io_sram2_rdata),
   
   	.io_sram3_addr(io_sram3_addr),
-  	.io_sram3_cen(io_sram3_cen),
-  	.io_sram3_wen(io_sram3_wen),
-  	.io_sram3_wmask(io_sram3_wmask),
+  	.io_sram3_cen_align(io_sram3_cen_align),
+  	.io_sram3_wen_align(io_sram3_wen_align),
+  	.io_sram3_wmask_align(io_sram3_wmask_align),
   	.io_sram3_wdata(io_sram3_wdata),
   	.io_sram3_rdata(io_sram3_rdata)
 
@@ -3461,30 +3516,30 @@ wire control_hazard;
 		.wb_reg_finish(wb_reg_finish),
 		
 		.io_sram0_addr(io_sram4_addr),
-		.io_sram0_cen(io_sram4_cen),
-		.io_sram0_wen(io_sram4_wen),
-		.io_sram0_wmask(io_sram4_wmask),
+		.io_sram0_cen_align(io_sram4_cen_align),
+		.io_sram0_wen_align(io_sram4_wen_align),
+		.io_sram0_wmask_align(io_sram4_wmask_align),
 		.io_sram0_wdata(io_sram4_wdata),
 		.io_sram0_rdata(io_sram4_rdata),
 
 		.io_sram1_addr(io_sram5_addr),
-		.io_sram1_cen(io_sram5_cen),
-		.io_sram1_wen(io_sram5_wen),
-		.io_sram1_wmask(io_sram5_wmask),
+		.io_sram1_cen_align(io_sram5_cen_align),
+		.io_sram1_wen_align(io_sram5_wen_align),
+		.io_sram1_wmask_align(io_sram5_wmask_align),
 		.io_sram1_wdata(io_sram5_wdata),
 		.io_sram1_rdata(io_sram5_rdata),
 
 		.io_sram2_addr(io_sram6_addr),
-		.io_sram2_cen(io_sram6_cen),
-		.io_sram2_wen(io_sram6_wen),
-		.io_sram2_wmask(io_sram6_wmask),
+		.io_sram2_cen_align(io_sram6_cen_align),
+		.io_sram2_wen_align(io_sram6_wen_align),
+		.io_sram2_wmask_align(io_sram6_wmask_align),
 		.io_sram2_wdata(io_sram6_wdata),
 		.io_sram2_rdata(io_sram6_rdata),
 
 		.io_sram3_addr(io_sram7_addr),
-		.io_sram3_cen(io_sram7_cen),
-		.io_sram3_wen(io_sram7_wen),
-		.io_sram3_wmask(io_sram7_wmask),
+		.io_sram3_cen_align(io_sram7_cen_align),
+		.io_sram3_wen_align(io_sram7_wen_align),
+		.io_sram3_wmask_align(io_sram7_wmask_align),
 		.io_sram3_wdata(io_sram7_wdata),
 		.io_sram3_rdata(io_sram7_rdata)
 	);
