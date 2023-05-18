@@ -327,8 +327,8 @@ int main(int argc, char** argv, char** env) {
     // Set Vtop's input signals
     top->reset = !0;
     top->clock = 0;
-    top->cpupc=0x80000000;
-		top->dnpc_reg_wb=0x80000000;
+    //top->cpupc=0x80000000;
+		//top->dnpc_reg_wb=0x80000000;
     //top->in=0;
 		int testdata=0;
 		 while (!contextp->gotFinish()) {

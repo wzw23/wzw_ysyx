@@ -234,8 +234,8 @@ module ysyx_22050533_arbiter(
 	output arready_1,
 	output arready_2,
 	//读数据通道
-	output reg[63:0]rdata_1,
-	output reg[63:0]rdata_2,
+	output [63:0]rdata_1,
+	output [63:0]rdata_2,
 	output [1:0]rresp_1,
 	output [1:0]rresp_2,
 	output rvalid_1,
@@ -1157,7 +1157,9 @@ assign io_sram0_wmask=((rvalid&rready)&(d_r_len==0))?{64'b0,{64{1'b1}}}:
 							 	(araddr_offset[5:3]==6)?io_sram3_rdata[63:0]:
 							 	io_sram3_rdata[127:64];
  always@(posedge clock)begin
-	 if(wready)begin
+	 if(reset)
+		 r_wdata<='d0;
+	 else if(wready)begin
 		 if(d_w_len==0)
 			 r_wdata<=io_sram0_rdata[63:0];
 		 else if(d_w_len==1)
@@ -1238,6 +1240,7 @@ always @(posedge clock) begin
     if (reset) begin
         divisor_s <= 1'b0;
         dividend_s <= 1'b0;        
+				divisor<='d0;
     end
     else if (div_prepare) begin
         divisor_s <= div_signed & y[63];
@@ -1316,6 +1319,10 @@ assign qutient_need_correct = ~dividend_s & divisor_s | dividend_s & ~divisor_s;
 assign remain_need_correct  = dividend_s;
 
 always @(posedge clock ) begin
+	if(reset)begin
+		qutient<='d0;
+		remain <='d0;
+	end
     if (done) begin
         remain  <= remain_need_correct  ? remain_correct  : dividend[127:64];
     end
@@ -1362,8 +1369,8 @@ module ysyx_22050533_exe(input clock,input reset,input [63:0]imm,input [3:0] sel
 	//wire [63:0]src1;
 	//wire [63:0]src2;
 	wire [2:0]alu_equal;
-	reg [63:0]alu_src1;
-	reg [63:0]alu_src2;
+	wire [63:0]alu_src1;
+	wire [63:0]alu_src2;
 
 
 
@@ -1514,7 +1521,9 @@ parameter   READ_IDLE        = 3'd0 ,
 						READ_FINISH 		 =3'd3;
 reg [2:0]state;
 always @(posedge clock)begin
-	if(rlast)
+	if(reset)
+		rlast_delay<='b0;
+	else if(rlast)
 		rlast_delay<='b1;
 	else 
 		rlast_delay<='b0;
@@ -1538,7 +1547,11 @@ assign arvalid=(state==READ_IDLE)&(cache_state==CACHE_MEMREAD);
 reg rvalid_rready;
 reg [63:0]rdata_test3;
 always @(posedge clock)begin
-	if(rvalid&rready)begin
+	if(reset)begin
+		rvalid_rready<='d0;
+		rdata_test3<='d0;
+	end
+	else if(rvalid&rready)begin
 		rdata_test3<=rdata_axi;
 		d_len<=d_len+1;
 		rvalid_rready<=1;
@@ -1553,7 +1566,7 @@ always @(posedge clock)begin
 	if(reset)begin
 		for(integer i=0;i<NUM_LINES;i=i+1)
 			tagarray[i]<=0;
-				d_len<=0;
+		d_len<=0;
 	end
 end
 //chache_get阶段
@@ -1615,7 +1628,7 @@ assign rlast=rlast1;
 							 io_sram3_rdata[127:64];
  ///////////
 endmodule
-module ysyx_22050533_id(input clock,input reset,input [31:0]inst,output [4:0]rd,output reg [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
+module ysyx_22050533_id(input clock,input reset,input [31:0]inst,output [4:0]rd,output [63:0]imm,output [11:0]op_d,output [4:0]fu_7_d,output [7:0]fu_3_d,input [11:0]e_j_b_inst/*,output [1:0]c_raddr*/,input rf_wen,input [63:0]wdata,output [63:0]src1,output [63:0]src2,output[63:0]c_rdata,input c_wchoose,input c_wen,input c_wen1_2,input [63:0]cpupc,input [4:0]rf_waddr,input pipe1_valid,input pipe3_valid,input rf_wen_reg_wb,input rf_ren_src1,input rf_ren_src2,output control_hazard,input validout,input id_reg_finish,input is_reg_finish);
   wire [1:0]c_waddr;
   wire [4:0]rs1;
 	wire [4:0]rs2;
@@ -1624,7 +1637,7 @@ module ysyx_22050533_id(input clock,input reset,input [31:0]inst,output [4:0]rd,
 	assign rs2=inst[24:20];
 	assign rd =inst[11:7];
 	assign same_inst_r_w=(rf_ren_src1&rf_wen&(rd==rs1))|(rf_ren_src2&rf_wen&(rd==rs2));
-	reg [4:0]waddr_test;
+	//reg [4:0]waddr_test;
 
 	wire [6:0]op;
 	wire	 [2:0]fu_3;
@@ -1643,7 +1656,7 @@ module ysyx_22050533_id(input clock,input reset,input [31:0]inst,output [4:0]rd,
 		end
 		if(validout&rf_wen_reg_wb)begin
 			buzy[rf_waddr]<=0;
-			waddr_test<=rf_waddr;
+			//waddr_test<=rf_waddr;
 		end
 	end
 
@@ -2314,6 +2327,7 @@ always @(posedge clock)begin
 	end
 	if(reset)begin
 		d_r_len<=0;
+		r_rdata<='d0;
 	end
 end
 assign arburst=2'b01;
@@ -2370,6 +2384,8 @@ assign wdata_axi =wdata;
 assign wstrb =r_mask;
 //r_wdata信号
 always@(posedge clock)begin
+	if(reset)
+		wdata<=0;
 	if(wready)begin
 		wdata<=r_wdata;
 		d_w_len<=d_w_len+1;
@@ -2538,7 +2554,9 @@ module ysyx_22050533_mulu(input clock,input reset, input[64:0]multiplicand,input
 	assign {adder_cout,adder_result}=p_result+tmp_result+{{66*2-1{1'b0}},partial_cout};
 
 	always@(posedge clock)begin
-		if(mul_prepare)begin
+		if(reset)
+			tmp_result<='d0;
+		else if(mul_prepare)begin
 			tmp_result<={66*2{1'b0}};
 		end
 		else if(running_r)begin
@@ -2837,13 +2855,8 @@ module ysyx_22050533_stallable_pipeline(
 	reg [2:0]sel_rf_res_reg_is;
 	reg rf_wen_reg_is;
 	reg [4:0]rd_reg_is;//rf waddr
-//pipe1 id
-//pipe2 ls
-//pipe3 wb
-	//reg pipe1_valid;
+	
 	reg [31:0]inst_reg_is;
-	//reg pipe2_valid;
-	//reg pipe3_valid;
 
 	reg not_jump_reg_id;
 	reg not_jump_reg_is;
@@ -2858,7 +2871,51 @@ module ysyx_22050533_stallable_pipeline(
 	
 	wire pipe3_allow_in;
 	wire pipe3_ready_go;
+	always @(posedge clock)begin
+		if(reset)begin
+			dnpc_reg_id<='d0;
+			cpupc_reg_id<=64'h80000000;
+			inst_reg_id<='d0;
+			e_j_b_inst_reg_id<='d0;
 
+			dnpc_reg_is<=64'h80000000;
+			cpupc_reg_is<=64'h80000000;
+			alu_src1_reg_is<='d0;
+			alu_src2_reg_is<='d0;
+			alu_control_reg_is<='d0;
+			data_ram_ren_reg_is<='d0;
+			data_ram_wen_reg_is<='d0;
+			wmask_reg_is<='d0;
+			l_choose_reg_is<='d0;
+			w_choose_reg_is<='d0;
+			src1_reg_is<='d0;
+			src2_reg_is<='d0;
+			imm_reg_is<='d0;
+			c_rdata_reg_is<='d0;
+			e_j_b_inst_reg_is<='d0;
+
+			inst_reg_wb<='d0;
+			e_j_b_inst_reg_wb<='d0;
+			dnpc_reg_wb<=64'h80000000;
+			cpupc_reg_wb<=64'h80000000;
+			sel_rf_res_reg_wb<='d0;
+			rf_wen_reg_wb<='d0;
+			alu_result_reg_wb<='d0;
+			ram_data_reg_wb<='d0;
+			rd_reg_wb<='d0;
+			c_rdata_reg_wb<='d0;
+			cpupc_reg_finish<=64'h80000000;
+
+			sel_rf_res_reg_is<='d0;
+			rf_wen_reg_is<='d0;
+			rd_reg_is<='d0;
+			inst_reg_is<='d0;
+
+			not_jump_reg_id<='d0;
+			not_jump_reg_is<='d0;
+			not_jump_reg_wb<='d0;
+		end
+	end
 //pipe1
 	assign pipe1_ready_go=~control_hazard;//译码是瞬时完成的
 	assign pipe1_allow_in=!pipe1_valid||pipe1_ready_go&&pipe2_allow_in;//若!pipe1_valid&&pipe2_allowin表示pipe1向pipe2传输的是无效数据 并且已经传输 若pipe1_valid&&pipe1_ready_go&&pipe2_allowin表示传输的是有效数据 并且将在下个周期传输
@@ -2918,7 +2975,6 @@ module ysyx_22050533_stallable_pipeline(
 	always@(posedge clock)begin
 		if(reset)begin
 			pipe3_valid<='d0;
-			dnpc_reg_wb<=64'h80000000;
 		end
 		else if(pipe3_allow_in)
 			pipe3_valid<=pipe2_to_pipe3_valid;
@@ -2940,7 +2996,6 @@ module ysyx_22050533_stallable_pipeline(
 	assign validout=pipe3_valid&&pipe3_ready_go;//新的结束信号
 	always@(posedge clock)begin
 		if(reset)begin
-			cpupc_reg_finish<=64'h80000000;
 			ebreak_finish<=0;
 		end
 		else begin
@@ -2956,10 +3011,116 @@ endmodule
 //`include "hong.v"
 //单周期cpu总模块
 module ysyx_22050533(
-  input clock,
+	input clock,
   input reset,
-	input io_interrupt,
-	//////测试信号//////
+  input io_interrupt,
+  input                               io_master_awready,
+  output                              io_master_awvalid,
+  output [31:0]                       io_master_awaddr,
+  output [3:0]                        io_master_awid,
+  output [7:0]                        io_master_awlen,
+  output [2:0]                        io_master_awsize,
+  output [1:0]                        io_master_awburst,
+  input                               io_master_wready,
+  output                              io_master_wvalid,
+  output [63:0]                       io_master_wdata,
+  output [7:0]                        io_master_wstrb,
+  output                              io_master_wlast,
+  output                              io_master_bready,
+  input                               io_master_bvalid,
+  input  [1:0]                        io_master_bresp,
+  input  [3:0]                        io_master_bid,
+  input                               io_master_arready,
+  output                              io_master_arvalid,
+  output [31:0]                       io_master_araddr,
+  output [3:0]                        io_master_arid,
+  output [7:0]                        io_master_arlen,
+  output [2:0]                        io_master_arsize,
+  output [1:0]                        io_master_arburst,
+  output                              io_master_rready,
+  input                               io_master_rvalid,
+  input  [1:0]                        io_master_rresp,
+  input  [63:0]                       io_master_rdata,
+  input                               io_master_rlast,
+  input  [3:0]                        io_master_rid,
+  output                              io_slave_awready,
+  input                               io_slave_awvalid,
+  input [31:0]                        io_slave_awaddr,
+  input [3:0]                         io_slave_awid,
+  input [7:0]                         io_slave_awlen,
+  input [2:0]                         io_slave_awsize,
+  input [1:0]                         io_slave_awburst,
+  output                              io_slave_wready,
+  input                               io_slave_wvalid,
+  input [63:0]                        io_slave_wdata,
+  input [7:0]                         io_slave_wstrb,
+  input                               io_slave_wlast,
+  input                               io_slave_bready,
+  output                              io_slave_bvalid,
+  output  [1:0]                       io_slave_bresp,
+  output  [3:0]                       io_slave_bid,
+  output                              io_slave_arready,
+  input                               io_slave_arvalid,
+  input [31:0]                        io_slave_araddr,
+  input [3:0]                         io_slave_arid,
+  input [7:0]                         io_slave_arlen,
+  input [2:0]                         io_slave_arsize,
+  input [1:0]                         io_slave_arburst,
+  input                               io_slave_rready,
+  output                              io_slave_rvalid,
+  output  [1:0]                       io_slave_rresp,
+  output  [63:0]                      io_slave_rdata,
+  output                              io_slave_rlast,
+  output  [3:0]                       io_slave_rid,
+  output [5:0] io_sram0_addr,
+	output io_sram0_cen,
+	output io_sram0_wen,
+	output [127:0] io_sram0_wmask,
+	output [127:0] io_sram0_wdata,
+	input [127:0] io_sram0_rdata,
+	output [5:0] io_sram1_addr,
+	output io_sram1_cen,
+	output io_sram1_wen,
+	output [127:0] io_sram1_wmask,
+	output [127:0] io_sram1_wdata,
+	input [127:0] io_sram1_rdata,
+	output [5:0] io_sram2_addr,
+	output io_sram2_cen,
+	output io_sram2_wen,
+	output [127:0] io_sram2_wmask,
+	output [127:0] io_sram2_wdata,
+	input [127:0] io_sram2_rdata,
+	output [5:0] io_sram3_addr,
+	output io_sram3_cen,
+	output io_sram3_wen,
+	output [127:0] io_sram3_wmask,
+	output [127:0] io_sram3_wdata,
+	input [127:0] io_sram3_rdata,
+	output [5:0] io_sram4_addr,
+	output io_sram4_cen,
+	output io_sram4_wen,
+	output [127:0] io_sram4_wmask,
+	output [127:0] io_sram4_wdata,
+	input [127:0] io_sram4_rdata,
+	output [5:0] io_sram5_addr,
+	output io_sram5_cen,
+	output io_sram5_wen,
+	output [127:0] io_sram5_wmask,
+	output [127:0] io_sram5_wdata,
+	input [127:0] io_sram5_rdata,
+	output [5:0] io_sram6_addr,
+	output io_sram6_cen,
+	output io_sram6_wen,
+	output [127:0] io_sram6_wmask,
+	output [127:0] io_sram6_wdata,
+	input [127:0] io_sram6_rdata,
+	output [5:0] io_sram7_addr,
+	output io_sram7_cen,
+	output io_sram7_wen,
+	output [127:0] io_sram7_wmask,
+	output [127:0] io_sram7_wdata,
+	input [127:0] io_sram7_rdata,
+  //////测试信号//////
 	output [31:0]inst,
   output [63:0] cpupc,
   output ebreak,
@@ -2971,125 +3132,25 @@ module ysyx_22050533(
 	output [63:0]dnpc_reg_wb,
 	output [63:0]cpupc_reg_wb,
 	output [63:0]cpupc_reg_finish,
-	output [31:0]inst_reg_wb,
+	output [31:0]inst_reg_wb
 	////////////////////
 
-	output [5:0]io_sram0_addr,
-  output io_sram0_cen,
-  output io_sram0_wen,
-  output [127:0]io_sram0_wmask,
-  output [127:0] io_sram0_wdata,
-  input [127:0] io_sram0_rdata,
+  );
+//////测试信号//////
+/*wire [31:0]inst;*/
+/*wire [63:0] cpupc;*/
+/*wire ebreak;*/
+/*wire not_have;*/
+/*wire [63:0]dnpc;*/
+/*reg inst_finish;*/
+/*wire mem_finish;*/
+/*wire inst_update;*/
+/*wire [63:0]dnpc_reg_wb;*/
+/*wire [63:0]cpupc_reg_wb;*/
+/*wire [63:0]cpupc_reg_finish;*/
+/*wire [31:0]inst_reg_w;*/
+////////////////////
 
-  output [5:0] io_sram1_addr,
-  output io_sram1_cen,
-  output io_sram1_wen,
-  output [127:0]io_sram1_wmask,
-  output [127:0] io_sram1_wdata,
-  input [127:0] io_sram1_rdata,
-
-  output [5:0] io_sram2_addr,
-  output io_sram2_cen,
-  output io_sram2_wen,
-  output [127:0]io_sram2_wmask,
-  output [127:0] io_sram2_wdata,
-  input [127:0] io_sram2_rdata,
-
-  output [5:0] io_sram3_addr,
-  output io_sram3_cen,
-  output io_sram3_wen,
-  output [127:0]io_sram3_wmask,
-  output [127:0] io_sram3_wdata,
-  input [127:0] io_sram3_rdata,
-
-  output[5:0] io_sram4_addr,
-  output io_sram4_cen,
-  output io_sram4_wen,
-  output [127:0]io_sram4_wmask,
-  output[127:0] io_sram4_wdata,
-  input[127:0] io_sram4_rdata,
-
-  output[5:0] io_sram5_addr,
-  output io_sram5_cen,
-  output io_sram5_wen,
-  output [127:0]io_sram5_wmask,
-  output[127:0] io_sram5_wdata,
-  input[127:0] io_sram5_rdata,
-  
-  output[5:0] io_sram6_addr,
-  output io_sram6_cen,
-  output io_sram6_wen,
-  output [127:0]io_sram6_wmask,
-  output[127:0] io_sram6_wdata,
-  input[127:0] io_sram6_rdata,
-
-  output[5:0] io_sram7_addr,
-  output io_sram7_cen,
-  output io_sram7_wen,
-  output [127:0]io_sram7_wmask,
-  output[127:0] io_sram7_wdata,
-  input[127:0] io_sram7_rdata,
-
-  input         io_master_awready,
-	output        io_master_awvalid,
-	output[3:0]   io_master_awid ,
-	output[31:0]  io_master_awaddr,
-	output[7:0]   io_master_awlen,
-	output[2:0]   io_master_awsize,
-	output[1:0]   io_master_awburst,
-	input         io_master_wready,
-	output        io_master_wvalid,
-	output[63:0]  io_master_wdata,
-	output[7:0]   io_master_wstrb,
-	output        io_master_wlast,
-	output        io_master_bready,
-	input         io_master_bvalid,
-	input[3:0]    io_master_bid,
-	input[1:0]    io_master_bresp,
-	input         io_master_arready,
-	output        io_master_arvalid,
-	output[3:0]   io_master_arid,
-	output[31:0]  io_master_araddr,
-	output[7:0]   io_master_arlen,
-	output[2:0]   io_master_arsize,
-	output[1:0]   io_master_arburst,
-	output        io_master_rready,
-	input         io_master_rvalid,
-	input[3:0]    io_master_rid,
-	input[1:0]    io_master_rresp,
-	input[63:0]   io_master_rdata,
-	input         io_master_rlast,
-
-	output      	io_slave_awready,
-	input 	      io_slave_awvalid,
-	input[3:0]  	io_slave_awid,
-	input[31:0] 	io_slave_awaddr,
-	input[7:0]  	io_slave_awlen,
-	input[2:0]  	io_slave_awsize,
-	input[1:0]  	io_slave_awburst,
-	output 	      io_slave_wready,
-	input 	      io_slave_wvalid,
-	input[63:0] 	io_slave_wdata,
-	input[7:0]  	io_slave_wstrb,
-	input 	      io_slave_wlast,
-	input 	      io_slave_bready,
-	output 	      io_slave_bvalid,
-	output[3:0] 	io_slave_bid,
-	output[1:0] 	io_slave_bresp,
-	output 	      io_slave_arready,
-	input 	      io_slave_arvalid,
-	input[3:0]  	io_slave_arid,
-	input[31:0] 	io_slave_araddr,
-	input[7:0]   	io_slave_arlen,
-	input[2:0]   	io_slave_arsize,
-	input[1:0]   	io_slave_arburst,
-	input 	      io_slave_rready,
-	output 	      io_slave_rvalid,
-	output[3:0] 	io_slave_rid,
-	output[1:0] 	io_slave_rresp,
-	output[63:0] 	io_slave_rdata,
-	output 	      io_slave_rlast
-);
 wire isu_finish;
 wire alu_finish;
 wire ebreak_finish;
@@ -3218,7 +3279,7 @@ wire control_hazard;
 
 	
 	assign validin=inst_update;
-	ysyx_22050533_stallable_pipeline stallable_pipeline_0(
+	ysyx_22050533_stallable_pipeline stallable_pipeline_test(
 	.clock(clock),
 	.reset(reset),
 	.isu_finish(isu_finish),
