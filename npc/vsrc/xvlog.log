@@ -1,0 +1,49 @@
+INFO: [VRFC 10-2263] Analyzing Verilog file "/tmp/vUBVtrX/1842/ysyx_22050533.v" into library work
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_Alu3
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_arbiter
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_control
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_dcache
+WARNING: [VRFC 10-8374] loop variable declaration is not allowed in this mode of Verilog [/tmp/vUBVtrX/1842/ysyx_22050533.v:968]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_de_len_olen
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_div
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_adder_32
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_adder_33
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_exe
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_icache
+WARNING: [VRFC 10-8374] loop variable declaration is not allowed in this mode of Verilog [/tmp/vUBVtrX/1842/ysyx_22050533.v:1567]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_id
+WARNING: [VRFC 10-8374] loop variable declaration is not allowed in this mode of Verilog [/tmp/vUBVtrX/1842/ysyx_22050533.v:1651]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_If
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_mem2
+ERROR: [VRFC 10-3380] identifier 'use_cache' is used before its declaration [/tmp/vUBVtrX/1842/ysyx_22050533.v:2008]
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_mem2' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:1873]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_mem_read_write
+ERROR: [VRFC 10-3380] identifier 'WRITE_FINISH' is used before its declaration [/tmp/vUBVtrX/1842/ysyx_22050533.v:2315]
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_mem_read_write' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2232]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_sel_gen
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_sel_gen' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2447]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_res_sel
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_res_sel' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2461]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_mul_partial
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_mul_partial' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2470]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_mulu
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_mulu' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2492]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_MuxKeyInternal
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_MuxKeyInternal' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2570]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_MuxKey
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_MuxKey' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2610]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_MuxKeyWithDefault
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_MuxKeyWithDefault' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2618]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_pre_decode
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_pre_decode' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2626]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_RegisterFile2
+ERROR: [VRFC 10-4982] syntax error near '"DPI-C' [/tmp/vUBVtrX/1842/ysyx_22050533.v:2698]
+ERROR: [VRFC 10-2939] 'import' is an unknown type [/tmp/vUBVtrX/1842/ysyx_22050533.v:2698]
+ERROR: [VRFC 10-2939] 'import' is an unknown type [/tmp/vUBVtrX/1842/ysyx_22050533.v:2699]
+ERROR: [VRFC 10-3155] cannot access memory 'rf' directly [/tmp/vUBVtrX/1842/ysyx_22050533.v:2733]
+ERROR: [VRFC 10-3155] cannot access memory 'csr' directly [/tmp/vUBVtrX/1842/ysyx_22050533.v:2734]
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_RegisterFile2' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2671]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_set_dnpc
+ERROR: [VRFC 10-8530] module 'ysyx_22050533_set_dnpc' is ignored due to previous errors [/tmp/vUBVtrX/1842/ysyx_22050533.v:2738]
+INFO: [VRFC 10-311] analyzing module ysyx_22050533_stallable_pipeline
+INFO: [#UNDEF] Sorry, too many errors..
