@@ -2154,19 +2154,15 @@ strncat(char *__restrict __dest, const char *__restrict __src, size_t __len)
 #define CONFIG_DIFFTEST_REF_SPIKE 1
 #define CONFIG_TARGET_NATIVE_ELF 1
 #define CONFIG_HAS_AUDIO 1
-#define CONFIG_STRACE 1
 #define CONFIG_MSIZE 0x8000000
 #define CONFIG_CC_O2 1
 #define CONFIG_DEVICE 1
 #define CONFIG_HAS_KEYBOARD 1
 #define CONFIG_MODE_SYSTEM 1
-#define CONFIG_STRACE_COND "true"
-#define CONFIG_ITRACE 1
 #define CONFIG_NOTWATCHPOINT 1
 #define CONFIG_DIFFTEST 1
 #define CONFIG_HAS_SERIAL 1
 #define CONFIG_HAS_DISK 1
-#define CONFIG_TRACE_END 10000
 #define CONFIG_FB_ADDR 0xa1000000
 #define CONFIG_CC_ASAN 1
 #define CONFIG_HAS_VGA 1
@@ -2180,16 +2176,13 @@ strncat(char *__restrict __dest, const char *__restrict __src, size_t __len)
 #define CONFIG_RT_CHECK 1
 #define CONFIG_ISA64 1
 #define CONFIG_I8042_DATA_MMIO 0xa0000060
-#define CONFIG_ITRACE_COND "true"
 #define CONFIG_SB_SIZE 0x10000
 #define CONFIG_CC "gcc"
 #define CONFIG_DIFFTEST_REF_PATH "tools/spike-diff"
 #define CONFIG_CC_DEBUG 1
-#define CONFIG_TRACE_START 0
 #define CONFIG_DISK_IMG_PATH ""
 #define CONFIG_CC_GCC 1
 #define CONFIG_SB_ADDR 0xa1200000
-#define CONFIG_TRACE 1
 #define CONFIG_ISA "riscv64"
 #define CONFIG_VGA_CTL_MMIO 0xa0000100
 #define CONFIG_PMEM_GARRAY 1
@@ -4737,5 +4730,10 @@ void init_log(const char *log_file) {
 _Bool
 # 41 "src/utils/log.c"
     log_enable() {
-  return (g_nr_guest_inst >= 0) && (g_nr_guest_inst <= 10000);
+  return
+# 42 "src/utils/log.c" 3 4
+      0
+
+# 43 "src/utils/log.c"
+      ;
 }

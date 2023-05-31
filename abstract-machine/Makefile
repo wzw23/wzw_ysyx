@@ -39,6 +39,8 @@ PLATFORM   = $(word 2,$(ARCH_SPLIT))
 ifeq ($(flavor SRCS), undefined)
   $(error Nothing to build)
 endif
+#printfsrc:
+	#echo $(SRCS)
 
 ### Checks end here
 endif
@@ -64,7 +66,7 @@ LINKAGE   = $(OBJS) \
     $(addsuffix /build/, $(addprefix $(AM_HOME)/, $(LIBS))), \
     $(LIBS) ))
 #linkage:
-#	echo $(LINKAGE)
+	#echo $(LINKAGE)
 
 ## 3. General Compilation Flags
 

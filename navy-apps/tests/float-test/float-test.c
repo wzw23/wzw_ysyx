@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <assert.h>
 /*#include <fixedptc.h>*/
-#include "/home/wzw/ysyx-workbench/navy-apps/libs/libfixedptc/include/fixedptc.h"
+#include "../../../navy-apps/libs/libfixedptc/include/fixedptc.h"
 typedef fixedpt             FLOAT, *LPFLOAT;
 /*#ifdef __ISA_NATIVE__*/
 /*#error can not support ISA=native*/

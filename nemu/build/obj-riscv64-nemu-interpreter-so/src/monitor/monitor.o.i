@@ -4741,7 +4741,7 @@ static void welcome() {
            "Build time: %s, %s"
            "\33[0m"
            "\n",
-           "src/monitor/monitor.c", 36, __func__, "15:05:29", "Apr 29 2023");
+           "src/monitor/monitor.c", 36, __func__, "19:42:48", "May 24 2023");
     ;
   } while (0);
   printf("Welcome to %s-NEMU!\n", "\33[1;33m"

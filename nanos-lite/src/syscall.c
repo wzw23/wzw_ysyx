@@ -1,8 +1,8 @@
 #include <common.h>
 #include "syscall.h"
 //wzw add
-#include "/home/wzw/ysyx-workbench/nemu/include/generated/autoconf.h"
-#include "/home/wzw/ysyx-workbench/nanos-lite/include/proc.h"
+#include "../../nemu/include/generated/autoconf.h"
+#include "../../nanos-lite/include/proc.h"
 /*enum {*/
   /*SYS_exit,*/
   /*SYS_yield,*/

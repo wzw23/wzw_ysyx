@@ -2158,19 +2158,15 @@ strncat(char *__restrict __dest, const char *__restrict __src, size_t __len)
 #define CONFIG_DIFFTEST_REF_SPIKE 1
 #define CONFIG_TARGET_NATIVE_ELF 1
 #define CONFIG_HAS_AUDIO 1
-#define CONFIG_STRACE 1
 #define CONFIG_MSIZE 0x8000000
 #define CONFIG_CC_O2 1
 #define CONFIG_DEVICE 1
 #define CONFIG_HAS_KEYBOARD 1
 #define CONFIG_MODE_SYSTEM 1
-#define CONFIG_STRACE_COND "true"
-#define CONFIG_ITRACE 1
 #define CONFIG_NOTWATCHPOINT 1
 #define CONFIG_DIFFTEST 1
 #define CONFIG_HAS_SERIAL 1
 #define CONFIG_HAS_DISK 1
-#define CONFIG_TRACE_END 10000
 #define CONFIG_FB_ADDR 0xa1000000
 #define CONFIG_CC_ASAN 1
 #define CONFIG_HAS_VGA 1
@@ -2184,16 +2180,13 @@ strncat(char *__restrict __dest, const char *__restrict __src, size_t __len)
 #define CONFIG_RT_CHECK 1
 #define CONFIG_ISA64 1
 #define CONFIG_I8042_DATA_MMIO 0xa0000060
-#define CONFIG_ITRACE_COND "true"
 #define CONFIG_SB_SIZE 0x10000
 #define CONFIG_CC "gcc"
 #define CONFIG_DIFFTEST_REF_PATH "tools/spike-diff"
 #define CONFIG_CC_DEBUG 1
-#define CONFIG_TRACE_START 0
 #define CONFIG_DISK_IMG_PATH ""
 #define CONFIG_CC_GCC 1
 #define CONFIG_SB_ADDR 0xa1200000
-#define CONFIG_TRACE 1
 #define CONFIG_ISA "riscv64"
 #define CONFIG_VGA_CTL_MMIO 0xa0000100
 #define CONFIG_PMEM_GARRAY 1
@@ -4724,7 +4717,7 @@ typedef struct Decode {
   vaddr_t snpc;
   vaddr_t dnpc;
   ISADecodeInfo isa;
-  char logbuf[128];
+  ;
 } Decode;
 
 __attribute__((always_inline)) static inline void
@@ -9716,19 +9709,15 @@ finish:
 #define CONFIG_DIFFTEST_REF_SPIKE 1
 #define CONFIG_TARGET_NATIVE_ELF 1
 #define CONFIG_HAS_AUDIO 1
-#define CONFIG_STRACE 1
 #define CONFIG_MSIZE 0x8000000
 #define CONFIG_CC_O2 1
 #define CONFIG_DEVICE 1
 #define CONFIG_HAS_KEYBOARD 1
 #define CONFIG_MODE_SYSTEM 1
-#define CONFIG_STRACE_COND "true"
-#define CONFIG_ITRACE 1
 #define CONFIG_NOTWATCHPOINT 1
 #define CONFIG_DIFFTEST 1
 #define CONFIG_HAS_SERIAL 1
 #define CONFIG_HAS_DISK 1
-#define CONFIG_TRACE_END 10000
 #define CONFIG_FB_ADDR 0xa1000000
 #define CONFIG_CC_ASAN 1
 #define CONFIG_HAS_VGA 1
@@ -9742,16 +9731,13 @@ finish:
 #define CONFIG_RT_CHECK 1
 #define CONFIG_ISA64 1
 #define CONFIG_I8042_DATA_MMIO 0xa0000060
-#define CONFIG_ITRACE_COND "true"
 #define CONFIG_SB_SIZE 0x10000
 #define CONFIG_CC "gcc"
 #define CONFIG_DIFFTEST_REF_PATH "tools/spike-diff"
 #define CONFIG_CC_DEBUG 1
-#define CONFIG_TRACE_START 0
 #define CONFIG_DISK_IMG_PATH ""
 #define CONFIG_CC_GCC 1
 #define CONFIG_SB_ADDR 0xa1200000
-#define CONFIG_TRACE 1
 #define CONFIG_ISA "riscv64"
 #define CONFIG_VGA_CTL_MMIO 0xa0000100
 #define CONFIG_PMEM_GARRAY 1
@@ -13657,26 +13643,7 @@ extern Ftrace ftrace;
 extern Sy_table func;
 
 #define iringbuf_MAXSIZE 7
-
-typedef struct {
-  char s[7][200];
-  int rear;
-} iringbuf;
-
-static iringbuf initiringbuf(iringbuf ib) {
-  ib.rear = 0;
-  return ib;
-}
-
-static iringbuf ib;
-static iringbuf eniringbuf(iringbuf ib, char *str) {
-  sprintf(ib.s[ib.rear], "%s", str);
-
-  ib.rear = (ib.rear + 1) % (7);
-
-  return ib;
-}
-
+# 61 "src/cpu/cpu-exec.c"
 uint64_t g_nr_guest_inst = 0;
 static uint64_t g_timer = 0;
 static
@@ -13692,140 +13659,9 @@ static
 void device_update();
 void watchpoint_exam();
 static void trace_and_difftest(Decode *_this, vaddr_t dnpc) {
-
-  if (
-# 69 "src/cpu/cpu-exec.c" 3 4
-      1
-# 69 "src/cpu/cpu-exec.c"
-  ) {
-
-    char logbuf[200];
-    do {
-      extern FILE *log_fp;
-      extern
-# 72 "src/cpu/cpu-exec.c" 3 4
-          _Bool
-# 72 "src/cpu/cpu-exec.c"
-          log_enable();
-      if (log_enable()) {
-        fprintf(log_fp, "%s\n", _this->logbuf);
-        fflush(log_fp);
-      }
-    } while (0);
-    if (nemu_state.state != NEMU_RUNNING) {
-
-      do {
-        extern FILE *log_fp;
-        extern
-# 75 "src/cpu/cpu-exec.c" 3 4
-            _Bool
-# 75 "src/cpu/cpu-exec.c"
-            log_enable();
-        if (log_enable()) {
-          fprintf(log_fp, "//////////////ftrace//////////////\n");
-          fflush(log_fp);
-        }
-      } while (0);
-      int space = 0;
-      for (int i = 0; i < ftrace.length; i++) {
-        if (ftrace.state[i] == 0) {
-          int j = 0;
-          for (j = 0; j < func.length; j++) {
-            if ((ftrace.right[i] == func.begin[j])) {
-              do {
-                extern FILE *log_fp;
-                extern
-# 82 "src/cpu/cpu-exec.c" 3 4
-                    _Bool
-# 82 "src/cpu/cpu-exec.c"
-                    log_enable();
-                if (log_enable()) {
-                  fprintf(log_fp, "%*s", space, "");
-                  fflush(log_fp);
-                }
-              } while (0);
-
-              do {
-                extern FILE *log_fp;
-                extern
-# 84 "src/cpu/cpu-exec.c" 3 4
-                    _Bool
-# 84 "src/cpu/cpu-exec.c"
-                    log_enable();
-                if (log_enable()) {
-                  fprintf(log_fp, " %lx:    call %s(%lx)\n", ftrace.left[i],
-                          func.name[j], ftrace.right[i]);
-                  fflush(log_fp);
-                }
-              } while (0);
-              space++;
-              break;
-            }
-          }
-        } else {
-          int j = 0;
-          for (j = 0; j < func.length; j++) {
-            if ((ftrace.left[i] >= func.begin[j]) &&
-                (ftrace.left[i] < func.begin[j] + func.size[j])) {
-              space--;
-              do {
-                extern FILE *log_fp;
-                extern
-# 95 "src/cpu/cpu-exec.c" 3 4
-                    _Bool
-# 95 "src/cpu/cpu-exec.c"
-                    log_enable();
-                if (log_enable()) {
-                  fprintf(log_fp, "%*s", space, "");
-                  fflush(log_fp);
-                }
-              } while (0);
-              do {
-                extern FILE *log_fp;
-                extern
-# 96 "src/cpu/cpu-exec.c" 3 4
-                    _Bool
-# 96 "src/cpu/cpu-exec.c"
-                    log_enable();
-                if (log_enable()) {
-                  fprintf(log_fp, " %lx:    ret %s(%lx)\n", ftrace.left[i],
-                          func.name[j], ftrace.right[i]);
-                  fflush(log_fp);
-                }
-              } while (0);
-              break;
-            }
-          }
-        }
-      }
-      do {
-        extern FILE *log_fp;
-        extern
-# 101 "src/cpu/cpu-exec.c" 3 4
-            _Bool
-# 101 "src/cpu/cpu-exec.c"
-            log_enable();
-        if (log_enable()) {
-          fprintf(log_fp, "/////////////////////////////////");
-          fflush(log_fp);
-        }
-      } while (0);
-      if (nemu_state.state == NEMU_ABORT) {
-        sprintf(logbuf, "-->%s\n", _this->logbuf);
-        ib = eniringbuf(ib, logbuf);
-        for (int i = 0; i < 7; i++) {
-          printf("%s", ib.s[i]);
-        }
-      }
-    } else {
-      sprintf(logbuf, "   %s\n", _this->logbuf);
-
-      ib = eniringbuf(ib, logbuf);
-    }
-  }
-
+# 119 "src/cpu/cpu-exec.c"
   if (g_print_step) {
-    puts(_this->logbuf);
+    ;
   }
   difftest_step(_this->pc, dnpc);
 
@@ -13838,34 +13674,7 @@ static void exec_once(Decode *s, vaddr_t pc) {
 
   isa_exec_once(s);
   cpu.pc = s->dnpc;
-
-  char *p = s->logbuf;
-
-  p += snprintf(p, sizeof(s->logbuf),
-                "0x%016"
-# 138 "src/cpu/cpu-exec.c" 3 4
-                "l"
-                "x"
-# 138 "src/cpu/cpu-exec.c"
-                ":",
-                s->pc);
-  int ilen = s->snpc - s->pc;
-  int i;
-  uint8_t *inst = (uint8_t *)&s->isa.inst.val;
-  for (i = ilen - 1; i >= 0; i--) {
-    p += snprintf(p, 4, " %02x", inst[i]);
-  }
-  int ilen_max = 4;
-  int space_len = ilen_max - ilen;
-  if (space_len < 0)
-    space_len = 0;
-  space_len = space_len * 3 + 1;
-  memset(p, ' ', space_len);
-  p += space_len;
-
-  void disassemble(char *str, int size, uint64_t pc, uint8_t *code, int nbyte);
-  disassemble(p, s->logbuf + sizeof(s->logbuf) - p, s->pc,
-              (uint8_t *)&s->isa.inst.val, ilen);
+# 158 "src/cpu/cpu-exec.c"
 }
 static void execute(uint64_t n) {
   Decode s;
@@ -14046,8 +13855,6 @@ void assert_fail_msg() {
 }
 
 void cpu_exec(uint64_t n) {
-
-  ib = initiringbuf(ib);
 
   g_print_step = (n < 10);
   switch (nemu_state.state) {
